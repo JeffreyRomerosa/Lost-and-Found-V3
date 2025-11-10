@@ -17,11 +17,22 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { Home, Search, Bell, User, PlusSquare } from "lucide-vue-next";
 
 const route = useRoute();
+const userRole = ref('');
+
+onMounted(() => {
+  // Get user role from localStorage on component mount
+  try {
+    const user = JSON.parse(localStorage.getItem('user'));
+    userRole.value = user?.role || '';
+  } catch (err) {
+    console.error('Error getting user role:', err);
+  }
+});
 
 const nav = [
   { to: "/userdashboard", label: "Home", icon: Home },
@@ -31,9 +42,18 @@ const nav = [
   { to: "/profile", label: "Profile", icon: User },
 ];
 
-// Hide navbar on login & register pages
+// Hide navbar on login & register pages and hide on profile for admin/security
 const showNavbar = computed(() => {
+  // Check if current route is profile and user is admin/security
+  if (route.path.startsWith('/profile') && (userRole.value === 'admin' || userRole.value === 'security')) {
+    return false;
+  }
+  
   // Check if the current route is neither login nor register
-  return route.path !== "/login" && route.path !== "/register" && route.path !== "/" && route.path !== "/admin-dashboard";
+  return route.path !== "/login" && 
+         route.path !== "/register" && 
+         route.path !== "/" && 
+         route.path !== "/admin-dashboard" && 
+         route.path !== "/security-dashboard";
 });
 </script>

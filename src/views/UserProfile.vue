@@ -11,7 +11,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
-        <span class="font-semibold">Profile updated successfully!</span>
+        <span class="font-semibold">{{ successMessageText }}</span>
       </div>
     </transition>
 
@@ -29,13 +29,17 @@
             alt="Profile Photo"
             class="w-32 h-32 rounded-full border-4 border-yellow-400 object-cover shadow-lg"
           />
-          <label
-            v-if="editMode"
-            class="absolute bottom-0 right-0 bg-yellow-500 text-black px-2 py-1 text-xs rounded cursor-pointer hover:bg-yellow-400 transition"
-          >
-            Change
-            <input type="file" accept="image/*" @change="openCropper" class="hidden" />
-          </label>
+            <div class="absolute inset-0 flex items-end justify-end pr-2 pb-1">
+              <label
+                v-if="editMode"
+                class="bg-yellow-500 text-black px-2 py-1 text-xs rounded cursor-pointer hover:bg-yellow-400 transition"
+              >
+                Change
+                <input type="file" accept="image/*" @change="openCropper" class="hidden" />
+              </label>
+
+              <button v-else @click="showImageOptions = true" class="bg-gray-800 text-yellow-400 px-2 py-1 text-xs rounded hover:bg-gray-700">Options</button>
+            </div>
         </div>
 
         <!-- Image Cropper Modal -->
@@ -78,6 +82,12 @@
           </div>
         </div>
 
+        <!-- Suggestion if profile is empty (only show for university members) -->
+        <div v-if="userRole === 'university_member' && !editMode && !name && !department && !contactNumber && (!birthday || birthday === 'Not set')" class="mb-4 p-4 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-300">
+          <strong>Please fill in your profile information.</strong>
+          <div class="text-sm mt-1">Complete your Full Name, Department, Contact Number, Birthday and Profile Photo so you can use all features.</div>
+        </div>
+
         <!-- Profile Info -->
         <div class="text-center mt-3 w-full">
           <div v-if="!editMode">
@@ -92,11 +102,10 @@
           <!-- Editable Fields -->
           <div v-else class="space-y-3 max-w-sm mx-auto">
             <input v-model="editableName" type="text" placeholder="Full Name" class="w-full p-2 rounded-lg text-black border border-gray-400 text-center" />
-            <select v-model="editableUserType" class="w-full p-2 rounded-lg text-black border border-gray-400 text-center">
-              <option value="University Student">University Student</option>
-              <option value="University Employee">University Employee</option>
-              <option value="Security Staff">Security Staff</option>
-            </select>
+            <!-- Role is managed by administrators; display only here -->
+            <div class="w-full p-2 rounded-lg text-black border border-gray-400 text-center bg-gray-100 text-sm text-gray-700">
+              {{ userType }}
+            </div>
             <input v-model="editableDepartment" type="text" placeholder="Department / Office" class="w-full p-2 rounded-lg text-black border border-gray-400 text-center" />
             <input v-model="editableContactNumber" type="tel" placeholder="Contact Number" class="w-full p-2 rounded-lg text-black border border-gray-400 text-center" />
             <input v-model="editableBirthday" type="date" class="w-full p-2 rounded-lg text-black border border-gray-400 text-center" />
@@ -124,7 +133,7 @@
             </div>
           </div>
 
-          <!-- ✅ Only Home Button -->
+          <!-- ✅ Back to Home Button -->
           <div class="mt-6 flex justify-center items-center text-gray-400">
             <router-link
               to="/userdashboard"
@@ -134,9 +143,24 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M3 12l2-2m0 0l7-7 7 7m-9 2v8m0-8H5m4 0h10" />
               </svg>
-              Home
+              Back to Home
             </router-link>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Options Modal -->
+    <div v-if="showImageOptions" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
+      <div class="bg-gray-900 p-6 rounded-2xl border border-yellow-400 w-full max-w-md text-center">
+        <img :src="profilePhoto" alt="Profile" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-2 border-yellow-400" />
+        <div class="flex justify-center gap-3">
+          <label class="px-4 py-2 bg-yellow-500 text-black rounded cursor-pointer hover:bg-yellow-400 transition">
+            Replace
+            <input type="file" accept="image/*" @change="onReplaceImage" class="hidden" />
+          </label>
+          <button @click="onDeleteImage" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+          <button @click="showImageOptions = false" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500">Cancel</button>
         </div>
       </div>
     </div>
@@ -145,13 +169,14 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
 import { Cropper } from "vue-advanced-cropper";
 import { disconnectSocket } from "../socket";
 import "vue-advanced-cropper/dist/style.css";
 
 const router = useRouter();
+const route = useRoute();
 const API_URL = "http://localhost:5000/api/profile";
 
 const redirectToLogin = () => {
@@ -164,6 +189,7 @@ const redirectToLogin = () => {
 const name = ref("");
 const email = ref("");
 const userType = ref("");
+const userRole = ref("");
 const department = ref("");
 const contactNumber = ref("");
 const birthday = ref(""); // ← will show formatted date
@@ -172,7 +198,7 @@ const profilePhoto = ref("https://via.placeholder.com/150");
 
 // Editable state
 const editableName = ref("");
-const editableUserType = ref("");
+// editableUserType removed: role is managed server-side; users cannot change role here
 const editableDepartment = ref("");
 const editableContactNumber = ref("");
 const editableBirthday = ref(""); // ← raw YYYY-MM-DD for input
@@ -183,6 +209,7 @@ const showCropper = ref(false);
 const showSuccess = ref(false);
 const tempPhoto = ref(null);
 const cropperRef = ref(null);
+const successMessageText = ref("Profile updated successfully!");
 
 // ✅ Fetch profile safely with backend base URL
 const fetchProfile = async () => {
@@ -201,7 +228,17 @@ const fetchProfile = async () => {
 
     name.value = data.full_name;
     email.value = data.email;
-    userType.value = data.user_type;
+    // Derive a displayable role from the stored role field
+    if (data.role) {
+      if (data.role === 'admin') userType.value = 'Administrator';
+      else if (data.role === 'security') userType.value = 'Security Staff';
+      else if (data.role === 'university_member') userType.value = 'University Member';
+      else userType.value = data.role;
+    } else {
+      userType.value = '';
+    }
+    // store raw role for conditional UI logic
+    userRole.value = data.role || '';
     department.value = data.department;
     contactNumber.value = data.contact_number;
 
@@ -229,11 +266,21 @@ const fetchProfile = async () => {
 
     // Editable fields
     editableName.value = name.value;
-    editableUserType.value = userType.value;
     editableDepartment.value = department.value;
     editableContactNumber.value = contactNumber.value;
     // Keep raw value for date input (YYYY-MM-DD)
     editableBirthday.value = data.birthday ? new Date(data.birthday).toISOString().split("T")[0] : "";
+
+    // If user was redirected here to complete profile, open edit mode automatically
+    try {
+      const nextPath = route.query?.next;
+      const isIncomplete = !data.full_name || !data.department || !data.contact_number || !data.birthday || !data.profile_picture;
+      if (nextPath && isIncomplete) {
+        editMode.value = true;
+      }
+    } catch (err) {
+      // ignore
+    }
 
   } catch (err) {
     console.error("Failed to fetch profile:", err.message);
@@ -274,7 +321,7 @@ const saveProfile = async () => {
 
     const formData = new FormData();
     formData.append("full_name", editableName.value);
-    formData.append("user_type", editableUserType.value);
+    // role/user_type is not editable via this form (managed by admin)
     formData.append("department", editableDepartment.value);
     formData.append("contact_number", editableContactNumber.value);
     formData.append("birthday", editableBirthday.value);
@@ -291,7 +338,18 @@ const saveProfile = async () => {
     if (updatedUser) {
       try {
         const storedUser = JSON.parse(localStorage.getItem("user") || "null") || {};
+
+        // Normalize profile_picture to full URL so other pages can use it immediately
+        let normalizedProfilePicture = null;
+        if (updatedUser.profile_picture) {
+          const normalizedPath = updatedUser.profile_picture.replace(/^\/?uploads\//, "/uploads/");
+          normalizedProfilePicture = `http://localhost:5000${normalizedPath}`;
+          // update local display immediately
+          profilePhoto.value = normalizedProfilePicture;
+        }
+
         const nextUser = { ...storedUser, ...updatedUser };
+        if (normalizedProfilePicture) nextUser.profile_picture = normalizedProfilePicture;
         localStorage.setItem("user", JSON.stringify(nextUser));
       } catch (err) {
         console.error("Failed to sync updated user in storage:", err);
@@ -299,9 +357,23 @@ const saveProfile = async () => {
     }
 
     showSuccess.value = true;
-    editMode.value = false;
+  editMode.value = false;
+  successMessageText.value = 'Your profile information has been successfully made.';
     fetchProfile();
     setTimeout(() => (showSuccess.value = false), 3000);
+
+    // If user was redirected here to complete their profile, send them back
+    // to the original page after successful save.
+    try {
+      const nextPath = route.query?.next;
+      if (nextPath) {
+        // remove query from URL then navigate
+        router.replace({ path: '/profile' }).catch(() => {});
+        router.push(String(nextPath)).catch(() => {});
+      }
+    } catch (err) {
+      console.error('Failed to redirect after profile save:', err);
+    }
 
   } catch (err) {
     console.error("Error saving profile:", err.message);
@@ -316,4 +388,30 @@ const toggleEdit = () => (editMode.value = true);
 const cancelEdit = () => (editMode.value = false);
 
 onMounted(fetchProfile);
+
+// Image options for profile page
+const showImageOptions = ref(false);
+
+const onReplaceImage = (e) => {
+  // reuse existing cropper flow
+  openCropper(e);
+  showImageOptions.value = false;
+};
+
+const onDeleteImage = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    if (token) {
+      // attempt backend delete (best-effort)
+      await axios.delete(`${API_URL}/photo`, { headers: { Authorization: `Bearer ${token}` } });
+    }
+  } catch (err) {
+    // ignore error; we'll still remove locally
+    console.warn('Delete profile photo API failed, continuing with local removal.', err?.message || err);
+  }
+  // clear local display and refetch profile to sync
+  profilePhoto.value = 'https://via.placeholder.com/150';
+  try { await fetchProfile(); } catch (e) { /* ignore */ }
+  showImageOptions.value = false;
+};
 </script>

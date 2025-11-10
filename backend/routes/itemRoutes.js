@@ -267,7 +267,21 @@ router.get("/search", async (req, res) => {
             );
 
             const matchId = matchInsert.rows[0].id;
-            const notificationUserId = lostItem?.reporter_id || reporterId;
+            // Resolve the authoritative reporter_id from the DB for the lost item.
+            // Candidate lostItem entries may have been synthesized with a fallback
+            // reporter_id (the search caller) — we must avoid using that fallback
+            // because it can incorrectly notify the found-item submitter.
+            let notificationUserId = null;
+            try {
+              const lostOwnerRes = await pool.query(
+                `SELECT reporter_id FROM items WHERE id = $1 LIMIT 1`,
+                [lostId]
+              );
+              notificationUserId = lostOwnerRes.rows[0]?.reporter_id || null;
+            } catch (ownerErr) {
+              console.warn('⚠️ Failed to resolve lost item owner from DB, skipping notification fallback', ownerErr);
+              notificationUserId = null;
+            }
 
             if (notificationUserId) {
               try {

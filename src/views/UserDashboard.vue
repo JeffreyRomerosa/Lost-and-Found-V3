@@ -76,10 +76,10 @@
                 </div>
               </div>
               <button
-                @click="viewMatchDetails(notif)"
-                class="mt-3 px-3 py-1 text-xs rounded bg-yellow-400 text-black font-semibold hover:bg-yellow-500 transition"
+                @click="goToNotificationForMatch(notif)"
+                class="mt-3 px-3 py-1 text-xs rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
               >
-                I want to claim this item
+                View Found Item
               </button>
             </li>
           </ul>
@@ -109,6 +109,12 @@
               {{ profileInitial }}
             </span>
           </template>
+          <!-- Dropdown indicator: small chevron to show menu available -->
+          <span class="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-black bg-opacity-70 rounded-full flex items-center justify-center border border-gray-600 text-white text-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 8l4 4 4-4" />
+            </svg>
+          </span>
         </button>
 
         <div
@@ -184,11 +190,42 @@
         <ul>
           <li
             v-for="(report, index) in reports"
-            :key="index"
-            class="text-gray-300 py-2 border-b border-gray-800"
+            :key="report.id || index"
+            class="text-gray-300 py-4 border-b border-gray-800 flex items-start space-x-4"
           >
-            {{ report.type }}: {{ report.name }} - {{ report.status }}
+            <div class="w-20 h-20 bg-gray-800 rounded overflow-hidden flex-shrink-0">
+              <img
+                v-if="report.image_url"
+                :src="report.image_url"
+                alt="report image"
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="w-full h-full flex items-center justify-center text-xs text-gray-500">No image</div>
+            </div>
+
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-semibold text-white">{{ report.name || 'Unnamed item' }}</p>
+                  <p class="text-xs text-gray-400">Type: {{ report.type || report.item_type || 'N/A' }}</p>
+                </div>
+                <div class="text-right text-sm">
+                  <p class="text-yellow-400 font-semibold">{{ report.status || 'pending' }}</p>
+                  <p class="text-xs text-gray-400">{{ report.created_at || '' }}</p>
+                </div>
+              </div>
+
+              <p v-if="report.description" class="text-sm text-gray-300 mt-2">{{ report.description }}</p>
+              <p v-if="report.student_id" class="text-sm text-gray-300 mt-1">Student ID: {{ report.student_id }}</p>
+              <p v-if="report.location" class="text-sm text-gray-300 mt-1">Location: {{ report.location }}</p>
+
+              <div class="mt-3 flex items-center gap-2">
+                <button @click="viewReport(report)" class="px-3 py-1 text-xs rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">View Report</button>
+                <button @click="editReport(report)" class="px-3 py-1 text-xs rounded bg-gray-700 text-white font-semibold hover:bg-gray-600 transition">Edit</button>
+              </div>
+            </div>
           </li>
+          <li v-if="reports.length === 0" class="text-gray-400 py-2">You have no pending reports.</li>
         </ul>
       </div>
 
@@ -269,19 +306,13 @@
             </p>
           </div>
 
-          <!-- 🟩 Claim Item Button -->
+          <!-- 🟩 View Found Item Button (navigates to Notifications page for full details) -->
           <div class="flex justify-center mb-3">
             <button
-              @click="openClaimModal(selectedMatch)"
-              :disabled="claimButtonDisabled"
-              class="px-5 py-2 rounded-lg font-semibold transition"
-              :class="
-                claimButtonDisabled
-                  ? 'bg-gray-500 text-white cursor-not-allowed opacity-70'
-                  : 'bg-green-600 hover:bg-green-700 text-white'
-              "
+              @click="goToNotificationForMatch(selectedMatch)"
+              class="px-5 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition"
             >
-              {{ claimButtonCta }}
+              View Found Item
             </button>
           </div>
 
@@ -696,6 +727,21 @@ export default {
       });
     },
 
+    goToNotificationForMatch(match) {
+      // Navigate to the Notifications page and include a query param that
+      // the NotificationsPage component will use to auto-open the matching notification.
+      if (!match) return;
+      const key =
+        match.notification_id || match.id || match.match_id || match.item_id || null;
+      this.showNotifications = false;
+      try {
+        const query = key ? { notification_id: String(key) } : {};
+        this.$router.push({ path: "/notifications", query });
+      } catch (e) {
+        console.error("Navigation to notifications failed:", e);
+      }
+    },
+
     maybeSendDesktopNotification(notification) {
       if (typeof Notification === "undefined") return;
 
@@ -891,7 +937,7 @@ export default {
       this.$router.push("/login");
     },
 
-    async fetchUserData() {
+  async fetchUserData() {
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("Missing authentication token");
@@ -916,10 +962,88 @@ export default {
         this.$router.push("/login");
       }
     },
+
+    async loadUserReports() {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user?.id) return;
+
+        const res = await fetch(
+          `http://localhost:5000/api/items?user_id=${user.id}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch user reports");
+
+        const data = await res.json();
+
+        // Map items into a display-friendly shape
+        const mapped = data.map((it) => {
+          const imageUrl = it.image_url
+            ? it.image_url.startsWith("/")
+              ? `http://localhost:5000${it.image_url}`
+              : it.image_url
+            : null;
+
+          return {
+            id: it.id,
+            name: it.name,
+            type: it.type,
+            status: it.status,
+            description: it.description,
+            student_id: it.student_id,
+            location: it.location,
+            image_url: imageUrl,
+            created_at: it.created_at
+              ? new Date(it.created_at).toLocaleString()
+              : null,
+          };
+        });
+
+        // Show only pending / newly reported items by default
+        this.reports = mapped.filter((r) =>
+          ["reported_lost", "reported", "pending_review", null].includes(
+            (r.status || "").toLowerCase()
+          )
+        );
+      } catch (err) {
+        console.error("❌ Error loading user reports:", err);
+      }
+    },
+
+    viewReport(report) {
+      if (!report?.id) return;
+      // Navigate to the report page and provide the item id so the page can show details
+      this.$router.push({ path: "/report", query: { item_id: report.id } });
+    },
+
+    editReport(report) {
+      if (!report?.id) return;
+      this.$router.push({ path: "/report", query: { edit_id: report.id } });
+    },
   },
   mounted() {
-    this.fetchUserData();
-    this.loadNotifications({ markInitial: true });
+    // Hydrate immediately from localStorage for faster UI update (will be refreshed by fetch)
+    try {
+      const stored = JSON.parse(localStorage.getItem('user') || 'null');
+      if (stored) {
+        if (stored.profile_picture && !stored.profile_picture.startsWith('http')) {
+          const normalizedPath = stored.profile_picture.replace(/^\/?uploads\//, '/uploads/');
+          stored.profile_picture = `http://localhost:5000${normalizedPath}`;
+        }
+        this.user = stored;
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+
+    // Fetch user profile first, then load user-specific data (reports & notifications)
+    this.fetchUserData()
+      .then(() => {
+        this.loadUserReports();
+        this.loadNotifications({ markInitial: true });
+      })
+      .catch((e) => {
+        console.warn("Failed to fetch user data at mount:", e);
+      });
 
     // Periodically refresh so matches still appear if realtime events are missed.
     this.notificationPollTimer = setInterval(() => {

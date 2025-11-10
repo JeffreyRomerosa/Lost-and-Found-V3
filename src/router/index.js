@@ -15,6 +15,7 @@ import SecurityDashboard from "@/views/SecurityDashboard.vue";
 import AdminDashboard from "@/views/AdminDashboard.vue"; // ✅ Import Admin Dashboard
 import AuthCallback from "@/views/AuthCallback.vue"; // ✅ Added AuthCallback page
 import ViewProfile from "@/views/ViewProfile.vue"; // <-- read-only profile page
+import VerifyEmail from "@/views/VerifyEmail.vue";
 
 const routes = [
   { path: "/", component: Landing },
@@ -54,6 +55,7 @@ const routes = [
     },
   }, // ✅ Admin route
   { path: "/auth/callback", name: "AuthCallback", component: AuthCallback }, // ✅ OAuth redirect
+  { path: "/verify-email", name: "VerifyEmail", component: VerifyEmail },
   {
     path: "/view-profile/:id?",
     name: "ViewProfile",
@@ -67,8 +69,8 @@ const router = createRouter({
   routes,
 });
 
-// Navigation Guard
-router.beforeEach((to, from, next) => {
+// Navigation Guard with profile completeness check
+router.beforeEach(async (to, from, next) => {
   const token = localStorage.getItem("token");
   let user = null;
 
@@ -101,7 +103,12 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  // Require login
+  // NOTE: Profile completeness should only be enforced after a successful sign-in.
+  // The post-login flow in LoginPage handles redirecting incomplete university_member
+  // users to `/profile?next=...`. We avoid checking profile here to prevent
+  // redirecting users who merely click the sign-in link.
+
+  // Require login redirection shortcuts
   if (to.path === "/login" && token) {
     if (user?.role === "university_member") return next("/userdashboard");
     if (user?.role === "security") return next("/security-dashboard");

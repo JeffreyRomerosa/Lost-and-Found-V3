@@ -20,13 +20,13 @@ export const getUserProfile = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { full_name, user_type, department, contact_number, birthday, profile_picture } = req.body;
+    const { full_name, department, contact_number, birthday, profile_picture } = req.body;
 
     const result = await pool.query(
       `UPDATE user_profiles
-       SET full_name=$1, user_type=$2, department=$3, contact_number=$4, birthday=$5, profile_picture=$6, updated_at=NOW()
-       WHERE user_id=$7 RETURNING *`,
-      [full_name, user_type, department, contact_number, birthday, profile_picture, userId]
+       SET full_name=$1, department=$2, contact_number=$3, birthday=$4, profile_picture=$5, updated_at=NOW()
+       WHERE user_id=$6 RETURNING *`,
+      [full_name, department, contact_number, birthday, profile_picture, userId]
     );
 
     if (result.rows.length === 0) {

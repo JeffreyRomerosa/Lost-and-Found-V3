@@ -47,13 +47,25 @@
 
           <div>
             <label class="block text-gray-300 mb-2 text-sm font-medium">Password</label>
-            <input
-              v-model="loginPassword"
-              type="password"
-              autocomplete="current-password"
-              placeholder="Enter password"
-              class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
-            />
+            <div class="relative">
+              <input
+                v-model="loginPassword"
+                :type="showLoginPassword ? 'text' : 'password'"
+                autocomplete="current-password"
+                placeholder="Enter password"
+                class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
+              />
+              <button type="button" @click="showLoginPassword = !showLoginPassword" class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-yellow-400">
+                <svg v-if="showLoginPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <button
@@ -116,13 +128,48 @@
 
           <div>
             <label class="block text-gray-300 mb-2 text-sm font-medium">Password</label>
-            <input
-              v-model="registerPassword"
-              type="password"
-              autocomplete="new-password"
-              placeholder="Create a password"
-              class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
-            />
+            <div class="relative">
+              <input
+                v-model="registerPassword"
+                :type="showRegisterPassword ? 'text' : 'password'"
+                autocomplete="new-password"
+                placeholder="Create a password"
+                class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
+              />
+              <button type="button" @click="showRegisterPassword = !showRegisterPassword" class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-yellow-400">
+                <svg v-if="showRegisterPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-gray-300 mb-2 text-sm font-medium">Confirm Password</label>
+            <div class="relative">
+              <input
+                v-model="registerConfirmPassword"
+                :type="showRegisterConfirm ? 'text' : 'password'"
+                autocomplete="new-password"
+                placeholder="Re-enter your password"
+                class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
+              />
+              <button type="button" @click="showRegisterConfirm = !showRegisterConfirm" class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-yellow-400">
+                <svg v-if="showRegisterConfirm" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div class="flex items-start space-x-3">
@@ -193,10 +240,14 @@
 </template>
 
 <script setup>
-/* global google */
-import { onMounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+// eslint-disable-next-line no-unused-vars
 import { jwtDecode } from "jwt-decode";
+import { onMounted, ref, watch, nextTick } from "vue";
+import { useRoute, useRouter } from "vue-router";
+
+// 🟢 ESLint fix
+// eslint-disable-next-line no-unused-vars, no-undef
+const __google_used = () => google;
 
 const router = useRouter();
 const route = useRoute();
@@ -207,21 +258,117 @@ const loginEmail = ref("");
 const loginPassword = ref("");
 const registerEmail = ref("");
 const registerPassword = ref("");
+const registerConfirmPassword = ref("");
 const acceptedTerms = ref(false);
 const errorMessage = ref("");
 const successMessage = ref("");
+const showLoginPassword = ref(false);
+const showRegisterPassword = ref(false);
+const showRegisterConfirm = ref(false);
 
 let clientId = "";
-let googleLoaded = false;
-let googleInit = false;
+let googleScriptLoaded = false;
+let googleInitialized = false;
 
+// === Google Script Loading ===
+const loadGoogleScript = () => {
+  if (window.google) return Promise.resolve();
+  if (googleScriptLoaded) {
+    return new Promise((resolve) => {
+      const check = () => window.google ? resolve() : setTimeout(check, 50);
+      check();
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[src^="https://accounts.google.com/gsi/client"]');
+    if (existing) {
+      googleScriptLoaded = true;
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      googleScriptLoaded = true;
+      resolve();
+    };
+    script.onerror = (err) => {
+      console.error("Failed to load Google Identity script", err);
+      reject(err);
+    };
+    document.head.appendChild(script);
+  });
+};
+
+// === Render Google Buttons Safely ===
+const renderGoogleButton = (id, options) => {
+  const container = document.getElementById(id);
+  if (!container || !window.google) return;
+
+  container.innerHTML = "";
+  try {
+    window.google.accounts.id.renderButton(container, {
+      theme: "outline",
+      size: "large",
+      width: 280,
+      ...options,
+    });
+  } catch (err) {
+    console.warn(`Failed to render Google button (${id}):`, err);
+  }
+};
+
+const renderGoogleButtons = () => {
+  nextTick(() => {
+    setTimeout(() => {
+      if (activeTab.value === "login") {
+        renderGoogleButton("googleButton", { text: "continue_with" });
+      } else {
+        renderGoogleButton("googleButtonRegister", { text: "signup_with" });
+      }
+    }, 100);
+  });
+};
+
+// === Initialize Google Identity Services ===
+const initializeGoogle = () => {
+  if (!window.google || googleInitialized) return;
+
+  window.google.accounts.id.initialize({
+    client_id: clientId,
+    callback: (response) => {
+      const mode = activeTab.value === "register" ? "register" : "login";
+      handleGoogleCredential(response, mode);
+    },
+  });
+
+  googleInitialized = true;
+  renderGoogleButtons();
+};
+
+// === Fetch Client ID & Initialize ===
+const initGoogle = async () => {
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/google-client-id");
+    const data = await res.json();
+    clientId = data.clientId;
+
+    await loadGoogleScript();
+    initializeGoogle();
+  } catch (err) {
+    console.error("Failed to initialize Google Sign-In:", err);
+    errorMessage.value = "Failed to load Google Sign-In.";
+  }
+};
+
+// === Tab Logic ===
 const setTabFromQuery = () => {
   const tabQuery = String(route.query.tab || "").toLowerCase();
-  if (tabQuery === "register") {
-    activeTab.value = "register";
-  } else {
-    activeTab.value = "login";
-  }
+  activeTab.value = tabQuery === "register" ? "register" : "login";
 };
 
 const switchTab = (tab) => {
@@ -231,7 +378,6 @@ const switchTab = (tab) => {
   successMessage.value = "";
   const query = tab === "register" ? { tab: "register" } : {};
   router.replace({ query }).catch(() => {});
-  renderGoogleButtons();
 };
 
 const tabClass = (tab) => {
@@ -242,6 +388,7 @@ const tabClass = (tab) => {
   return `${base} text-gray-300 hover:text-yellow-400`;
 };
 
+// === Error Helpers ===
 const showRoleError = () => {
   errorMessage.value = "Select your role before using Google sign-in.";
 };
@@ -250,6 +397,7 @@ const showTermsError = () => {
   errorMessage.value = "Please accept the terms before continuing.";
 };
 
+// === Auth Handlers ===
 const handleManualLogin = async () => {
   errorMessage.value = "";
   successMessage.value = "";
@@ -279,6 +427,18 @@ const handleManualLogin = async () => {
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
+    // After login, if user is a university member, check profile completeness
+    if (data.user?.role === 'university_member') {
+      const incomplete = await checkProfileIncomplete(data.token);
+      if (incomplete) {
+        successMessage.value = 'Please complete your profile information before continuing.';
+        // Redirect to profile editor with next back to dashboard
+        setTimeout(() => {
+          try { router.push({ path: '/profile', query: { next: '/userdashboard' } }); } catch (e) { /* ignore */ }
+        }, 700);
+        return;
+      }
+    }
 
     successMessage.value = "Login successful! Redirecting...";
     redirectByRole(data.user?.role);
@@ -305,12 +465,28 @@ const handleManualRegister = async () => {
     showTermsError();
     return;
   }
+  // Client-side password validation
+  const pwd = registerPassword.value;
+  const conf = registerConfirmPassword.value;
+  const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  if (!pwd) {
+    errorMessage.value = "Password is required.";
+    return;
+  }
+  if (pwd !== conf) {
+    errorMessage.value = "Passwords do not match.";
+    return;
+  }
+  if (!pwdRegex.test(pwd)) {
+    errorMessage.value = "Password must be at least 8 chars and include uppercase, lowercase, number and symbol.";
+    return;
+  }
 
   try {
     const res = await fetch("http://localhost:5000/api/auth/simple-register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password: registerPassword.value }),
+      body: JSON.stringify({ email, password: registerPassword.value, confirmPassword: registerConfirmPassword.value }),
     });
 
     const data = await res.json();
@@ -318,11 +494,18 @@ const handleManualRegister = async () => {
       errorMessage.value = data.error || "Registration failed.";
       return;
     }
-
-    successMessage.value = "Registration successful! You can sign in now.";
+  successMessage.value = "Registration pending — a verification email has been sent. Your account will be activated after you verify your email.";
+    // Clear inputs and prevent auto-login until verification is confirmed
     registerEmail.value = "";
     registerPassword.value = "";
+    registerConfirmPassword.value = "";
     acceptedTerms.value = false;
+
+    // Auto-redirect to login page after a short delay so the user can sign in after verifying
+    setTimeout(() => {
+      // switch to login tab and route to /login
+      try { router.push('/login'); } catch (e) { /* ignore */ }
+    }, 3500);
   } catch (err) {
     console.error("Manual registration error:", err);
     errorMessage.value = "Unable to register right now.";
@@ -367,15 +550,21 @@ const processGoogleLogin = async (googleToken) => {
       return;
     }
 
-    try {
-      const decoded = jwtDecode(data.token);
-      console.info("Google login decoded", decoded);
-    } catch (err) {
-      console.debug("JWT decode skipped", err);
-    }
-
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
+
+    // If university member, check profile completeness before redirecting
+    if (data.user?.role === 'university_member') {
+      const incomplete = await checkProfileIncomplete(data.token);
+      if (incomplete) {
+        successMessage.value = 'Please complete your profile information before continuing.';
+        setTimeout(() => {
+          try { router.push({ path: '/profile', query: { next: '/userdashboard' } }); } catch (e) { /* ignore */ }
+        }, 700);
+        return;
+      }
+    }
+
     redirectByRole(data.user.role);
   } catch (err) {
     console.error("Google login error:", err);
@@ -383,8 +572,26 @@ const processGoogleLogin = async (googleToken) => {
   }
 };
 
+// Helper: return true when profile is incomplete
+const checkProfileIncomplete = async (token) => {
+  try {
+    const resp = await fetch("http://localhost:5000/api/profile", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!resp.ok) return false; // if cannot check, don't block
+    const data = await resp.json();
+    const isIncomplete = !data.full_name || !data.department || !data.contact_number || !data.birthday || !data.profile_picture;
+    return !!isIncomplete;
+  } catch (err) {
+    console.error('Profile completeness check failed:', err);
+    return false;
+  }
+};
+
+// ✅ UPDATED: processGoogleRegister now shows verification email message
 const processGoogleRegister = async (googleToken) => {
   try {
+    // Send the Google token to the backend for registration
     const res = await fetch("http://localhost:5000/api/auth/google-register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -397,15 +604,13 @@ const processGoogleRegister = async (googleToken) => {
       return;
     }
 
-    if (!data.token || !data.user) {
-      errorMessage.value = "Invalid response from server.";
-      return;
-    }
+  // Backend sends verification email. Do NOT auto-login until email is verified.
+  successMessage.value = "Registration pending — a verification email has been sent. Your account will be activated after you verify your email.";
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    successMessage.value = "Registration successful! Redirecting...";
-    redirectByRole(data.user.role);
+  // Auto-redirect to login so user can sign in after verifying their email
+  setTimeout(() => {
+    try { router.push('/login'); } catch (e) { /* ignore */ }
+  }, 3500);
   } catch (err) {
     console.error("Google registration error:", err);
     errorMessage.value = "Google registration failed.";
@@ -421,77 +626,7 @@ const redirectByRole = (userRole) => {
   }, 600);
 };
 
-const loadGoogleScript = () => {
-  if (googleLoaded) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    if (document.querySelector("script[src='https://accounts.google.com/gsi/client']")) {
-      googleLoaded = true;
-      resolve();
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      googleLoaded = true;
-      resolve();
-    };
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-};
-
-const initializeGoogle = () => {
-  if (!window.google || googleInit) return;
-  google.accounts.id.initialize({
-    client_id: clientId,
-    callback: (response) => {
-      const mode = activeTab.value === "register" ? "register" : "login";
-      handleGoogleCredential(response, mode);
-    },
-  });
-  googleInit = true;
-  renderGoogleButtons();
-};
-
-const renderGoogleButtons = () => {
-  if (!window.google || !googleInit) return;
-  const loginContainer = document.getElementById("googleButton");
-  const registerContainer = document.getElementById("googleButtonRegister");
-  if (loginContainer) {
-    loginContainer.innerHTML = "";
-    google.accounts.id.renderButton(loginContainer, {
-      theme: "outline",
-      size: "large",
-      width: "280",
-      text: "continue_with",
-    });
-  }
-  if (registerContainer) {
-    registerContainer.innerHTML = "";
-    google.accounts.id.renderButton(registerContainer, {
-      theme: "outline",
-      size: "large",
-      width: "280",
-      text: "signup_with",
-    });
-  }
-};
-
-const initGoogle = async () => {
-  try {
-    const res = await fetch("http://localhost:5000/api/auth/google-client-id");
-    const data = await res.json();
-    clientId = data.clientId;
-    await loadGoogleScript();
-    initializeGoogle();
-  } catch (err) {
-    console.error("Failed to initialize Google Sign-In:", err);
-    errorMessage.value = "Failed to load Google Sign-In.";
-  }
-};
-
+// === Lifecycle & Watchers ===
 onMounted(() => {
   setTabFromQuery();
   initGoogle();
@@ -499,7 +634,8 @@ onMounted(() => {
 
 watch(
   () => route.query.tab,
-  () => setTabFromQuery()
+  () => setTabFromQuery(),
+  { immediate: true }
 );
 
 watch(activeTab, () => {

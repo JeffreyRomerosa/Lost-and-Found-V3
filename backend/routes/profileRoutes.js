@@ -59,7 +59,7 @@ router.get("/:id", async (req, res) => {
 // ========================
 router.post("/save", authenticateJWT, upload.single("profile_picture"), async (req, res) => {
   try {
-    const { full_name, user_type, department, contact_number, birthday } = req.body;
+  const { full_name, department, contact_number, birthday } = req.body;
     let profile_picture = null;
 
     // ✅ Step 1: Fetch old profile picture path (if exists)
@@ -87,15 +87,15 @@ router.post("/save", authenticateJWT, upload.single("profile_picture"), async (r
     // ✅ Step 4: Build update query dynamically
     let query = `
       UPDATE users 
-      SET full_name=$1, user_type=$2, department=$3, contact_number=$4, birthday=$5
+      SET full_name=$1, department=$2, contact_number=$3, birthday=$4
     `;
-    const values = [full_name, user_type, department, contact_number, birthday];
+    const values = [full_name, department, contact_number, birthday];
 
     if (profile_picture) {
-      query += `, profile_picture=$6 WHERE id=$7 RETURNING *`;
+      query += `, profile_picture=$5 WHERE id=$6 RETURNING *`;
       values.push(profile_picture, req.user.id);
     } else {
-      query += ` WHERE id=$6 RETURNING *`;
+      query += ` WHERE id=$5 RETURNING *`;
       values.push(req.user.id);
     }
 

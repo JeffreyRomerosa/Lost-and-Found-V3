@@ -3,6 +3,11 @@ import { authenticateJWT } from "../middleware/authenticateJWT.js";
 import pool from "../db.js";
 import fs from "fs";
 import path from "path";
+import jwt from "jsonwebtoken";
+import sendVerificationEmail from "../services/emailService.js";
+import bcrypt from "bcrypt";
+
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
 const router = express.Router();
 
@@ -20,7 +25,6 @@ router.get("/", async (req, res) => {
         full_name,
         email,
         role,
-        user_type,
         department,
         contact_number,
         birthday,
@@ -76,32 +80,47 @@ router.post("/staff", authenticateJWT, async (req, res) => {
         });
       }
 
-      const updated = await pool.query(
-        `UPDATE users
-         SET role = $1,
-             full_name = COALESCE($2, full_name),
-             department = COALESCE($3, department),
-             contact_number = COALESCE($4, contact_number)
-         WHERE id = $5
-         RETURNING id, full_name, email, role, department, contact_number, created_at`,
-        [
-          "security",
-          fullName || null,
-          department || null,
-          contactNumber || null,
-          current.id,
-        ]
+      // Generate verification token for role update
+      const verificationToken = jwt.sign(
+        {
+          userId: current.id,
+          newRole: "security",
+          type: 'role-update',
+          fullName: fullName || current.full_name,
+          department: department || current.department,
+          contactNumber: contactNumber || current.contact_number
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
       );
 
+      // Store the verification token
+      await pool.query(
+        "UPDATE users SET verification_token = $1, email_verified = false WHERE id = $2",
+        [verificationToken, current.id]
+      );
+
+      // Send verification email
+      await sendVerificationEmail(current.email, verificationToken);
+
       return res.json({
-        message: "Existing user elevated to security staff",
-        user: updated.rows[0],
+        message: "Role update initiated. Please check your email to verify this change.",
+        user: current,
+        needsVerification: true
       });
     }
 
+    // Generate verification token
+    const verificationToken = jwt.sign(
+      { email: normalizedEmail },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Insert user with verification token and email_verified = false
     const inserted = await pool.query(
-      `INSERT INTO users (email, role, full_name, department, contact_number)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO users (email, role, full_name, department, contact_number, verification_token, email_verified)
+       VALUES ($1, $2, $3, $4, $5, $6, false)
        RETURNING id, full_name, email, role, department, contact_number, created_at`,
       [
         normalizedEmail,
@@ -109,12 +128,17 @@ router.post("/staff", authenticateJWT, async (req, res) => {
         fullName || null,
         department || null,
         contactNumber || null,
+        verificationToken
       ]
     );
 
+    // Send verification email
+    await sendVerificationEmail(normalizedEmail, verificationToken);
+
     return res.status(201).json({
-      message: "Security staff registered",
+      message: "Security staff registration initiated. Please verify your email to complete the process.",
       user: inserted.rows[0],
+      needsVerification: true
     });
   } catch (err) {
     console.error("❌ Error registering staff:", err);
@@ -200,6 +224,265 @@ router.delete("/:id", authenticateJWT, async (req, res) => {
   } catch (err) {
     console.error("❌ Error deleting user:", err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ========================
+// 🔹 Update Own Email (Admin Self-Service)
+// ========================
+router.patch("/profile", authenticateJWT, async (req, res) => {
+  try {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+      const { email, newPassword, confirmPassword, oldPassword } = req.body || {};
+
+      if (!oldPassword) {
+        return res.status(400).json({ error: "Current password is required for verification" });
+      }
+
+      // Verify old password
+      const user = await pool.query(
+        "SELECT * FROM users WHERE id = $1",
+        [req.user.id]
+      );
+
+      if (!user.rows[0] || !user.rows[0].password_hash) {
+        return res.status(400).json({ error: "Account verification failed" });
+      }
+
+      const isValidPassword = await bcrypt.compare(oldPassword, user.rows[0].password_hash);
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+
+    // If email is being updated
+    if (email) {
+      if (!validateUniversityEmail(email)) {
+        return res.status(400).json({ error: "A valid @carsu.edu.ph email is required" });
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Prevent email duplication
+      const emailExists = await pool.query(
+        "SELECT id FROM users WHERE email = $1 AND id != $2",
+        [normalizedEmail, req.user.id]
+      );
+
+      if (emailExists.rowCount > 0) {
+        return res.status(409).json({ error: "Email already in use" });
+      }
+
+      // Generate verification token for email change
+      const verificationToken = jwt.sign(
+        {
+          userId: req.user.id,
+          newEmail: normalizedEmail,
+          type: 'email-change'
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      // Store the pending email change
+      await pool.query(
+        "UPDATE users SET verification_token = $1 WHERE id = $2",
+        [verificationToken, req.user.id]
+      );
+
+      // Send verification email
+      await sendVerificationEmail(normalizedEmail, verificationToken);
+
+      return res.json({
+        message: "A verification email has been sent to your new email address. The change will take effect after verification.",
+        needsVerification: true
+      });
+    }
+
+    // If password fields provided, validate and hash
+    if (newPassword || confirmPassword) {
+      if (!newPassword || !confirmPassword) {
+        return res.status(400).json({ error: "Both newPassword and confirmPassword are required" });
+      }
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ error: "Passwords do not match" });
+      }
+      if (!PASSWORD_REGEX.test(newPassword)) {
+        return res.status(400).json({ error: "Password must be at least 8 characters and include lowercase, uppercase, a number, and a symbol" });
+      }
+
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+
+        // Update only password
+        const result = await pool.query(
+          "UPDATE users SET password_hash = $1 WHERE id = $2 RETURNING id, email, full_name, role",
+          [passwordHash, req.user.id]
+        );
+
+      const updatedUser = result.rows[0];
+        const token = jwt.sign(
+          { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role },
+          process.env.JWT_SECRET
+        );
+
+        return res.json({
+          message: "Password updated successfully. Please sign in with your new password.",
+          needsRelogin: true,
+          user: updatedUser,
+          token
+        });
+    }
+
+      res.status(400).json({ error: "No changes requested" });
+  } catch (err) {
+    console.error("❌ Error updating admin email:", err);
+    res.status(500).json({ error: "Failed to update email" });
+  }
+});
+
+// ========================
+// 🔹 Verify Email Change
+// ========================
+router.get("/verify-email-change", async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).json({ error: "Verification token is required" });
+  }
+
+  try {
+    // Verify and decode the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Ensure this is an email change verification
+    if (decoded.type !== 'email-change') {
+      return res.status(400).json({ error: "Invalid verification token" });
+    }
+
+    // Find the user with this verification token
+    const result = await pool.query(
+      "SELECT * FROM users WHERE id = $1 AND verification_token = $2",
+      [decoded.userId, token]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(400).json({ error: "Invalid or expired verification token" });
+    }
+
+    // Update email and clear verification token
+    const updated = await pool.query(
+      `UPDATE users 
+       SET email = $1,
+           verification_token = NULL,
+           email_verified = true
+       WHERE id = $2
+       RETURNING id, email, full_name, role`,
+      [decoded.newEmail, decoded.userId]
+    );
+
+    // Generate new JWT with updated email
+    const updatedUser = updated.rows[0];
+    const newToken = jwt.sign(
+      { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role },
+      process.env.JWT_SECRET
+    );
+
+    // Redirect to admin dashboard with status=email-changed for modal/logout
+    if (process.env.FRONTEND_URL) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/admin-dashboard?status=email-changed`
+      );
+    }
+
+    res.json({
+      message: "Email updated successfully",
+      user: updatedUser,
+      token: newToken
+    });
+  } catch (err) {
+    console.error("Email change verification failed:", err);
+    if (err.name === 'TokenExpiredError') {
+      return res.status(400).json({ error: "Verification link has expired" });
+    }
+    res.status(400).json({ error: "Invalid verification token" });
+  }
+});
+// ========================
+// 🔹 Verify Role Update
+// ========================
+router.get("/verify-role-update", async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).json({ error: "Verification token is required" });
+  }
+
+  try {
+    // Verify and decode the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Ensure this is a role update verification
+    if (decoded.type !== 'role-update') {
+      return res.status(400).json({ error: "Invalid verification token type" });
+    }
+
+    // Find the user with this verification token
+    const result = await pool.query(
+      "SELECT * FROM users WHERE id = $1 AND verification_token = $2",
+      [decoded.userId, token]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(400).json({ error: "Invalid or expired verification token" });
+    }
+
+    // Update role and profile info
+    const updated = await pool.query(
+      `UPDATE users 
+       SET role = $1,
+           full_name = COALESCE($2, full_name),
+           department = COALESCE($3, department),
+           contact_number = COALESCE($4, contact_number),
+           verification_token = NULL,
+           email_verified = true
+       WHERE id = $5
+       RETURNING id, email, full_name, role, department, contact_number`,
+      [
+        decoded.newRole,
+        decoded.fullName,
+        decoded.department,
+        decoded.contactNumber,
+        decoded.userId
+      ]
+    );
+
+    // Generate new JWT with updated role
+    const updatedUser = updated.rows[0];
+    const newToken = jwt.sign(
+      { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role },
+      process.env.JWT_SECRET
+    );
+
+    // Redirect to admin dashboard with status=email-changed for modal/logout
+    if (process.env.FRONTEND_URL) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/admin-dashboard?status=email-changed`
+      );
+    }
+
+    res.json({
+      message: "Role updated successfully",
+      user: updatedUser,
+      token: newToken
+    });
+  } catch (err) {
+    console.error("Role update verification failed:", err);
+    if (err.name === 'TokenExpiredError') {
+      return res.status(400).json({ error: "Verification link has expired" });
+    }
+    res.status(400).json({ error: "Invalid verification token" });
   }
 });
 

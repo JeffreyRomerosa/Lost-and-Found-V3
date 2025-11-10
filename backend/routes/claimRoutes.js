@@ -203,7 +203,17 @@ router.post("/", async (req, res) => {
 
         const claimDetail = claimDetailRes.rows[0] || null;
         if (claimDetail) {
-          io.emit("newClaimRequest", claimDetail);
+          // Emit to the 'security' room for targeted delivery to security staff clients
+          try {
+            // DEBUG: print the payload being emitted so we can verify fields/type
+            // This is a transient diagnostic log; remove or lower in verbosity after debugging.
+            console.debug('[claims] Emitting newClaimRequest to "security" room with payload:', claimDetail);
+            io.to("security").emit("newClaimRequest", claimDetail);
+          } catch (e) {
+            // Fallback to broadcasting if room emit fails
+            console.debug('[claims] Room emit failed, broadcasting newClaimRequest payload instead.');
+            io.emit("newClaimRequest", claimDetail);
+          }
         }
       }
     } catch (emitErr) {

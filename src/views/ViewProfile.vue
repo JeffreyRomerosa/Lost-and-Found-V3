@@ -35,7 +35,15 @@ const fetchProfile = async () => {
 
     name.value = data.full_name;
     email.value = data.email;
-    userType.value = data.user_type;
+    // Derive role display from stored role value
+    if (data.role) {
+      if (data.role === 'admin') userType.value = 'Administrator';
+      else if (data.role === 'security') userType.value = 'Security Staff';
+      else if (data.role === 'university_member') userType.value = 'University Member';
+      else userType.value = data.role;
+    } else {
+      userType.value = '';
+    }
     department.value = data.department;
     contactNumber.value = data.contact_number;
 

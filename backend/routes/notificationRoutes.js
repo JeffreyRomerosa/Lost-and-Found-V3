@@ -119,10 +119,11 @@ router.get("/:user_id", async (req, res) => {
   matched_i.user_claim_status AS matched_user_claim_status
 
       FROM matches m
-      JOIN user_items ui ON (ui.id = m.lost_item_id OR ui.id = m.found_item_id)
-      JOIN items matched_i ON (
-        CASE WHEN ui.id = m.lost_item_id THEN m.found_item_id ELSE m.lost_item_id END = matched_i.id
-      )
+      -- Only synthesize notifications for matches where the current user is the reporter
+      -- of the LOST item. This prevents users who submitted FOUND reports from
+      -- seeing generated match rows intended for the lost-report submitter.
+      JOIN user_items ui ON ui.id = m.lost_item_id
+      JOIN items matched_i ON m.found_item_id = matched_i.id
       WHERE m.id NOT IN (
         SELECT match_id FROM notifications WHERE user_id = $1 AND match_id IS NOT NULL
       )
@@ -176,7 +177,7 @@ router.put("/:id/read", async (req, res) => {
  * Allows user to initiate a claim directly from their notification
  * and emits a Socket.IO event to the security dashboard
  */
-router.put("/:id/claim", async (req, res) => {
+router.put("/:id/claim", async (req, res) => 
   const { id } = req.params; // notification ID
   const { claimant_id } = req.body;
 

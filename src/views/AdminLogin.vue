@@ -37,13 +37,25 @@
 
           <div>
             <label class="block text-gray-300 mb-2 text-sm font-medium">Password</label>
-            <input
-              v-model="loginPassword"
-              type="password"
-              autocomplete="current-password"
-              placeholder="Enter password"
-              class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
-            />
+            <div class="relative">
+              <input
+                v-model="loginPassword"
+                :type="showAdminLoginPassword ? 'text' : 'password'"
+                autocomplete="current-password"
+                placeholder="Enter password"
+                class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
+              />
+              <button type="button" @click="showAdminLoginPassword = !showAdminLoginPassword" class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-yellow-400">
+                <svg v-if="showAdminLoginPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <button
@@ -103,6 +115,7 @@ const loginEmail = ref("");
 const loginPassword = ref("");
 const errorMessage = ref("");
 const successMessage = ref("");
+const showAdminLoginPassword = ref(false);
 
 let clientId = "";
 let googleLoaded = false;

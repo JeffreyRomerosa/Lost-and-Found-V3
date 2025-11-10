@@ -67,7 +67,74 @@
         </div>
       </div>
     </nav>
+    <!-- Toasts: appear when a claim targets an item that's not currently visible -->
+    <div class="fixed top-20 right-6 z-60 space-y-3">
+      <div
+        v-for="toast in toasts"
+        :key="toast.id"
+        class="bg-gray-800 border border-gray-700 text-white px-4 py-3 rounded shadow-lg w-80"
+      >
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <div class="font-semibold">{{ toast.title || 'Incoming request' }}</div>
+            <div class="text-xs text-gray-400">Item ID: {{ toast.itemId }}</div>
+          </div>
+          <div class="flex flex-col items-end ml-3">
+            <button
+              @click.stop="openToastRequest(toast); removeToast(toast.id)"
+              class="bg-yellow-500 text-black px-3 py-1 rounded text-xs mb-2"
+            >
+              View Request
+            </button>
+            <button @click.stop="removeToast(toast.id)" class="text-xs text-gray-400">Dismiss</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
+      <!-- INSTANT CLAIM POPUP (appears immediately when a claim is received) -->
+      <div
+        v-if="activeClaimNotification"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60"
+      >
+        <div class="bg-gray-900 text-white rounded-lg p-6 w-96 border border-gray-700">
+          <h3 class="text-xl font-semibold mb-3">New Claim Request</h3>
+
+          <div class="flex items-start space-x-4 mb-3">
+            <div class="w-24 h-24 bg-gray-800 rounded overflow-hidden">
+              <img
+                v-if="activeClaimNotification.item && activeClaimNotification.item.image_url && !imageError"
+                :src="`${API_BASE_URL}${activeClaimNotification.item.image_url}`"
+                @error="imageError = true"
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="w-full h-full flex items-center justify-center text-gray-500">N/A</div>
+            </div>
+            <div class="flex-1 text-sm">
+              <p class="font-medium text-gray-200">{{ activeClaimNotification.item?.name || 'Item ' + (activeClaimNotification.itemId || '') }}</p>
+              <p class="text-xs text-gray-400">Item ID: {{ activeClaimNotification.itemId }}</p>
+              <p class="text-xs text-gray-400">Category: {{ activeClaimNotification.item?.category || 'General' }}</p>
+              <p class="text-xs text-gray-400">Reported by: {{ activeClaimNotification.item?.reporter_name || 'Anonymous' }}</p>
+            </div>
+          </div>
+
+          <div class="mb-3 p-3 bg-gray-800 rounded">
+            <p class="text-sm font-semibold">Claimant</p>
+            <p class="text-sm">{{ activeClaimNotification.claimant?.name || 'Unknown' }}</p>
+            <p v-if="activeClaimNotification.claimant?.email" class="text-xs text-gray-400">{{ activeClaimNotification.claimant.email }}</p>
+            <p v-if="activeClaimNotification.claimant?.contact" class="text-xs text-gray-400">{{ activeClaimNotification.claimant.contact }}</p>
+            <div v-if="activeClaimNotification.claimant?.message" class="mt-2 text-sm bg-gray-900 p-2 rounded">
+              <strong class="text-xs">Message:</strong>
+              <div class="whitespace-pre-line text-gray-300 text-sm">{{ activeClaimNotification.claimant.message }}</div>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-2">
+            <button @click.stop="openClaimFromPopup" class="px-3 py-1 bg-yellow-500 text-black rounded">Open Request</button>
+            <button @click.stop="closeClaimPopup" class="px-3 py-1 bg-gray-600 text-white rounded">Dismiss</button>
+          </div>
+        </div>
+      </div>
     <!-- Main Content -->
     <div class="pt-24 px-6">
       <!-- Tabs with Notification Badges -->
@@ -146,7 +213,8 @@
             <tr
               v-for="item in filteredLostItems"
               :key="item.id"
-              class="border-b border-gray-700 hover:bg-gray-800"
+                :id="`item-row-${item.id}`"
+                :class="[ 'border-b border-gray-700 hover:bg-gray-800', claimHighlights[String(item.id)] ? 'ring-2 ring-green-400 ring-opacity-60 animate-pulse bg-green-900/40' : '' ]"
             >
               <td class="px-4 py-2">
                 <img
@@ -197,6 +265,14 @@
                   class="px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600"
                 >
                   View
+                </button>
+                <!-- Quick access to view claim request when a new claim arrives for this item -->
+                <button
+                  v-if="claimHighlights[String(item.id)]"
+                  @click.stop="openClaimsModal(item); clearHighlight(item.id)"
+                  class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 ring-2 ring-red-400 animate-pulse"
+                >
+                  View Request
                 </button>
                 <!-- 'Mark Received' removed from Lost Reports as requested -->
                 <template v-if="item.status === 'in_security_custody'">
@@ -276,7 +352,8 @@
             <tr
               v-for="item in filteredFoundItems"
               :key="item.id"
-              class="border-b border-gray-700 hover:bg-gray-800"
+                :id="`item-row-${item.id}`"
+                :class="[ 'border-b border-gray-700 hover:bg-gray-800', claimHighlights[String(item.id)] ? 'ring-2 ring-green-400 ring-opacity-60 animate-pulse bg-green-900/40' : '' ]"
             >
               <td class="px-4 py-2">
                 <img
@@ -329,26 +406,20 @@
                   View
                 </button>
                 <button
+                  v-if="claimHighlights[String(item.id)]"
+                  @click.stop="openClaimsModal(item); clearHighlight(item.id)"
+                  class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 ring-2 ring-red-400 animate-pulse"
+                >
+                  View Request
+                </button>
+                <button
                   v-if="item.status === 'pending'"
                   @click="openReviewModal(item)"
                   class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                 >
                   Mark Received
                 </button>
-                <template v-if="item.status === 'in_security_custody'">
-                  <button
-                    @click="openReturnModal(item)"
-                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  >
-                    Mark as Returned
-                  </button>
-                  <button
-                    @click="openClaimsModal(item)"
-                    class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-                  >
-                    View Claims
-                  </button>
-                </template>
+                <!-- For items already in security custody we intentionally hide the additional action buttons here. Use the item's View button to open details or the Claims modal from within the item detail view. -->
               </td>
             </tr>
           </tbody>
@@ -529,6 +600,34 @@
         <div class="bg-gray-900 text-white rounded-lg p-6 w-96 border border-gray-700">
           <h3 class="text-xl font-semibold mb-4">Claim Requests - {{ claimModalItem.name }}</h3>
 
+          <div class="flex items-start space-x-4 mb-3">
+            <div class="w-24 h-24 bg-gray-800 rounded overflow-hidden">
+              <img
+                v-if="claimModalItem.image_url && !imageError"
+                :src="`${API_BASE_URL}${claimModalItem.image_url}`"
+                @error="imageError = true"
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="w-full h-full flex items-center justify-center text-gray-500">N/A</div>
+            </div>
+            <div class="flex-1 text-sm">
+              <p class="font-medium text-gray-200">{{ claimModalItem.name }}</p>
+              <p class="text-xs text-gray-400">Category: {{ claimModalItem.category || 'General' }}</p>
+              <p v-if="claimModalItem.student_id" class="text-xs text-gray-400">Student ID: {{ claimModalItem.student_id }}</p>
+              <p class="text-xs text-gray-400">Reported by: {{ claimModalItem.reporter_name || 'Anonymous' }}</p>
+
+              <div v-if="claimRequests.length" class="mt-2 p-2 bg-gray-800 rounded text-sm">
+                <p class="text-sm"><strong>Latest request from:</strong> {{ claimRequests[0].claimant_name || 'Unknown' }}</p>
+                <p v-if="claimRequests[0].claimant_email" class="text-xs text-gray-400">Email: {{ claimRequests[0].claimant_email }}</p>
+                <p v-if="claimRequests[0].claimant_contact" class="text-xs text-gray-400">Contact: {{ claimRequests[0].claimant_contact }}</p>
+                <div v-if="claimRequests[0].message" class="mt-1 text-sm bg-gray-900 p-2 rounded">
+                  <strong>Message:</strong>
+                  <div class="whitespace-pre-line text-gray-300">{{ claimRequests[0].message }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="text-sm text-gray-400 mb-2">Item ID: <span class="text-xs text-gray-300">{{ claimModalItem.id }}</span></div>
 
           <div v-if="claimRequests.length === 0" class="text-gray-400 italic mb-4">
@@ -604,29 +703,52 @@
         </div>
       </div>
 
-      <!-- REVIEW MODAL -->
+      <!-- REVIEW MODAL (shows same details as VIEW MODAL plus confirm controls) -->
       <div
         v-if="reviewItem"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       >
-        <div class="bg-gray-900 text-white rounded-lg p-6 w-96 border border-gray-700">
+        <div class="bg-gray-900 text-white rounded-xl p-6 w-96 max-h-[90vh] overflow-y-auto border border-gray-700 shadow-lg">
           <h3 class="text-xl font-semibold mb-4">Confirm Item Received</h3>
-          <p><strong>Name:</strong> {{ reviewItem.name }}</p>
-          <p><strong>Status:</strong> {{ formatStatus(reviewItem.status) }}</p>
+
+          <img
+            v-if="reviewItem.image_url && !imageError"
+            :src="`${API_BASE_URL}${reviewItem.image_url}`"
+            @error="imageError = true"
+            class="w-full h-48 object-cover rounded mb-4"
+          />
+          <div v-else class="w-full h-48 bg-gray-800 flex items-center justify-center rounded mb-4 text-gray-500">N/A</div>
+
+          <div class="space-y-1">
+            <div v-for="(value, key) in (reviewItem ? Object.fromEntries(Object.entries(reviewItem).filter(([k,v]) => v && !['id','image_url','created_at','imageError','reporter_id','reporter_name','reporter_email','reporter_profile_picture','reporterImageError'].includes(k))) : {})" :key="key" class="flex justify-between border-b border-gray-800 py-1">
+              <span class="capitalize text-gray-400">{{ key }}</span>
+              <span>{{ value }}</span>
+            </div>
+          </div>
+
+          <div v-if="reviewItem.reporter_name" class="mt-4 pt-3 border-t border-gray-800">
+            <h4 class="text-lg font-medium text-yellow-400 mb-2">Reported By</h4>
+            <div class="flex items-center space-x-3 mb-3">
+              <img
+                v-if="reviewItem.reporter_profile_picture && !reporterImageError"
+                :src="`${API_BASE_URL}${reviewItem.reporter_profile_picture}`"
+                @error="reporterImageError = true"
+                class="w-10 h-10 rounded-full object-cover border border-gray-600"
+              />
+              <div v-else class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                {{ reviewItem.reporter_name[0].toUpperCase() }}
+              </div>
+              <div>
+                <p class="font-medium">{{ reviewItem.reporter_name }}</p>
+                <p class="text-sm text-gray-400">{{ reviewItem.reporter_email }}</p>
+              </div>
+            </div>
+            <button @click="viewReporterProfile(reviewItem.reporter_id)" class="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm font-medium">View Reporter Profile</button>
+          </div>
 
           <div class="mt-6 flex justify-end space-x-2">
-            <button
-              @click="reviewItem = null"
-              class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              Cancel
-            </button>
-            <button
-              @click="confirmReceived"
-              class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-            >
-              Confirm Received
-            </button>
+            <button @click="closeReviewModal" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Cancel</button>
+            <button @click="confirmReceived" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Confirm Received</button>
           </div>
         </div>
       </div>
@@ -733,6 +855,25 @@ const securityAvatar = computed(() => {
   return path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
 });
 
+// Settings
+const autoOpenOnClaim = ref(localStorage.getItem('security:autoOpenOnClaim') === '1');
+const snoozedUntil = ref(Number(localStorage.getItem('security:snoozedUntil') || '0'));
+
+const toggleAutoOpen = () => {
+  autoOpenOnClaim.value = !autoOpenOnClaim.value;
+  localStorage.setItem('security:autoOpenOnClaim', autoOpenOnClaim.value ? '1' : '0');
+};
+
+const snoozeMinutes = (mins = 5) => {
+  const until = Date.now() + mins * 60 * 1000;
+  snoozedUntil.value = until;
+  localStorage.setItem('security:snoozedUntil', String(until));
+};
+
+const isSnoozed = () => {
+  return snoozedUntil.value && Number(snoozedUntil.value) > Date.now();
+};
+
 const securityInitial = computed(() => securityDisplayName.value.charAt(0).toUpperCase());
 
 const toggleProfileMenu = () => {
@@ -809,8 +950,121 @@ const claimStatusClass = (status) => {
 
 // 🔸 NEW: Pending claims counter
 const pendingClaimsCount = ref(0);
+// Track item ids that should be visually highlighted due to incoming claim requests
+const claimHighlights = ref({});
 
 const claimRequests = ref([]);
+// Small in-app toasts for when rows are not visible
+const toasts = ref([]);
+
+const pushToast = (toast) => {
+  const id = Date.now() + Math.random();
+  const t = { id, ...toast };
+  toasts.value.push(t);
+  // auto-dismiss after 12s
+  setTimeout(() => {
+    try { toasts.value = toasts.value.filter(x => x.id !== id); } catch (e) { void e; }
+  }, 12000);
+  return t;
+};
+
+const openToastRequest = async (toast) => {
+  try {
+    // try to find item in current lists first
+    const findInLists = (id) => {
+      return (
+        lostItems.value.find((i) => String(i.id) === String(id)) ||
+        foundItems.value.find((i) => String(i.id) === String(id)) ||
+        returnedHistory.value.find((i) => String(i.id) === String(id)) ||
+        null
+      );
+    };
+
+    let item = findInLists(toast.itemId);
+    if (!item) {
+      // fetch from API
+      const res = await axios.get(`${API_BASE_URL}/api/items/${encodeURIComponent(toast.itemId)}`);
+      item = res.data;
+    }
+
+    if (item) {
+      // open the claims modal for this item
+      openClaimsModal(item);
+    } else {
+      alert('Item not found');
+    }
+  } catch (err) {
+    console.error('Failed to open request from toast', err);
+    alert('Failed to load item details.');
+  }
+};
+const removeToast = (id) => {
+  try { toasts.value = toasts.value.filter(t => t.id !== id); } catch (e) { void e; }
+};
+const closeClaimPopup = () => {
+  activeClaimNotification.value = null;
+};
+
+const openClaimFromPopup = async () => {
+  if (!activeClaimNotification.value) return;
+  const payload = activeClaimNotification.value;
+  try {
+    let item = payload.item;
+    if (!item && payload.itemId) {
+      const res = await axios.get(`${API_BASE_URL}/api/items/${encodeURIComponent(payload.itemId)}`);
+      item = res.data;
+    }
+    if (item) {
+      openClaimsModal(item);
+    } else {
+      alert('Item details not available');
+    }
+  } catch (e) {
+    console.error('Failed to open claim from popup', e);
+    alert('Failed to open claim details');
+  } finally {
+    activeClaimNotification.value = null;
+  }
+};
+const clearHighlight = (id) => {
+  try { delete claimHighlights.value[String(id)]; } catch (e) { void e; }
+};
+// Active claim popup shown immediately to security staff when a claim arrives
+const activeClaimNotification = ref(null);
+
+const showClaimPopupForPayload = async (payload) => {
+  try {
+    const ids = extractClaimItemIds(payload);
+    const itemId = ids.length ? ids[0] : payload.item_id || payload.claimed_item_id || null;
+
+    let item = null;
+    if (itemId) {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/items/${encodeURIComponent(itemId)}`);
+        item = res.data;
+      } catch (e) {
+        // fallback: try to find in local lists
+        item = (
+          lostItems.value.find(i => String(i.id) === String(itemId)) ||
+          foundItems.value.find(i => String(i.id) === String(itemId)) ||
+          returnedHistory.value.find(i => String(i.id) === String(itemId)) ||
+          null
+        );
+      }
+    }
+
+    const claimant = {
+      name: payload.claimant_name || payload.user_name || payload.claimant_full_name || payload.name || null,
+      email: payload.claimant_email || payload.user_email || payload.email || null,
+      contact: payload.claimant_contact || payload.user_contact || payload.contact || null,
+      message: payload.message || payload.claimant_message || payload.notes || null,
+    };
+
+    activeClaimNotification.value = { item, itemId, claimant, raw: payload };
+  } catch (e) {
+    console.error('Failed to show claim popup', e);
+  }
+};
 
 const normalizeClaim = (raw = {}) => {
   const normalized = { ...raw };
@@ -888,7 +1142,53 @@ const normalizeClaim = (raw = {}) => {
 
   return normalized;
 };
+// Extract candidate item IDs from various possible claim payload shapes
+const extractClaimItemIds = (payload) => {
+  if (!payload) return [];
+  const ids = new Set();
+
+  const pushIf = (v) => {
+    if (v === null || v === undefined) return;
+    // accept strings or numbers; ignore empty
+    const s = String(v).trim();
+    if (s && s !== 'null') ids.add(s);
+  };
+
+  pushIf(payload.item_id);
+  pushIf(payload.claimed_item_id);
+  pushIf(payload.claimed_item);
+  // nested objects
+  try {
+    if (payload.claimed_item && typeof payload.claimed_item === 'object') pushIf(payload.claimed_item.id || payload.claimed_item.item_id);
+  } catch (e) { void e; }
+
+  pushIf(payload.matched_item_id);
+  pushIf(payload.notification_item_id);
+  pushIf(payload.notification_matched_item_id);
+  pushIf(payload.claimed_itemId);
+  pushIf(payload.itemId);
+  pushIf(payload.lost_item_id);
+  pushIf(payload.found_item_id);
+
+  if (Array.isArray(payload.related_item_ids)) {
+    payload.related_item_ids.forEach((x) => pushIf(x));
+  }
+  if (Array.isArray(payload.relatedItems)) {
+    payload.relatedItems.forEach((x) => pushIf(x));
+  }
+
+  return Array.from(ids);
+};
 const openClaimsModal = async (item) => {
+  // clear any visual highlight for this item when staff opens the claims modal
+  try {
+    if (claimHighlights.value && claimHighlights.value[item.id]) {
+      delete claimHighlights.value[item.id];
+    }
+  } catch (e) {
+    // ignore
+  }
+
   claimModalItem.value = item;
   claimRequests.value = [];
   try {
@@ -1080,12 +1380,44 @@ socket.on("newClaimRequest", (claimData) => {
     });
   }
 
-  // Add to modal if open
-  if (claimModalItem.value && claimModalItem.value.id === claimData.item_id) {
-    claimRequests.value.push(
-      normalizeClaim({ ...claimData, status: claimData.status || 'pending' })
-    );
-  }
+  // Add to modal if open and highlight any referenced item rows (supports different payload shapes)
+  try {
+    const ids = extractClaimItemIds(claimData);
+
+    if (claimModalItem.value && ids.some((i) => String(i) === String(claimModalItem.value.id))) {
+      claimRequests.value.push(
+        normalizeClaim({ ...claimData, status: claimData.status || 'pending' })
+      );
+    }
+
+    // Highlight all candidate ids and auto-scroll to the first visible row
+    let firstEl = null;
+    ids.forEach((id) => {
+      try {
+        claimHighlights.value[id] = Date.now();
+        setTimeout(() => {
+          try { delete claimHighlights.value[id]; } catch (e) { void e; }
+        }, 20000);
+        const el = document.getElementById(`item-row-${id}`);
+        if (!firstEl && el) firstEl = el;
+      } catch (e) { void e; }
+    });
+    if (firstEl) {
+      firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      // If the row isn't currently visible, show a toast so staff can open the request
+      if (ids && ids.length) {
+        const itemId = ids[0];
+        pushToast({
+          type: 'claim',
+          itemId,
+          title: `Claim request for item ${itemId}`,
+        });
+      }
+    }
+    // Show immediate popup for security staff with claimant + item details
+    try { showClaimPopupForPayload(claimData); } catch (e) { void e; }
+  } catch (e) { void e; }
 });
 
 const getUnreadCount = (tabName) => {
@@ -1128,7 +1460,35 @@ const confirmReceived = async () => {
     const res = await axios.put(`${API_BASE_URL}/api/items/${reviewItem.value.id}`, {
       status: "in_security_custody",
     });
-    socket.emit("updateReport", res.data);
+
+    const updated = { ...(res.data || {}), imageError: false, reporterImageError: false };
+
+    // Try to find and replace the item in any of the lists so the UI updates immediately
+    const lists = [foundItems.value, lostItems.value, returnedHistory.value];
+    let replaced = false;
+    for (const list of lists) {
+      const idx = list.findIndex((i) => String(i.id) === String(updated.id));
+      if (idx !== -1) {
+        // preserve some local flags if present
+        const prev = list[idx] || {};
+        list.splice(idx, 1, { ...prev, ...updated });
+        replaced = true;
+        break;
+      }
+    }
+
+    // If not found, add to foundItems if status is non-returned
+    if (!replaced) {
+      if ((updated.status || "").toLowerCase() === "returned") {
+        returnedHistory.value.unshift(updated);
+      } else {
+        foundItems.value.unshift(updated);
+      }
+    }
+
+    // Broadcast to other listeners via socket (server may rebroadcast as well)
+    socket.emit("updateReport", updated);
+
     reviewItem.value = null;
   } catch (err) {
     console.error("Error marking received:", err);
@@ -1177,6 +1537,12 @@ onMounted(() => {
 
   document.addEventListener("click", handleProfileMenuOutside);
   fetchItems();
+  // Join the 'security' socket room so the server can emit targeted events to security staff
+  try {
+    socket.emit("joinRoom", "security");
+  } catch (e) {
+    console.warn("Failed to join security socket room:", e);
+  }
 
   socket.on("newReport", handleNewReport);
 
@@ -1185,14 +1551,16 @@ onMounted(() => {
     try {
       pendingClaimsCount.value++;
 
+      // Desktop notification (use first item id if present)
+      const ids = extractClaimItemIds(payload);
       if (Notification.permission === "granted") {
         new Notification("🆕 Claim Request", {
-          body: `Claim for: ${payload.item_id}`,
+          body: `Claim for: ${ids.length ? ids[0] : payload.item_id || 'item'}`,
         });
       }
 
-      // If the modal for this item is open, add claimant info to the modal list
-      if (claimModalItem.value && claimModalItem.value.id === payload.item_id) {
+      // If the modal for this item is open, add claimant info
+      if (claimModalItem.value && ids.some((i) => String(i) === String(claimModalItem.value.id))) {
         claimRequests.value.push(
           normalizeClaim({
             ...payload,
@@ -1201,6 +1569,30 @@ onMounted(() => {
           })
         );
       }
+
+      // Highlight all candidate item rows and auto-scroll to the first found
+      try {
+        let firstEl = null;
+        ids.forEach((id) => {
+          try {
+            claimHighlights.value[id] = Date.now();
+            setTimeout(() => {
+              try { delete claimHighlights.value[id]; } catch (e) { void e; }
+            }, 20000);
+            const el = document.getElementById(`item-row-${id}`);
+            if (!firstEl && el) firstEl = el;
+          } catch (e) { void e; }
+        });
+        if (firstEl) {
+          firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          if (ids && ids.length) {
+            const itemId = ids[0];
+            pushToast({ type: 'claim', itemId, title: `Claim request for item ${itemId}` });
+          }
+        }
+        try { showClaimPopupForPayload(payload); } catch (e) { void e; }
+      } catch (e) { void e; }
     } catch (e) {
       console.error('Error handling claimStatusUpdated socket event', e);
     }
@@ -1307,7 +1699,16 @@ const closeModal = () => {
   claimModalItem.value = null;
 };
 
-const openReviewModal = (item) => (reviewItem.value = item);
+const openReviewModal = (item) => {
+  reviewItem.value = item;
+  imageError.value = false;
+  reporterImageError.value = false;
+};
+const closeReviewModal = () => {
+  reviewItem.value = null;
+  imageError.value = false;
+  reporterImageError.value = false;
+};
 const openReturnModal = (item) => (returnItem.value = item);
 
 const viewReporterProfile = (reporterId) => {

@@ -2,6 +2,7 @@ import pool from "../db.js";
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import sendVerificationEmail from "../services/emailService.js"; // Import your email service
 
 dotenv.config();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -25,19 +26,31 @@ export const googleRegister = async (req, res) => {
       return res.status(400).json({ error: "Email must be a university address" });
     }
 
-    const existing = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
+    const existing = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     let user;
 
     if (existing.rowCount === 0) {
+      // Create new user with email_verified = false
       const result = await pool.query(
-        "INSERT INTO users (email, role) VALUES ($1, $2) RETURNING *",
+        "INSERT INTO users (email, role, email_verified) VALUES ($1, $2, false) RETURNING *",
         [email, role]
       );
       user = result.rows[0];
+
+      // Create a verification token (valid for 1 hour)
+      const verificationToken = jwt.sign(
+        { email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' } // Token expires in 1 hour
+      );
+
+      // Send verification email
+      await sendVerificationEmail(user.email, verificationToken);
     } else {
       user = existing.rows[0];
     }
 
+    // Generate a JWT for login, even though the email isn't verified yet
     const tokenJWT = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
@@ -74,7 +87,7 @@ export const googleLogin = async (req, res) => {
       return res.status(400).json({ error: "Email must be a university address" });
     }
 
-    const existing = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
+    const existing = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     if (existing.rowCount === 0) {
       return res.status(404).json({ error: "User not found. Please register first." });
     }

@@ -41,21 +41,28 @@
       >
         Users
       </button>
+
       <button
-        @click="selectPage('categories')"
-        :class="navButtonClass('categories')"
+        @click="() => emit('select-page', 'profile')"
+        :class="[navButtonClass('profile'), isProfileIncomplete ? 'relative' : '']"
       >
-        Categories
+        My Profile
+        <span
+          v-if="isProfileIncomplete"
+          class="absolute right-2 top-1/2 -translate-y-1/2 bg-yellow-400 text-black text-xs rounded-full px-2 py-0.5 ml-2 animate-pulse border border-yellow-600"
+        >
+          Complete your profile
+        </span>
       </button>
     </nav>
 
-    <button
-      @click="selectPage('profile')"
-      :class="navButtonClass('profile')"
-      class="mt-auto"
+    <div
+      v-if="isProfileIncomplete"
+      class="mt-4 p-3 bg-yellow-100 text-yellow-900 rounded border border-yellow-400 text-sm"
     >
-      My Profile
-    </button>
+      <strong>Reminder:</strong> Your admin profile is incomplete. Please update
+      your details for a better experience.
+    </div>
   </aside>
 </template>
 
@@ -99,6 +106,12 @@ const avatarUrl = computed(() => {
 
 const avatarInitial = computed(() => displayName.value.charAt(0).toUpperCase());
 
+// Profile completeness check for admin
+const isProfileIncomplete = computed(() => {
+  if (!adminUser.value) return true;
+  return !adminUser.value.full_name || !adminUser.value.department || !adminUser.value.contact_number || !adminUser.value.birthday;
+});
+
 // Emit event to parent when page is selected
 const emit = defineEmits(["select-page"]);
 
@@ -116,6 +129,8 @@ const navButtonClass = (page) => {
       : "hover:text-yellow-400"
   ];
 };
+
+// (image options removed; managed on UserProfile page)
 </script>
 
 <style scoped>

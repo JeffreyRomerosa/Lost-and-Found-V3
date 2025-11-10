@@ -421,12 +421,21 @@
       class="bg-gray-800 p-8 rounded-2xl text-center w-full max-w-md sm:max-w-lg lg:max-w-xl shadow-2xl border border-gray-700"
     >
       <h3 class="text-2xl font-bold text-green-400 mb-4">Report Submitted!</h3>
-      <p class="text-gray-300 mb-6">Your report has been successfully submitted.</p>
+
+      <!-- 🔸 Dynamic success message -->
+      <p v-if="reportType === 'lost'" class="text-gray-300 mb-6">
+        Your lost item report has been successfully submitted. You will be notified if a matching found item is reported.
+      </p>
+      <p v-else class="text-gray-300 mb-6">
+        Your found item report has been successfully submitted. You will be notified if a matching lost item claim is verified.
+      </p>
+
+      <!-- 🔸 Button changed to "Okay" -->
       <button
         @click="resetForm"
         class="px-6 py-3 rounded-lg bg-yellow-500 text-black font-bold hover:bg-yellow-600 hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl"
       >
-        File Another Report
+        Okay
       </button>
     </div>
   </div>
@@ -529,13 +538,66 @@ const clearProgress = () => {
 // Existing logic below remains unchanged
 
 const selectType = (type) => {
+  // When switching between reporting types, clear transient form data so
+  // values (images, previews, detected fields) don't leak between flows.
   reportType.value = type;
   step.value = 2;
+
+  // Clear both forms to avoid cross-population when switching between Lost/Found
+  idForm.name = "";
+  idForm.studentId = "";
+  idForm.course = "";
+  idForm.dateTime = "";
+  idForm.location = "";
+  idForm.description = "";
+  idForm.file = null;
+  idForm.preview = null;
+  qrDetected.value = false;
+  qrDetectionFailed.value = false;
+
+  generalForm.name = "";
+  generalForm.brand = "";
+  generalForm.color = "";
+  generalForm.cover = "";
+  generalForm.dateTime = "";
+  generalForm.location = "";
+  generalForm.description = "";
+  generalForm.file = null;
+  generalForm.preview = null;
+  detectedObjects.value = [];
 };
 
 const selectCategory = (category) => {
+  // When switching category, clear the opposite form so the other category's
+  // image/details won't appear unexpectedly.
   itemCategory.value = category;
   step.value = 3;
+
+  if (category === 'id') {
+    // clear general form
+    generalForm.name = "";
+    generalForm.brand = "";
+    generalForm.color = "";
+    generalForm.cover = "";
+    generalForm.dateTime = "";
+    generalForm.location = "";
+    generalForm.description = "";
+    generalForm.file = null;
+    generalForm.preview = null;
+    detectedObjects.value = [];
+  } else {
+    // clear id form
+    idForm.name = "";
+    idForm.studentId = "";
+    idForm.course = "";
+    idForm.dateTime = "";
+    idForm.location = "";
+    idForm.description = "";
+    idForm.file = null;
+    idForm.preview = null;
+    qrDetected.value = false;
+    qrDetectionFailed.value = false;
+  }
 };
 
 const handleImage = async (event, formType) => {
