@@ -1,10 +1,10 @@
 <template>
-  <nav class="bg-gray-900 shadow-md h-16 flex items-center justify-between px-6">
-    <h1 class="text-lg font-semibold text-yellow-300">Admin Dashboard</h1>
+  <nav class="bg-white dark:bg-gray-900 shadow-md h-16 flex items-center justify-between px-6 pt-6 transition-colors duration-200">
+    <h1 class="text-lg font-semibold text-gray-900 dark:text-yellow-300">Admin Dashboard</h1>
     <div class="flex items-center gap-4">
       <div class="hidden sm:block text-right">
-        <p class="font-semibold text-white">{{ displayName }}</p>
-        <p class="text-xs text-gray-400">{{ displayEmail }}</p>
+        <p class="font-semibold text-gray-900 dark:text-white">{{ displayName }}</p>
+        <p class="text-xs text-gray-600 dark:text-gray-400">{{ displayEmail }}</p>
       </div>
 
       <div class="relative" ref="menuRef">
@@ -23,11 +23,11 @@
 
         <div
           v-if="showMenu"
-          class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg border border-gray-700 z-50"
+          class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-50 transition-colors duration-200"
         >
           <button
             @click="goToProfile"
-            class="w-full px-4 py-2 flex items-center gap-2 text-left text-gray-200 hover:bg-gray-700"
+            class="w-full px-4 py-2 flex items-center gap-2 text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             <svg
               class="w-5 h-5"
@@ -46,7 +46,7 @@
           </button>
           <button
             @click="logout"
-            class="w-full px-4 py-2 flex items-center gap-2 text-left text-red-500 hover:bg-gray-700"
+            class="w-full px-4 py-2 flex items-center gap-2 text-left text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             <svg
               class="w-5 h-5"

@@ -1,25 +1,25 @@
 <template>
   <div
-    class="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 animate-fade-in"
+    class="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-gray-100 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 animate-fade-in"
   >
-    <h1 class="text-2xl font-semibold mb-6 text-center text-gray-100">
+    <h1 class="text-2xl font-semibold mb-6 text-center text-gray-900 dark:text-gray-100">
       Register
     </h1>
 
     <!-- Note box -->
     <div
-      class="bg-gray-800 text-gray-200 text-sm p-3 rounded-md mb-6 border-l-4 border-yellow-400 max-w-sm w-full"
+      class="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm p-3 rounded-md mb-6 border-l-4 border-yellow-500 dark:border-yellow-400 max-w-sm w-full shadow-sm"
     >
       <p class="font-semibold">Note:</p>
       <p class="mt-1">
         All new users are registered as
-        <span class="text-yellow-400 font-semibold">University Members</span> by
+        <span class="text-yellow-600 dark:text-yellow-400 font-semibold">University Members</span> by
         default.
       </p>
     </div>
 
     <!-- Terms and Conditions Checkbox -->
-    <div class="flex items-start space-x-2 max-w-sm mb-4 text-gray-300 text-sm">
+    <div class="flex items-start space-x-2 max-w-sm mb-4 text-gray-700 dark:text-gray-300 text-sm">
       <input
         id="terms"
         type="checkbox"
@@ -31,7 +31,7 @@
         <button
           type="button"
           @click="showModal = true"
-          class="text-yellow-400 hover:underline font-semibold"
+          class="text-yellow-600 dark:text-yellow-400 hover:underline font-semibold"
         >
           Terms and Conditions
         </button>
@@ -55,15 +55,15 @@
     </p>
 
     <!-- Already have an account -->
-    <p class="mt-4 text-gray-400 text-sm">
+    <p class="mt-4 text-gray-600 dark:text-gray-400 text-sm">
       Already have an account?
-      <router-link to="/login" class="text-yellow-400 hover:underline">
+      <router-link to="/login" class="text-yellow-600 dark:text-yellow-400 hover:underline">
         Sign In
       </router-link>
     </p>
 
     <!-- Loading text -->
-    <p v-if="loading" class="mt-4 text-yellow-400 text-sm animate-pulse">
+    <p v-if="loading" class="mt-4 text-yellow-600 dark:text-yellow-400 text-sm animate-pulse">
       Setting up Google Sign-Up...
     </p>
 
@@ -71,12 +71,12 @@
     <transition name="fade">
       <div
         v-if="showModal"
-        class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 bg-black bg-opacity-70 dark:bg-opacity-80 flex items-center justify-center z-50 p-4"
       >
         <div
-          class="bg-gray-900 text-gray-200 rounded-2xl shadow-lg max-w-lg w-full p-6 relative border border-yellow-500/20"
+          class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 rounded-2xl shadow-lg max-w-lg w-full p-6 relative border border-gray-200 dark:border-yellow-500/20"
         >
-          <h2 class="text-xl font-semibold text-yellow-400 mb-3">
+          <h2 class="text-xl font-semibold text-yellow-600 dark:text-yellow-400 mb-3">
             Terms and Conditions
           </h2>
           <div class="text-sm space-y-3 max-h-80 overflow-y-auto pr-2">
@@ -87,7 +87,7 @@
             </p>
 
             <p>
-              This system uses <span class="text-yellow-400">AI image recognition</span> to match
+              This system uses <span class="text-yellow-600 dark:text-yellow-400">AI image recognition</span> to match
               found items with reported lost ones. Your data (including uploaded images and contact
               information) will be securely processed and stored in accordance with our privacy
               policy.

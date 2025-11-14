@@ -12,7 +12,14 @@ router.get("/", async (req, res) => {
   const { type, category, user_id, status } = req.query;
 
   try {
-    let query = "SELECT * FROM items WHERE 1=1";
+    // Return items with reporter/claimant display fields to simplify UI rendering
+    let query = `SELECT i.*, 
+      u_reporter.full_name AS reporter_name, u_reporter.profile_picture AS reporter_profile_picture,
+      u_claimant.full_name AS claimant_name, u_claimant.profile_picture AS claimant_profile_picture
+      FROM items i
+      LEFT JOIN users u_reporter ON i.reporter_id = u_reporter.id
+      LEFT JOIN users u_claimant ON i.claimant_id = u_claimant.id
+      WHERE 1=1`;
     const params = [];
 
     if (type) {

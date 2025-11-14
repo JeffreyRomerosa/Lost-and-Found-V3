@@ -16,6 +16,8 @@ import AdminDashboard from "@/views/AdminDashboard.vue"; // ✅ Import Admin Das
 import AuthCallback from "@/views/AuthCallback.vue"; // ✅ Added AuthCallback page
 import ViewProfile from "@/views/ViewProfile.vue"; // <-- read-only profile page
 import VerifyEmail from "@/views/VerifyEmail.vue";
+import AboutUs from "@/views/AboutUs.vue";
+import HowItWorks from "@/views/HowItWorks.vue";
 
 const routes = [
   { path: "/", component: Landing },
@@ -32,6 +34,14 @@ const routes = [
   { path: "/notifications", component: Notifications },
   { path: "/match/:id", component: MatchItem },
   {
+    path: "/aboutus", 
+    name: "AboutUs",
+    component: AboutUs, },
+  {
+    path: "/how-it-works", 
+    name: "HowItWorks",
+    component: HowItWorks, },
+    {
     path: "/userdashboard",
     name: "UserDashboard",
     component: UserDashboard,
@@ -105,7 +115,7 @@ router.beforeEach(async (to, from, next) => {
 
   // NOTE: Profile completeness should only be enforced after a successful sign-in.
   // The post-login flow in LoginPage handles redirecting incomplete university_member
-  // users to `/profile?next=...`. We avoid checking profile here to prevent
+  // users to /profile?next=.... We avoid checking profile here to prevent
   // redirecting users who merely click the sign-in link.
 
   // Require login redirection shortcuts

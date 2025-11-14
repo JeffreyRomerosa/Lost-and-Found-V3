@@ -1,18 +1,16 @@
 <template>
-  <div
-    class="relative min-h-screen overflow-y-auto bg-gray-950 flex flex-col items-center pb-24 pt-20"
-  >
+  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6 pb-24">
     <!-- Top-Right Profile & Notification -->
-    <div class="absolute top-6 right-6 flex items-center space-x-4">
+    <div class="absolute top-6 right-6 flex items-center gap-4">
       <!-- Notification Icon -->
       <div class="relative">
         <button
           @click="toggleNotifications"
-          class="relative w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center shadow-lg hover:bg-yellow-500 transition"
+          class="relative w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center shadow-lg transition-all duration-200 text-white"
           title="Notifications"
         >
           <svg
-            class="w-6 h-6 text-black"
+            class="w-6 h-6"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
@@ -27,7 +25,7 @@
 
           <span
             v-if="unreadNotificationCount > 0"
-            class="absolute top-1 right-1 bg-red-600 text-white text-xs rounded-full px-2 py-0.5 font-bold"
+            class="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full px-2 py-0.5 font-bold shadow-md"
           >
             {{ unreadNotificationCount }}
           </span>
@@ -36,28 +34,28 @@
         <!-- Notifications Dropdown -->
         <div
           v-if="showNotifications"
-          class="absolute right-0 mt-2 w-80 bg-yellow-100 rounded-xl shadow-lg z-50"
+          class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 border border-gray-200 dark:border-gray-700 overflow-hidden"
         >
-          <div class="p-4 border-b border-yellow-300">
-            <h2 class="text-lg font-semibold text-yellow-900 mb-2">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-emerald-50 dark:bg-emerald-900/20">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               Notifications
             </h2>
           </div>
 
-          <ul v-if="notifications.length > 0">
+          <ul v-if="notifications.length > 0" class="max-h-96 overflow-y-auto">
             <li
               v-for="notif in notifications"
               :key="notif.id"
-              class="text-yellow-900 py-3 px-4 border-b border-yellow-300"
+              class="text-gray-900 dark:text-white py-3 px-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
             >
-              <p class="font-medium mb-1">{{ notif.message }}</p>
+              <p class="font-medium mb-1 text-sm">{{ notif.message }}</p>
               <p
                 v-if="notif.display_description"
-                class="text-sm text-yellow-800/80"
+                class="text-xs text-gray-600 dark:text-gray-400"
               >
                 {{ notif.display_description }}
               </p>
-              <p v-if="notif.created_at" class="text-xs text-yellow-700 mt-1">
+              <p v-if="notif.created_at" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 {{ notif.created_at }}
               </p>
               <div class="flex items-start gap-2 mt-2">
@@ -65,26 +63,35 @@
                   v-if="notif.display_image"
                   :src="notif.display_image"
                   alt="Matched item"
-                  class="w-10 h-10 object-cover rounded border"
+                  class="w-10 h-10 object-cover rounded border border-gray-300 dark:border-gray-600"
                 />
-                <div class="text-sm">
-                  <p><strong>{{ notif.display_name }}</strong></p>
-                  <p v-if="notif.display_student_id">
+                <div class="text-xs">
+                  <p class="font-semibold text-gray-900 dark:text-white">{{ notif.display_name }}</p>
+                  <p v-if="notif.display_student_id" class="text-gray-600 dark:text-gray-400">
                     ID: {{ notif.display_student_id }}
                   </p>
-                  <p>Location: {{ notif.matched_location || "N/A" }}</p>
+                  <p class="text-gray-600 dark:text-gray-400">Location: {{ notif.matched_location || "N/A" }}</p>
                 </div>
               </div>
-              <button
-                @click="goToNotificationForMatch(notif)"
-                class="mt-3 px-3 py-1 text-xs rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-              >
-                View Found Item
-              </button>
+              <div class="mt-3 flex items-center gap-2">
+                <button
+                  @click="goToNotificationForMatch(notif)"
+                  class="px-3 py-1 text-xs rounded-lg bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition"
+                >
+                  View Found Item
+                </button>
+                <button
+                  @click.stop="clearNotification(notif)"
+                  class="px-2 py-1 text-xs rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                  title="Remove notification"
+                >
+                  Clear
+                </button>
+              </div>
             </li>
           </ul>
 
-          <div v-else class="p-4 text-yellow-900 text-center">
+          <div v-else class="p-4 text-gray-600 dark:text-gray-400 text-center text-sm">
             No new notifications.
           </div>
         </div>
@@ -94,7 +101,7 @@
       <div class="relative">
         <button
           @click="showProfileMenu = !showProfileMenu"
-          class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center shadow-lg hover:bg-blue-700 transition overflow-hidden border-2 border-yellow-400"
+          class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg hover:bg-emerald-600 transition overflow-hidden border-2 border-amber-400"
           title="Profile"
         >
           <template v-if="user && user.profile_picture">
@@ -109,26 +116,20 @@
               {{ profileInitial }}
             </span>
           </template>
-          <!-- Dropdown indicator: small chevron to show menu available -->
-          <span class="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-black bg-opacity-70 rounded-full flex items-center justify-center border border-gray-600 text-white text-xs">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 8l4 4 4-4" />
-            </svg>
-          </span>
         </button>
 
         <div
           v-if="showProfileMenu"
-          class="absolute right-0 mt-2 w-48 bg-black-700 rounded-xl shadow-lg z-50"
+          class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 border border-gray-200 dark:border-gray-700 overflow-hidden"
         >
           <ul>
             <li>
               <button
                 @click="goToProfile"
-                class="w-full text-left px-4 py-2 hover:bg-gray-700 flex items-center space-x-2"
+                class="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-2 transition text-gray-900 dark:text-white"
               >
                 <svg
-                  class="w-5 h-5 text-blue-600"
+                  class="w-5 h-5 text-emerald-600 dark:text-emerald-400"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
@@ -146,7 +147,7 @@
             <li>
               <button
                 @click="logout"
-                class="w-full px-4 py-2 flex items-center gap-2 text-red-500 hover:bg-gray-700 transition"
+                class="w-full px-4 py-3 flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition"
               >
                 <svg
                   class="w-5 h-5"
@@ -163,7 +164,7 @@
                     d="M16 12h4M4 18v-1a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Zm8-10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                   />
                 </svg>
-                <span class="text-white">Logout</span>
+                <span>Logout</span>
               </button>
             </li>
           </ul>
@@ -171,164 +172,210 @@
       </div>
     </div>
 
-    <!-- Dashboard Title -->
-    <h1 class="text-3xl font-semibold mb-10 mt-16 text-yellow-400">
-      User Dashboard
-    </h1>
+    <!-- Dashboard Header -->
+    <div class="max-w-6xl mx-auto mb-12 mt-8">
+      <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">User Dashboard</h1>
+        <p class="text-gray-600 dark:text-gray-400">Manage your lost and found items</p>
+      </div>
+    </div>
 
+    <!-- Success Message -->
     <div
       v-if="claimResultMessage"
-      class="mb-6 max-w-2xl w-full px-4 py-3 rounded-lg bg-green-600/20 border border-green-500 text-green-200 text-sm"
+      class="mb-6 max-w-6xl mx-auto px-4 py-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 text-sm"
     >
       {{ claimResultMessage }}
     </div>
 
     <!-- Dashboard Sections -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl px-6">
-      <div class="bg-gray-900 rounded-xl p-6 shadow-lg">
-        <h2 class="text-lg font-semibold text-white mb-4">Pending Reports</h2>
-        <ul>
-          <li
-            v-for="(report, index) in reports"
-            :key="report.id || index"
-            class="text-gray-300 py-4 border-b border-gray-800 flex items-start space-x-4"
-          >
-            <div class="w-20 h-20 bg-gray-800 rounded overflow-hidden flex-shrink-0">
-              <img
-                v-if="report.image_url"
-                :src="report.image_url"
-                alt="report image"
-                class="w-full h-full object-cover"
-              />
-              <div v-else class="w-full h-full flex items-center justify-center text-xs text-gray-500">No image</div>
+    <div class="w-full max-w-6xl mx-auto mb-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Pending Reports Card -->
+        <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-50 dark:from-emerald-900/20 to-white dark:to-gray-800">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Pending Reports</h2>
+            <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg">
+              <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
             </div>
-
-            <div class="flex-1">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="font-semibold text-white">{{ report.name || 'Unnamed item' }}</p>
-                  <p class="text-xs text-gray-400">Type: {{ report.type || report.item_type || 'N/A' }}</p>
+          </div>
+          <ul class="space-y-4">
+            <li
+              v-for="(report, index) in reports"
+              :key="report.id || index"
+              class="p-4 rounded-xl bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition border border-gray-200 dark:border-gray-700"
+            >
+              <div class="flex items-start gap-4">
+                <div class="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden flex-shrink-0 border border-gray-300 dark:border-gray-600">
+                  <img
+                    v-if="report.image_url"
+                    :src="report.image_url"
+                    alt="report image"
+                    class="w-full h-full object-cover"
+                  />
+                  <div v-else class="w-full h-full flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 font-medium">No image</div>
                 </div>
-                <div class="text-right text-sm">
-                  <p class="text-yellow-400 font-semibold">{{ report.status || 'pending' }}</p>
-                  <p class="text-xs text-gray-400">{{ report.created_at || '' }}</p>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-start justify-between gap-2 mb-2">
+                    <p class="font-semibold text-gray-900 dark:text-white truncate">{{ report.name || 'Unnamed item' }}</p>
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 whitespace-nowrap">{{ report.status || 'pending' }}</span>
+                  </div>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ report.type || report.item_type || 'N/A' }}</p>
+
+                  <p v-if="report.description" class="text-xs text-gray-700 dark:text-gray-300 mb-2 line-clamp-2">{{ report.description }}</p>
+                  <p v-if="report.student_id" class="text-xs text-gray-600 dark:text-gray-400">Student ID: {{ report.student_id }}</p>
+                  <p v-if="report.location" class="text-xs text-gray-600 dark:text-gray-400">Location: {{ report.location }}</p>
+
+                  <div class="mt-3 flex items-center gap-2">
+                    <button @click="viewReport(report)" class="px-3 py-1.5 text-xs rounded-lg bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition">View</button>
+                    <button @click="editReport(report)" class="px-3 py-1.5 text-xs rounded-lg bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-gray-500 transition">Edit</button>
+                  </div>
                 </div>
               </div>
-
-              <p v-if="report.description" class="text-sm text-gray-300 mt-2">{{ report.description }}</p>
-              <p v-if="report.student_id" class="text-sm text-gray-300 mt-1">Student ID: {{ report.student_id }}</p>
-              <p v-if="report.location" class="text-sm text-gray-300 mt-1">Location: {{ report.location }}</p>
-
-              <div class="mt-3 flex items-center gap-2">
-                <button @click="viewReport(report)" class="px-3 py-1 text-xs rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">View Report</button>
-                <button @click="editReport(report)" class="px-3 py-1 text-xs rounded bg-gray-700 text-white font-semibold hover:bg-gray-600 transition">Edit</button>
+            </li>
+            <li v-if="reports.length === 0" class="text-center py-8 text-gray-600 dark:text-gray-400">
+              <div class="flex flex-col items-center">
+                <svg class="w-12 h-12 opacity-30 mb-2 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <p class="font-medium">You have no pending reports yet.</p>
               </div>
-            </div>
-          </li>
-          <li v-if="reports.length === 0" class="text-gray-400 py-2">You have no pending reports.</li>
-        </ul>
-      </div>
+            </li>
+          </ul>
+        </div>
 
-      <div class="bg-gray-900 rounded-xl p-6 shadow-lg">
-        <h2 class="text-lg font-semibold text-white mb-4">Claimed Items</h2>
-        <ul>
-          <li
-            v-for="(item, index) in claimedItems"
-            :key="index"
-            class="text-gray-300 py-2 border-b border-gray-800"
-          >
-            {{ item.type }}: {{ item.name }} - {{ item.user_claim_status }}
-          </li>
-        </ul>
+        <!-- Claimed Items Card -->
+        <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-50 dark:from-emerald-900/20 to-white dark:to-gray-800">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Claimed Items</h2>
+            <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg">
+              <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+            </div>
+          </div>
+          <ul class="space-y-3">
+            <li
+              v-for="(item, index) in claimedItems"
+              :key="index"
+              class="p-4 rounded-xl bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition border border-gray-200 dark:border-gray-700 flex items-center justify-between"
+            >
+              <div class="flex-1">
+                <p class="font-semibold text-gray-900 dark:text-white text-sm">{{ item.type }}: {{ item.name }}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ item.user_claim_status }}</p>
+              </div>
+              <div class="px-3 py-1 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-semibold whitespace-nowrap">Claimed</div>
+            </li>
+            <li v-if="claimedItems.length === 0" class="text-center py-8 text-gray-600 dark:text-gray-400">
+              <div class="flex flex-col items-center">
+                <svg class="w-12 h-12 opacity-30 mb-2 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                <p class="font-medium">No claimed items yet.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
 
-    <!-- File a Report & Search Option -->
-    <div class="flex flex-col md:flex-row gap-4 mt-10 w-full max-w-sm">
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 w-full max-w-2xl mx-auto mb-10 px-6">
       <button
         @click="$router.push('/report')"
-        class="w-full py-3 rounded-xl bg-yellow-500 text-black font-semibold hover:bg-yellow-600 transition"
+        class="w-full py-3 px-6 rounded-lg bg-emerald-500 text-white font-bold text-lg hover:bg-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl"
       >
         File a Report
       </button>
 
       <button
         @click="$router.push('/search')"  
-        class="w-full py-3 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition"
+        class="w-full py-3 px-6 rounded-lg bg-amber-500 text-white font-bold text-lg hover:bg-amber-600 transition-all duration-200 shadow-lg hover:shadow-xl"
       >
         Search by Image
       </button>
     </div>
 
-    <!-- 🟩 UPDATED Match Details Modal -->
+    <!-- Match Details Modal -->
     <div
       v-if="selectedMatch"
-      class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-xl max-w-md w-full overflow-hidden shadow-2xl">
-        <div class="p-5">
-          <h3 class="text-xl font-bold text-gray-800 mb-3">Match Found!</h3>
-          <p class="text-gray-600 mb-2">{{ selectedMatch.message }}</p>
+      <div class="relative bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700">
+        <!-- Close button -->
+        <button
+          @click="clearAndCloseSelectedMatch"
+          aria-label="Clear notification"
+          class="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white text-lg font-bold shadow-lg border-2 border-white dark:border-gray-800 z-50 transition"
+          title="Clear notification"
+        >
+          ×
+        </button>
+        <div class="p-6">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">✨ Match Found!</h3>
+          <p class="text-gray-900 dark:text-white mb-2">{{ selectedMatch.message }}</p>
           <p
             v-if="selectedMatch.display_description"
-            class="text-sm text-gray-500 mb-3"
+            class="text-sm text-gray-600 dark:text-gray-400 mb-4"
           >
             {{ selectedMatch.display_description }}
           </p>
 
-          <div class="flex flex-col items-center mb-4">
+          <div class="flex flex-col items-center mb-6">
             <img
               v-if="selectedMatch.display_image"
               :src="selectedMatch.display_image"
               alt="Matched item"
-              class="w-32 h-32 object-cover rounded-lg border mb-3"
+              class="w-40 h-40 object-cover rounded-xl border-4 border-emerald-100 dark:border-emerald-900/30 mb-4 shadow-md"
             />
-            <p class="font-semibold text-gray-800">
+            <p class="font-semibold text-gray-900 dark:text-white text-lg text-center">
               {{ selectedMatch.display_name }}
             </p>
             <p
               v-if="selectedMatch.display_student_id"
-              class="text-gray-600"
+              class="text-gray-600 dark:text-gray-400 text-sm"
             >
               Student ID: {{ selectedMatch.display_student_id }}
             </p>
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
               Location: {{ selectedMatch.matched_location || "N/A" }}
             </p>
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
               Status: {{ selectedMatchStatusLabel }}
             </p>
             <p
               v-if="claimStatusNotice"
-              class="mt-2 text-sm text-red-500"
+              class="mt-2 text-sm text-red-600 dark:text-red-400 font-medium"
             >
               {{ claimStatusNotice }}
             </p>
           </div>
 
-          <!-- 🟩 View Found Item Button (navigates to Notifications page for full details) -->
-          <div class="flex justify-center mb-3">
+          <div class="flex justify-center mb-4">
             <button
               @click="goToNotificationForMatch(selectedMatch)"
-              class="px-5 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition"
+              class="px-6 py-2 rounded-lg font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
             >
               View Found Item
             </button>
           </div>
 
-          <p class="text-center text-sm text-gray-500 mb-1">
+          <p class="text-center text-xs text-gray-600 dark:text-gray-400 mb-1">
             Ready to submit a claim request to the security office?
           </p>
 
-          <p class="text-xs text-gray-500 text-center">
+          <p class="text-xs text-gray-600 dark:text-gray-400 text-center">
             This item is currently in the Security Office.
           </p>
         </div>
 
-        <div class="bg-gray-50 px-5 py-3 text-right">
+        <div class="bg-gray-50 dark:bg-gray-700/30 px-6 py-4 text-right border-t border-gray-200 dark:border-gray-700">
           <button
             @click="closeMatchModal"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition font-semibold"
           >
             Close
           </button>
@@ -336,15 +383,15 @@
       </div>
     </div>
 
-    <!-- 🟩 Claim Submission Modal -->
+    <!-- Claim Submission Modal -->
     <div
       v-if="showClaimModal"
-      class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-xl max-w-md w-full overflow-hidden shadow-2xl">
-        <div class="p-5">
-          <h3 class="text-xl font-bold text-gray-800 mb-3">Submit Claim Request</h3>
-          <p class="text-gray-600 mb-4">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700">
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Submit Claim Request</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">
             You are about to submit a claim for <strong>{{ selectedMatch.display_name }}</strong>.
             Share a quick note below so security can verify your request, then confirm to send the claim to the Security Office.
           </p>
@@ -353,13 +400,13 @@
             v-model="claimMessage"
             rows="3"
             placeholder="Optional: e.g., 'I can describe the unique scratch on the back.'"
-            class="w-full p-2 border rounded-lg mb-4"
+            class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg mb-4 text-gray-900 dark:text-white bg-white dark:bg-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           ></textarea>
 
           <div class="flex justify-end gap-3">
             <button
               @click="closeClaimModal"
-              class="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400 transition"
+              class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-semibold"
             >
               Cancel
             </button>
@@ -369,8 +416,8 @@
               class="px-5 py-2 rounded-lg font-semibold transition"
               :class="
                 claimSubmitDisabled
-                  ? 'bg-gray-400 text-white cursor-not-allowed opacity-70'
-                  : 'bg-green-600 hover:bg-green-700 text-white'
+                  ? 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed opacity-50'
+                  : 'bg-emerald-500 text-white hover:bg-emerald-600'
               "
             >
               {{ claimSubmitLabel }}
@@ -405,6 +452,9 @@ export default {
       notificationPollTimer: null,
       notificationsInitialized: false,
       latestNotificationSignature: null,
+      // Keep short-lived keys for notifications the user just cleared so auto-preview
+      // and realtime handlers won't immediately re-open them.
+      recentlyClearedNotificationKeys: [],
     };
   },
   computed: {
@@ -555,7 +605,17 @@ export default {
 
     async toggleNotifications() {
       this.showNotifications = !this.showNotifications;
-      if (this.showNotifications) await this.loadNotifications();
+      if (this.showNotifications) {
+        // Load latest notifications first (populate list from server)
+        await this.loadNotifications();
+
+        // Immediately mark notifications as read locally so the badge/indicator clears
+        try {
+          this.notifications = this.notifications.map((n) => ({ ...n, is_read: true }));
+        } catch (e) {
+          console.warn("Failed to mark notifications read locally:", e);
+        }
+      }
     },
 
     async loadNotifications(options = {}) {
@@ -703,6 +763,10 @@ export default {
       const target = candidate || this.notifications[0] || null;
       if (!target) return;
 
+      const key = target.notification_id || target.id || target.match_id || target.item_id || null;
+      // If the user just cleared this notification, skip auto-preview
+      if (key && this.recentlyClearedNotificationKeys.includes(String(key))) return;
+
       const signature = this.buildNotificationSignature(target);
       if (!signature || signature === this.latestNotificationSignature) return;
 
@@ -733,12 +797,84 @@ export default {
       if (!match) return;
       const key =
         match.notification_id || match.id || match.match_id || match.item_id || null;
+      // mark this notification as read so the badge/count is cleared
+      try {
+        if (match && typeof match.is_read !== 'undefined') {
+          match.is_read = true;
+        } else if (match) {
+          // attempt to find by id in the notifications array
+          const idx = this.notifications.findIndex(n => (n.notification_id || n.id || n.match_id) === (match.notification_id || match.id || match.match_id));
+          if (idx !== -1) this.notifications[idx].is_read = true;
+        }
+      
+        // Also remove the notification from the dropdown locally so it's cleared from the list
+        try {
+          const key = match.notification_id || match.id || match.match_id || match.item_id || null;
+          const removeIdx = this.notifications.findIndex(n => (n.notification_id || n.id || n.match_id || n.item_id) === key);
+          if (removeIdx !== -1) this.notifications.splice(removeIdx, 1);
+
+          // Remember the cleared key briefly so auto-preview/poll/sockets won't reopen it
+          if (key) {
+            try {
+              this.recentlyClearedNotificationKeys.push(String(key));
+              this.latestNotificationSignature = this.buildNotificationSignature(match) || this.latestNotificationSignature;
+              // remove after 60s
+              setTimeout(() => {
+                const i = this.recentlyClearedNotificationKeys.indexOf(String(key));
+                if (i !== -1) this.recentlyClearedNotificationKeys.splice(i, 1);
+              }, 60000);
+            } catch (e) {
+              // non-fatal
+            }
+          }
+        } catch (e) {
+          // non-fatal
+        }
+      } catch (e) {
+        console.warn('Failed to mark notification read locally:', e);
+      }
       this.showNotifications = false;
       try {
         const query = key ? { notification_id: String(key) } : {};
         this.$router.push({ path: "/notifications", query });
       } catch (e) {
         console.error("Navigation to notifications failed:", e);
+      }
+    },
+
+    clearNotification(notif) {
+      if (!notif) return;
+      try {
+        const key = notif.notification_id || notif.id || notif.match_id || notif.item_id || null;
+        const idx = this.notifications.findIndex(n => (n.notification_id || n.id || n.match_id || n.item_id) === key);
+        if (idx !== -1) this.notifications.splice(idx, 1);
+
+        if (key) {
+          // mark recently cleared so we don't auto-preview immediately
+          this.recentlyClearedNotificationKeys.push(String(key));
+          this.latestNotificationSignature = this.buildNotificationSignature(notif) || this.latestNotificationSignature;
+          setTimeout(() => {
+            const i = this.recentlyClearedNotificationKeys.indexOf(String(key));
+            if (i !== -1) this.recentlyClearedNotificationKeys.splice(i, 1);
+          }, 60000);
+        }
+      } catch (e) {
+        console.warn('Failed to clear notification locally:', e);
+      }
+    },
+
+    clearAndCloseSelectedMatch() {
+      try {
+        // Remove the corresponding notification from the dropdown (if present)
+        if (this.selectedMatch) {
+          this.clearNotification(this.selectedMatch);
+        }
+      } catch (e) {
+        console.warn('Failed to clear selected notification:', e);
+      } finally {
+        // Close the modal
+        this.selectedMatch = null;
+        this.showClaimModal = false;
       }
     },
 
@@ -786,6 +922,12 @@ export default {
         if (String(evt.user_id) !== String(user.id)) return;
 
         // Refresh list to get complete display fields
+        // If this event corresponds to a notification the user just cleared, ignore it
+        const candidateKey = evt.notification_id || evt.match_id || evt.item_id || evt.found_item_id || null;
+        if (candidateKey && this.recentlyClearedNotificationKeys.includes(String(candidateKey))) {
+          return;
+        }
+
         await this.loadNotifications();
 
         const newly = this.findNotificationForEvent(evt);
@@ -799,6 +941,78 @@ export default {
         this.triggerNotificationPreview(target, { showBrowserNotification: true });
       } catch (e) {
         console.error("Error handling realtime match event:", e);
+      }
+    },
+
+    async handleClaimApprovedEvent(evt) {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user?.id) return;
+
+        // Only react if this event is for the logged-in user
+        if (String(evt.user_id) !== String(user.id)) return;
+
+        console.log("✅ Claim approved notification received:", evt);
+        
+        // Show a success message
+        this.claimResultMessage = evt.message || "Your claim has been approved!";
+        setTimeout(() => {
+          this.claimResultMessage = "";
+        }, 6000);
+
+        // Refresh notifications to reflect the claim status change
+        await this.loadNotifications();
+
+        // Update the selected match if open
+        if (this.selectedMatch) {
+          this.applyClaimState(this.selectedMatch, "approved");
+        }
+
+        // Send desktop notification
+        if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+          new Notification("✅ Claim Approved!", {
+            body: evt.message || "Your claim has been approved. Please visit the Security Office.",
+            icon: "/logo.png",
+          });
+        }
+      } catch (e) {
+        console.error("Error handling claim approved event:", e);
+      }
+    },
+
+    async handleClaimRejectedEvent(evt) {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user?.id) return;
+
+        // Only react if this event is for the logged-in user
+        if (String(evt.user_id) !== String(user.id)) return;
+
+        console.log("❌ Claim rejected notification received:", evt);
+        
+        // Show an error message
+        this.claimResultMessage = evt.message || "Your claim has been rejected.";
+        setTimeout(() => {
+          this.claimResultMessage = "";
+        }, 6000);
+
+        // Refresh notifications to reflect the claim status change
+        await this.loadNotifications();
+
+        // Update the selected match if open
+        if (this.selectedMatch) {
+          this.applyClaimState(this.selectedMatch, "rejected");
+        }
+
+        // Send desktop notification
+        if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+          new Notification("❌ Claim Rejected", {
+            body: evt.message || "Your claim has been rejected.",
+            icon: "/logo.png",
+          });
+        }
+      } catch (e) {
+        console.error("Error handling claim rejected event:", e);
       }
     },
 
@@ -1056,6 +1270,8 @@ export default {
       // Attach only the listeners this component needs. Do not disconnect the shared socket on unmount;
       // just remove listeners so other components using the socket are unaffected.
       this.socket.on("newNotification", this.handleNewNotificationEvent);
+      this.socket.on("claimApproved", this.handleClaimApprovedEvent);
+      this.socket.on("claimRejected", this.handleClaimRejectedEvent);
     } catch (e) {
       console.error("Failed to initialize realtime socket:", e);
     }
@@ -1069,6 +1285,8 @@ export default {
     if (this.socket) {
       try {
         this.socket.off("newNotification", this.handleNewNotificationEvent);
+        this.socket.off("claimApproved", this.handleClaimApprovedEvent);
+        this.socket.off("claimRejected", this.handleClaimRejectedEvent);
         // Do not call disconnect() on the shared socket here. Other components may still need it.
       } catch (e) {
         // Non-fatal: ignore socket cleanup errors during unmount
@@ -1078,3 +1296,80 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* ... (keep all existing styles unchanged) ... */
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.new-report-highlight {
+  animation: highlightFlash 1.5s ease-in-out;
+  box-shadow: 0 0 20px 4px rgba(0, 255, 100, 0.4);
+  border: 2px solid rgba(0, 255, 100, 0.6);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+@keyframes highlightFlash {
+  0% { background-color: rgba(0, 255, 100, 0.1); transform: scale(1.02); }
+  50% { background-color: rgba(0, 255, 100, 0.25); transform: scale(1.05); }
+  100% { background-color: transparent; transform: scale(1); }
+}
+
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: popIn 0.4s ease-in-out;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  80% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.report-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.report-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 12px rgba(0, 255, 150, 0.3);
+}
+
+.image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(75, 85, 99, 0.2);
+  color: #9ca3af;
+  font-size: 0.9rem;
+  font-style: italic;
+  border-radius: 0.5rem;
+}
+
+.modal-fade {
+  animation: modalFadeIn 0.4s ease;
+}
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+</style>

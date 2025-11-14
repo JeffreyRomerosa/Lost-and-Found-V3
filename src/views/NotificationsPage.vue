@@ -1,109 +1,260 @@
 <template>
-  <div class="p-6 min-h-screen flex flex-col items-center bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
-    <h2 class="text-2xl font-bold mb-6 text-yellow-400">Alerts</h2>
-
-    <div v-if="successBanner" class="mb-4 w-full max-w-xl">
-      <div class="px-4 py-3 rounded-lg bg-green-600 text-white text-sm flex items-start justify-between">
-        <div class="pr-4">{{ successBanner }}</div>
-        <button @click="successBanner = ''" class="ml-4 text-white text-sm font-bold px-2 py-1 rounded hover:bg-green-700">✕</button>
-      </div>
+  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4 sm:p-6 ">
+    <!-- Header -->
+    <div class="max-w-6xl mx-auto mb-6 sm:mb-8">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-yellow-400 mb-2">Alerts</h1>
+      <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">Manage your lost and found notifications</p>
     </div>
 
-    <div v-if="loading" class="text-gray-400">Loading notifications...</div>
-    <div v-else-if="errorMessage" class="text-red-400">{{ errorMessage }}</div>
+    <!-- Loading State -->
+    <div v-if="loading" class="max-w-6xl mx-auto text-center py-12">
+      <p class="text-gray-600 dark:text-gray-400 text-lg">Loading notifications...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="errorMessage" class="max-w-6xl mx-auto mb-6 px-4 py-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 text-sm sm:text-base">
+      {{ errorMessage }}
+    </div>
 
     <!-- Notifications List -->
-    <div
-      v-else-if="!selectedNotification && notifications.length"
-      class="w-full max-w-md sm:max-w-lg lg:max-w-xl space-y-4"
-    >
-      <div
-        v-for="notif in notifications"
-        :key="notif.id"
-        class="bg-gray-900 p-4 rounded-xl shadow-md cursor-pointer hover:bg-gray-800 transition"
-        @click="openNotification(notif)"
-      >
-        <h3 class="text-lg font-semibold text-yellow-400">{{ notif.title }}</h3>
-        <p class="text-gray-300 text-sm mt-1">{{ notif.message }}</p>
-        <p v-if="notif.created_at" class="text-gray-500 text-xs mt-2">
-          {{ notif.created_at }}
-        </p>
+    <div v-else-if="!selectedNotification && notifications.length" class="max-w-6xl mx-auto">
+      <div class="space-y-3 sm:space-y-4">
+        <div
+          v-for="notif in notifications"
+          :key="notif.id"
+          class="bg-white dark:bg-gradient-to-b dark:from-gray-900 dark:to-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-md dark:shadow-lg group cursor-pointer transform transition duration-200 ease-out hover:scale-105 hover:shadow-xl dark:hover:shadow-2xl filter dark:hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:focus-visible:ring-yellow-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 relative"
+          role="button"
+          tabindex="0"
+          @keydown.enter="openNotification(notif)"
+          @click="openNotification(notif)"
+        >
+          <!-- Delete button (top-right corner) -->
+          <button
+            @click.stop="deleteNotification(notif.id)"
+            class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-red-600 dark:bg-red-600 text-white font-bold hover:bg-red-700 dark:hover:bg-red-700 transition shadow-md"
+            title="Delete notification"
+          >
+            ✕
+          </button>
+
+          <div class="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
+            <!-- Added responsive grid layout for thumbnail -->
+            <!-- Left: thumbnail -->
+            <div class="col-span-1 lg:col-span-2 flex items-start">
+              <div class="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 flex-shrink-0">
+                <img
+                  v-if="notif.image"
+                  :src="notif.image"
+                  alt="Matched item"
+                  class="w-full h-full object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-sm"
+                />
+                <div v-else class="w-full h-full rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-2 border-gray-200 dark:border-gray-700">
+                  <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Middle: main info -->
+            <div class="col-span-1 lg:col-span-7">
+              <div class="flex flex-col h-full justify-between">
+                <div>
+                  <h3 class="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 dark:text-yellow-400 mb-2 break-words">{{ notif.title }}</h3>
+                  <p class="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-3 sm:mb-4 leading-relaxed break-words">{{ notif.message }}</p>
+                  
+                  <!-- Added responsive spacing and icon sizing for details -->
+                  <!-- Details -->
+                  <div class="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+                    <p v-if="notif.location" class="text-gray-600 dark:text-gray-400 flex items-start sm:items-center gap-2">
+                      <svg class="w-4 h-4 mt-0.5 sm:mt-0 flex-shrink-0 text-emerald-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span class="break-words">{{ notif.location }}</span>
+                    </p>
+                    <p v-if="notif.created_at" class="text-gray-600 dark:text-gray-400 flex items-start sm:items-center gap-2">
+                      <svg class="w-4 h-4 mt-0.5 sm:mt-0 flex-shrink-0 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {{ formatDate(notif.created_at) }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Added responsive status badge styling -->
+                <!-- Status badge -->
+                <div class="mt-3 sm:mt-4 flex items-center gap-2 flex-wrap">
+                  <span
+                    v-if="notif.status"
+                    class="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold bg-yellow-500 dark:bg-yellow-500 text-black dark:text-black"
+                  >
+                    {{ (notif.status || '').toUpperCase() }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Made action buttons responsive with responsive spacing -->
+            <!-- Right: View Details button -->
+            <div class="col-span-1 lg:col-span-3 flex flex-col gap-2 items-stretch">
+              <button
+                @click.stop="openNotification(notif)"
+                class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg bg-yellow-500 dark:bg-yellow-500 text-black font-semibold hover:bg-yellow-600 dark:hover:bg-yellow-600 transition-all shadow-md hover:shadow-lg text-sm sm:text-base"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div
-      v-else-if="!selectedNotification && !notifications.length"
-      class="text-gray-500"
-    >
-      No notifications yet.
+    <!-- Empty State -->
+    <div v-else-if="!selectedNotification && !notifications.length" class="max-w-6xl mx-auto">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-8 sm:p-12 text-center border border-gray-200 dark:border-gray-800">
+        <svg class="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">No notifications yet</h3>
+        <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6">You'll see alerts here when items are found or matched</p>
+      </div>
     </div>
 
-    <!-- Notification Details -->
+    <!-- Notification Details Modal -->
     <div
       v-else
-      class="w-full max-w-md sm:max-w-lg lg:max-w-xl bg-gray-900 p-6 rounded-xl shadow-md border border-gray-800"
+      class="fixed inset-0 bg-black bg-opacity-60 dark:bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
-      <h2 class="text-xl font-bold mb-3 text-white">
-        {{ selectedNotification.title }}
-      </h2>
-      <p class="text-gray-300 mb-4">{{ selectedNotification.details }}</p>
-
-      <img
-        v-if="selectedNotification.image"
-        :src="selectedNotification.image"
-        alt="Matched item"
-        class="w-full h-48 object-cover rounded-lg border border-gray-700 mb-4"
-      />
-
-      <div class="text-sm text-gray-400 space-y-1 mb-4">
-        <p v-if="selectedNotification.location">Location: {{ selectedNotification.location }}</p>
-        <p v-if="selectedNotification.status">Status: {{ selectedNotification.status }}</p>
-        <p v-if="selectedNotification.studentId">Tagged Student ID: {{ selectedNotification.studentId }}</p>
-      </div>
-
-      <div class="flex items-center space-x-3">
+      <!-- Added responsive modal sizing and padding -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl max-w-sm sm:max-w-lg lg:max-w-2xl w-full overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800 max-h-[90vh] overflow-y-auto">
+        <!-- Close button -->
         <button
-          @click="selectedNotification = null"
-          class="mt-2 px-6 py-2 rounded-lg bg-yellow-500 text-black font-semibold hover:bg-yellow-600 transition"
+          @click="closeNotificationModal"
+          class="absolute top-4 right-4 z-10 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-900 dark:text-white transition"
+          title="Close"
         >
-          ← Back
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
 
-        <!-- Claim CTA: show when this notification represents a match for user's lost item -->
-        <button
-          v-if="selectedNotification.base_item_type && selectedNotification.base_item_type.toLowerCase() === 'lost'"
-          @click="openClaimModal"
-          class="mt-2 px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition"
-        >
-          I want to claim this item
-        </button>
+        <div class="p-4 sm:p-6 lg:p-8 pt-12 sm:pt-8">
+          <h2 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-gray-900 dark:text-yellow-400 break-words">{{ selectedNotification.title }}</h2>
+
+          <!-- Added responsive image sizing -->
+          <!-- Image -->
+          <div class="relative mb-6 w-full">
+            <img
+              v-if="selectedNotification.image"
+              :src="selectedNotification.image"
+              alt="Matched item"
+              class="w-full h-40 sm:h-48 lg:h-64 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-md"
+            />
+
+            <!-- Student badge overlay -->
+            <div v-if="selectedNotification.studentId" class="absolute bottom-3 left-3 bg-yellow-500 text-black text-xs sm:text-sm font-semibold px-2 sm:px-4 py-1 sm:py-2 rounded shadow-lg">
+              Student: {{ selectedNotification.studentId }}
+            </div>
+          </div>
+
+          <!-- Added responsive text sizes and spacing in details section -->
+          <!-- Details -->
+          <div class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 space-y-2 sm:space-y-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+            <p v-if="selectedNotification.location">
+              <span class="font-semibold text-gray-900 dark:text-white">Location:</span> {{ selectedNotification.location }}
+            </p>
+            <p v-if="selectedNotification.status">
+              <span class="font-semibold text-gray-900 dark:text-white">Status:</span> {{ selectedNotification.status }}
+            </p>
+            <p v-if="selectedNotification.studentId">
+              <span class="font-semibold text-gray-900 dark:text-white">Tagged Student ID:</span> {{ selectedNotification.studentId }}
+            </p>
+            <p v-if="selectedNotification.created_at">
+              <span class="font-semibold text-gray-900 dark:text-white">Posted:</span> {{ formatDate(selectedNotification.created_at) }}
+            </p>
+          </div>
+
+          <!-- Made action buttons responsive and stackable on mobile -->
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row gap-3 items-stretch">
+            <button
+              @click="closeNotificationModal"
+              class="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-gray-300 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold hover:bg-gray-400 dark:hover:bg-gray-700 transition-all shadow-md text-sm sm:text-base"
+            >
+              ← Back
+            </button>
+
+            <!-- Claim CTA -->
+            <button
+              v-if="selectedNotification.base_item_type && selectedNotification.base_item_type.toLowerCase() === 'lost'"
+              @click="openClaimModal"
+              class="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-green-600 dark:bg-green-600 text-white font-semibold hover:bg-green-700 dark:hover:bg-green-700 transition-all shadow-md text-sm sm:text-base"
+            >
+              I want to claim this item
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Claim Confirmation Modal -->
     <div v-if="showClaimModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-xl max-w-md w-full overflow-hidden shadow-2xl">
-        <div class="p-5">
-          <h3 class="text-xl font-bold text-gray-800 mb-3">Confirm Claim Request</h3>
-          <p class="text-gray-600 mb-3">You're about to submit a claim request for this found item. Add a short message for security (optional):</p>
+      <!-- Added responsive modal sizing -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl max-w-sm w-full overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800">
+        <div class="p-4 sm:p-6 lg:p-8">
+          <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-yellow-400 mb-3 sm:mb-4">Confirm Claim Request</h3>
+          <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">You're about to submit a claim request for this found item. Add a short message for security (optional):</p>
 
           <textarea
             v-model="claimMessage"
             rows="4"
-            class="w-full p-2 border rounded-lg mb-4 bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-300"
-            placeholder="Optional: describe why this is yours (unique marks, time/place, etc.)"
+            class="w-full p-3 sm:p-4 border border-gray-300 dark:border-gray-700 rounded-lg mb-4 sm:mb-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-500 text-sm"
+            placeholder="Optional: describe why this is yours"
           ></textarea>
 
-          <div class="flex justify-end gap-3">
-            <button @click="closeClaimModal" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
-            <button @click="submitClaim" :disabled="claiming" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          <div class="flex flex-col sm:flex-row justify-end gap-3">
+            <button
+              @click="closeClaimModal"
+              class="px-4 sm:px-6 py-2 sm:py-2.5 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 font-semibold transition text-sm sm:text-base"
+            >
+              Cancel
+            </button>
+            <button
+              @click="submitClaim"
+              :disabled="claiming"
+              class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg font-semibold transition-all text-sm sm:text-base"
+              :class="claiming ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed opacity-50' : 'bg-green-600 dark:bg-green-600 text-white hover:bg-green-700 dark:hover:bg-green-700'"
+            >
               <span v-if="!claiming">Confirm & Send Claim</span>
               <span v-else>Submitting...</span>
             </button>
           </div>
 
-          <p v-if="claimResultMessage" class="mt-3 text-sm text-green-600">{{ claimResultMessage }}</p>
+          <p v-if="claimResultMessage" class="mt-4 text-xs sm:text-sm text-green-600 dark:text-green-400 text-center">{{ claimResultMessage }}</p>
         </div>
+      </div>
+    </div>
+
+    <!-- Claim Submitted Confirmation -->
+    <div v-if="showClaimConfirmation" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+      <!-- Added responsive modal sizing -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-6 sm:p-8 max-w-sm w-full text-center border border-gray-200 dark:border-gray-800">
+        <div class="mb-4 sm:mb-6">
+          <svg class="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-yellow-400 mb-3 sm:mb-4">Claim Request Submitted!</h2>
+        <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 sm:mb-8 leading-relaxed">
+          Your claim request has been submitted. Please visit the security office for verification and claiming of the item.
+        </p>
+        <button
+          @click="closeClaimConfirmation"
+          class="w-full py-2.5 sm:py-3 px-4 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition text-sm sm:text-base"
+        >
+          OK
+        </button>
       </div>
     </div>
   </div>
@@ -114,25 +265,52 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
 
+const route = useRoute();
 const notifications = ref([]);
 const selectedNotification = ref(null);
 const loading = ref(false);
 const errorMessage = ref("");
-const successBanner = ref("");
+
+const showClaimModal = ref(false);
+const claimMessage = ref("");
+const claiming = ref(false);
+const claimResultMessage = ref("");
+const showClaimConfirmation = ref(false);
+const confirmationMessage = ref("");
 
 const API_BASE = "http://localhost:5000";
 
+// Format date for UI
+const formatDate = (dateStr) => {
+  if (!dateStr) return "Unknown date";
+  const date = new Date(dateStr);
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+// Map backend data to notification format
 const mapNotification = (row) => {
-  const title = row.category?.toLowerCase() === "id" ? "Student ID match found" : "Item match found";
+  const title =
+    row.category?.toLowerCase() === "id"
+      ? "Student ID match found"
+      : "Item match found";
+
   const message =
     row.category?.toLowerCase() === "id"
-      ? `Your Student ID (${row.display_student_id || "Unknown"}) might be at Security.`
-      : `A possible match for "${row.display_name}" was found.`;
+      ? `Your Student ID (${row.display_student_id || "Unknown"}) is currently in the custody of the Security Office.`
+      : `A match for "${row.display_name}" has been found and is currently in the custody of the Security Office.`;
 
   const detailSegments = [];
   if (row.display_description) detailSegments.push(row.display_description);
-  if (row.matched_location) detailSegments.push(`Stored at: ${row.matched_location}`);
-  if (row.matched_status) detailSegments.push(`Current status: ${row.matched_status.replace(/_/g, " ")}`);
+  if (row.matched_location)
+    detailSegments.push(`Stored at: ${row.matched_location}`);
+  if (row.matched_status)
+    detailSegments.push(`Current status: ${row.matched_status.replace(/_/g, " ")}`);
 
   return {
     id: row.id || `match-${row.match_id}`,
@@ -146,14 +324,15 @@ const mapNotification = (row) => {
     details: detailSegments.join(" • ") || message,
     image: row.display_image ? `${API_BASE}${row.display_image}` : null,
     location: row.matched_location || null,
-    status: row.matched_status ? row.matched_status.replace(/_/g, " ") : null,
+    status: row.matched_status
+      ? row.matched_status.replace(/_/g, " ")
+      : null,
     studentId: row.display_student_id || null,
-    created_at: row.created_at ? new Date(row.created_at).toLocaleString() : null,
+    created_at: row.created_at || null,
   };
 };
 
-const route = useRoute();
-
+// Load notifications from API
 const loadNotifications = async () => {
   loading.value = true;
   errorMessage.value = "";
@@ -178,16 +357,43 @@ const loadNotifications = async () => {
   }
 };
 
+// Notification actions
 const openNotification = (notif) => {
   selectedNotification.value = notif;
 };
 
-// Claim modal state & actions
-const showClaimModal = ref(false);
-const claimMessage = ref("");
-const claiming = ref(false);
-const claimResultMessage = ref("");
+const closeNotificationModal = async () => {
+  if (selectedNotification.value?.notification_id) {
+    try {
+      await axios.put(
+        `${API_BASE}/api/notifications/${selectedNotification.value.notification_id}/clear`
+      );
+    } catch (err) {
+      console.error("Failed to clear notification:", err);
+    }
+  }
+  selectedNotification.value = null;
+};
 
+const deleteNotification = async (notificationId) => {
+  try {
+    if (!confirm("Are you sure you want to delete this notification?")) return;
+
+    await axios.delete(`${API_BASE}/api/notifications/${notificationId}`);
+    notifications.value = notifications.value.filter(
+      (n) => n.id !== notificationId
+    );
+
+    if (selectedNotification.value?.id === notificationId) {
+      selectedNotification.value = null;
+    }
+  } catch (err) {
+    console.error("Failed to delete notification:", err);
+    errorMessage.value = "Failed to delete notification. Please try again.";
+  }
+};
+
+// Claim modal actions
 const openClaimModal = () => {
   showClaimModal.value = true;
   claimMessage.value = "";
@@ -199,24 +405,33 @@ const closeClaimModal = () => {
   claimMessage.value = "";
 };
 
+const closeClaimConfirmation = () => {
+  showClaimConfirmation.value = false;
+  closeNotificationModal();
+};
+
 const submitClaim = async () => {
   if (!selectedNotification.value) return;
+
   try {
     claiming.value = true;
     const user = JSON.parse(localStorage.getItem("user") || "null");
     if (!user?.id) throw new Error("Please sign in to submit a claim.");
 
-    // Determine found item id: when base_item_type is 'lost', matched_item_id is the found item
-    // Otherwise, if base is 'found', the item_id may be the found item.
-    const baseType = (selectedNotification.value.base_item_type || "").toLowerCase();
-    const foundItemId = baseType === "lost"
-      ? selectedNotification.value.matched_item_id || selectedNotification.value.found_item_id || null
-      : selectedNotification.value.item_id || null;
+    const baseType =
+      (selectedNotification.value.base_item_type || "").toLowerCase();
+    const foundItemId =
+      baseType === "lost"
+        ? selectedNotification.value.matched_item_id ||
+          selectedNotification.value.found_item_id ||
+          null
+        : selectedNotification.value.item_id || null;
 
-    if (!foundItemId) throw new Error("Found item reference missing; cannot submit claim.");
+    if (!foundItemId)
+      throw new Error("Found item reference missing; cannot submit claim.");
 
-    // Use notification_id if present, otherwise pass null and backend will handle
-    const targetNotificationId = selectedNotification.value.notification_id || null;
+    const targetNotificationId =
+      selectedNotification.value.notification_id || null;
 
     const res = await axios.post(`${API_BASE}/api/claims`, {
       user_id: user.id,
@@ -226,43 +441,41 @@ const submitClaim = async () => {
     });
 
     if (res.status === 201 || res.status === 200) {
-      claimResultMessage.value = res.data?.message || "Claim submitted. Security will review it.";
-      // Refresh notifications so status updates are visible
-      await loadNotifications();
-      // Close modal after brief pause
-      setTimeout(() => {
-        closeClaimModal();
-      }, 1200);
-
-      // Show a persistent success banner on the page until the user dismisses it
-      successBanner.value =
+      const msg =
         res.data?.message ||
-        "Your claim request has been sent. Please visit the Security Office for verification and claiming of that item.";
+        "Your claim request has been submitted to the security office.";
+      confirmationMessage.value = msg;
+
+      await loadNotifications();
+      closeClaimModal();
+      showClaimConfirmation.value = true;
     } else {
       throw new Error(res.data?.message || "Failed to submit claim");
     }
   } catch (err) {
     console.error("Claim submission failed:", err);
-    claimResultMessage.value = err?.response?.data?.message || err.message || "Claim failed.";
+    claimResultMessage.value =
+      err?.response?.data?.message || err.message || "Claim failed.";
   } finally {
     claiming.value = false;
   }
 };
 
+// Lifecycle hook
 onMounted(async () => {
   await loadNotifications();
 
-  // If a notification_id query param is present, auto-open the matching notification
   try {
-    const qid = route.query.notification_id || route.query.notificationId || null;
+    const qid = route.query.notification_id || route.query.notificationId;
     if (qid) {
-      const match = notifications.value.find((n) => String(n.id) === String(qid));
-      if (match) {
-        selectedNotification.value = match;
-      }
+      const match = notifications.value.find(
+        (n) => String(n.notification_id) === String(qid)
+      );
+      if (match) openNotification(match);
     }
-  } catch (e) {
-    console.warn('Failed to auto-open notification from query:', e);
+  } catch (err) {
+    console.error("Query handling failed:", err);
   }
 });
 </script>
+

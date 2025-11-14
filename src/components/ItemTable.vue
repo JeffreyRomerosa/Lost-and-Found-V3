@@ -1,7 +1,7 @@
 <template>
-  <table class="w-full text-left">
+  <table class="w-full text-left bg-white dark:bg-gray-900">
     <thead>
-      <tr class="border-b border-gray-700">
+      <tr class="border-b border-gray-200 dark:border-gray-700">
         <th class="p-2">ID</th>
         <th class="p-2">Item Name</th>
         <th class="p-2">Category</th>
@@ -10,11 +10,11 @@
       </tr>
     </thead>
     <tbody>
-      <tr v-for="item in items" :key="item.id" class="border-b border-gray-800 hover:bg-gray-800">
-        <td class="p-2">{{ item.id }}</td>
-        <td class="p-2">{{ item.name }}</td>
-        <td class="p-2">{{ item.category }}</td>
-        <td class="p-2">{{ item.status }}</td>
+      <tr v-for="item in items" :key="item.id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
+        <td class="p-2 text-gray-900 dark:text-gray-300">{{ item.id }}</td>
+        <td class="p-2 text-gray-900 dark:text-gray-300">{{ item.name }}</td>
+        <td class="p-2 text-gray-900 dark:text-gray-300">{{ item.category }}</td>
+        <td class="p-2 text-gray-900 dark:text-gray-300">{{ item.status }}</td>
         <td class="p-2">
           <button class="px-2 py-1 bg-yellow-400 text-black rounded mr-2">View</button>
           <button class="px-2 py-1 bg-red-500 text-white rounded">Delete</button>

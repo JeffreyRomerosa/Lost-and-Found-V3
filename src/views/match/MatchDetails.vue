@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen bg-gray-950 flex flex-col items-center py-10 px-4 space-y-10">
+  <div class="min-h-screen bg-white dark:bg-gray-950 flex flex-col items-center py-10 px-4 space-y-10 transition-colors duration-200">
     <!-- Page Title -->
-    <h1 class="text-2xl font-bold text-yellow-400 mb-6">Matched Item Details</h1>
+    <h1 class="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-6">Matched Item Details</h1>
 
     <!-- Lost Item Card -->
-    <div class="w-full max-w-lg bg-gray-900 rounded-xl shadow-lg p-6 text-white">
-      <h2 class="text-xl font-semibold mb-4 text-yellow-400">Lost Item</h2>
+    <div class="w-full max-w-lg bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+      <h2 class="text-xl font-semibold mb-4 text-red-600 dark:text-yellow-400">Lost Item</h2>
       <div class="w-full flex justify-center mb-4">
         <img
           v-if="match.lostItem?.preview"
@@ -15,7 +15,7 @@
         />
         <div
           v-else
-          class="w-64 h-64 flex items-center justify-center bg-gray-700 text-gray-300 rounded-lg border-4 border-red-500"
+          class="w-64 h-64 flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-lg border-4 border-red-500"
         >
           No Image
         </div>
@@ -33,8 +33,8 @@
     </div>
 
     <!-- Found Item Card -->
-    <div class="w-full max-w-lg bg-gray-900 rounded-xl shadow-lg p-6 text-white">
-      <h2 class="text-xl font-semibold mb-4 text-green-400">Found Item (Matched)</h2>
+    <div class="w-full max-w-lg bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+      <h2 class="text-xl font-semibold mb-4 text-green-600 dark:text-green-400">Found Item (Matched)</h2>
       <div class="w-full flex justify-center mb-4">
         <img
           v-if="match.foundItem?.preview"
@@ -44,7 +44,7 @@
         />
         <div
           v-else
-          class="w-64 h-64 flex items-center justify-center bg-gray-700 text-gray-300 rounded-lg border-4 border-green-500"
+          class="w-64 h-64 flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-lg border-4 border-green-500"
         >
           No Image
         </div>
@@ -64,7 +64,7 @@
     <!-- Back Button -->
     <button
       @click="$router.push('/userdashboard')"
-      class="w-full max-w-lg py-3 rounded-xl bg-yellow-500 text-black font-semibold hover:bg-yellow-600 transition"
+      class="w-full max-w-lg py-3 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-semibold transition duration-300"
     >
       Back to Dashboard
     </button>

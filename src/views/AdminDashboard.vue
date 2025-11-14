@@ -3,14 +3,14 @@
     <!-- Email Changed Modal -->
     <transition name="fade">
       <div v-if="showEmailChangedModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-        <div class="bg-gray-900 border border-yellow-500 rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+        <div class="bg-white dark:bg-gray-900 border border-emerald-500 rounded-2xl shadow-xl p-8 max-w-md w-full text-center transition-colors duration-200">
           <div class="flex flex-col items-center space-y-4">
-            <svg class="h-12 w-12 text-yellow-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="h-12 w-12 text-emerald-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
             </svg>
-            <h2 class="text-2xl font-bold text-yellow-400">Admin Account Changed</h2>
-            <p class="text-gray-300">Your admin email or role has been updated.<br>Please log in again to continue.</p>
-            <button @click="logoutToLogin" class="mt-4 px-6 py-2 bg-yellow-500 text-black font-semibold rounded-xl hover:bg-yellow-400 transition duration-300">Go to Login</button>
+            <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Admin Account Changed</h2>
+            <p class="text-gray-600 dark:text-gray-300">Your admin email or role has been updated.<br>Please log in again to continue.</p>
+            <button @click="logoutToLogin" class="mt-4 px-6 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition duration-300">Go to Login</button>
           </div>
         </div>
       </div>
@@ -19,29 +19,29 @@
     <!-- Role Change Confirmation Modal -->
     <transition name="fade">
       <div v-if="isRoleChangeModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-        <div class="bg-gray-900 border border-yellow-500 rounded-2xl shadow-xl p-8 max-w-md w-full">
+        <div class="bg-white dark:bg-gray-900 border border-emerald-500 rounded-2xl shadow-xl p-8 max-w-md w-full transition-colors duration-200">
           <div class="flex flex-col items-center space-y-4">
-            <h2 class="text-2xl font-bold text-yellow-400">Confirm Role Change</h2>
+            <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Confirm Role Change</h2>
             <div class="flex items-center space-x-4 mb-4">
               <div v-if="selectedRoleChangeUser?.profile_picture" class="w-20 h-20 rounded-full overflow-hidden">
                 <img :src="`${API_BASE_URL}${selectedRoleChangeUser.profile_picture}`" 
                      :alt="selectedRoleChangeUser.full_name"
                      class="w-full h-full object-cover">
               </div>
-              <div v-else class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center">
+              <div v-else class="w-20 h-20 rounded-full bg-emerald-600 flex items-center justify-center">
                 <span class="text-2xl text-white font-bold">
                   {{ selectedRoleChangeUser?.full_name?.[0]?.toUpperCase() || '?' }}
                 </span>
               </div>
             </div>
-            <p class="text-gray-300 text-center">{{ roleChangeMessage }}</p>
+            <p class="text-gray-600 dark:text-gray-300 text-center">{{ roleChangeMessage }}</p>
             <div class="flex space-x-4">
               <button @click="confirmRoleChange" 
-                      class="px-6 py-2 bg-yellow-500 text-black font-semibold rounded-xl hover:bg-yellow-400 transition duration-300">
+                      class="px-6 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition duration-300">
                 Confirm
               </button>
               <button @click="cancelRoleChange" 
-                      class="px-6 py-2 bg-gray-700 text-white font-semibold rounded-xl hover:bg-gray-600 transition duration-300">
+                      class="px-6 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition duration-300">
                 Cancel
               </button>
             </div>
@@ -53,7 +53,7 @@
     <!-- Delete User Confirmation Modal -->
     <transition name="fade">
       <div v-if="userDeleteConfirmation" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-        <div class="bg-gray-900 border border-red-500 rounded-2xl shadow-xl p-8 max-w-md w-full">
+        <div class="bg-white dark:bg-gray-900 border border-red-500 rounded-2xl shadow-xl p-8 max-w-md w-full transition-colors duration-200">
           <div class="flex flex-col items-center space-y-4">
             <div class="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center">
               <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,28 +61,28 @@
                       d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h2 class="text-2xl font-bold text-red-500">Delete User</h2>
+            <h2 class="text-2xl font-bold text-red-600">Delete User</h2>
             <div class="flex items-center space-x-4 mb-4">
               <div v-if="selectedUserToDelete?.profile_picture" class="w-20 h-20 rounded-full overflow-hidden">
                 <img :src="`${API_BASE_URL}${selectedUserToDelete.profile_picture}`" 
                      :alt="selectedUserToDelete.full_name"
                      class="w-full h-full object-cover">
               </div>
-              <div v-else class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center">
+              <div v-else class="w-20 h-20 rounded-full bg-emerald-600 flex items-center justify-center">
                 <span class="text-2xl text-white font-bold">
                   {{ selectedUserToDelete?.full_name?.[0]?.toUpperCase() || '?' }}
                 </span>
               </div>
             </div>
-            <p class="text-gray-300 text-center mb-2">Are you sure you want to delete this user?</p>
+            <p class="text-gray-600 dark:text-gray-300 text-center mb-2">Are you sure you want to delete this user?</p>
             <p class="text-gray-400 text-sm text-center mb-4">This action cannot be undone.</p>
             <div class="flex space-x-4">
               <button @click="deleteUserConfirmed" 
-                      class="px-6 py-2 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition duration-300">
+                      class="px-6 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-300">
                 Delete
               </button>
               <button @click="cancelUserDelete" 
-                      class="px-6 py-2 bg-gray-700 text-white font-semibold rounded-xl hover:bg-gray-600 transition duration-300">
+                      class="px-6 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition duration-300">
                 Cancel
               </button>
             </div>
@@ -94,63 +94,55 @@
     <!-- Item Details Modal -->
     <transition name="fade">
       <div v-if="selectedItem" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
-        <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-start mb-4">
-            <h2 class="text-2xl font-semibold text-yellow-400">Item Details</h2>
-            <button @click="closeModal" class="text-gray-500 hover:text-white">
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-start mb-6">
+            <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Item Details</h2>
+            <button @click="closeModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Item Images -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="space-y-4">
-              <div class="border border-gray-700 rounded-lg overflow-hidden">
+              <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800">
                 <img v-if="selectedItem.image_url && !imageError" 
                      :src="`${API_BASE_URL}${selectedItem.image_url}`"
                      :alt="selectedItem.name"
-                     class="w-full h-64 object-contain"
-                     @error="imageError = true">
-                <div v-else class="w-full h-64 bg-gray-800 flex items-center justify-center">
-                  <span class="text-gray-500">No image available</span>
+                     class="w-full h-64 object-contain">
+                <div v-else class="w-full h-64 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <span class="text-gray-500 dark:text-gray-400">No image available</span>
                 </div>
               </div>
             </div>
 
-            <!-- Item Information -->
-            <div class="space-y-4">
+            <div class="space-y-6">
               <div>
-                <h3 class="text-lg font-semibold text-yellow-400">Item Details</h3>
-                <div class="mt-2 space-y-2">
-                  <p class="text-gray-300"><span class="font-semibold">Name:</span> {{ selectedItem.name }}</p>
-                  <p class="text-gray-300"><span class="font-semibold">Category:</span> {{ selectedItem.category }}</p>
-                  <p class="text-gray-300"><span class="font-semibold">Status:</span> 
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Item Information</h3>
+                <div class="space-y-3">
+                  <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Name:</span> {{ selectedItem.name }}</p>
+                  <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Category:</span> {{ selectedItem.category }}</p>
+                  <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Status:</span> 
                     <span :class="{
-                      'text-green-400': selectedItem.status === 'returned',
-                      'text-yellow-400': selectedItem.status === 'pending'
+                      'text-green-600 dark:text-green-400': selectedItem.status === 'returned',
+                      'text-amber-600 dark:text-amber-400': selectedItem.status === 'pending'
                     }">
                       {{ selectedItem.status.charAt(0).toUpperCase() + selectedItem.status.slice(1) }}
                     </span>
                   </p>
-                  <p class="text-gray-300">
-                    <span class="font-semibold">Location:</span> 
-                    {{ selectedItem.location || 'N/A' }}
-                  </p>
-                  <p class="text-gray-300">
-                    <span class="font-semibold">Date & Time:</span> 
-                    {{ formatDate(selectedItem.datetime) }}
-                  </p>
-                  <p class="text-gray-300"><span class="font-semibold">Description:</span></p>
-                  <p class="text-gray-400 whitespace-pre-wrap">{{ selectedItem.description }}</p>
+                  <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Location:</span> {{ selectedItem.location || 'N/A' }}</p>
+                  <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Date & Time:</span> {{ formatDate(selectedItem.datetime) }}</p>
+                  <div>
+                    <p class="font-semibold text-gray-900 dark:text-white mb-1">Description</p>
+                    <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ selectedItem.description }}</p>
+                  </div>
                 </div>
               </div>
 
-              <!-- Reporter Information -->
-              <div class="mt-6">
-                <h3 class="text-lg font-semibold text-yellow-400">Reporter Information</h3>
-                <div class="mt-2 flex items-start space-x-4">
+              <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Reporter Information</h3>
+                <div class="flex items-start space-x-4">
                   <div class="flex-shrink-0">
                     <div class="w-12 h-12 rounded-full overflow-hidden">
                       <img v-if="selectedItem.reporter?.profile_picture && !reporterImageError" 
@@ -158,25 +150,15 @@
                            @error="reporterImageError = true"
                            class="w-full h-full object-cover"
                            :alt="selectedItem.reporter.full_name">
-                      <div v-else 
-                           class="w-full h-full bg-blue-600 flex items-center justify-center text-white text-lg font-semibold">
+                      <div v-else class="w-full h-full bg-emerald-600 flex items-center justify-center text-white font-semibold">
                         {{ selectedItem.reporter?.full_name?.[0]?.toUpperCase() || '?' }}
                       </div>
                     </div>
                   </div>
                   <div>
-                    <p class="text-gray-300">
-                      <span class="font-semibold">Name:</span> 
-                      {{ selectedItem.reporter?.full_name || 'Anonymous' }}
-                    </p>
-                    <p class="text-gray-300">
-                      <span class="font-semibold">Email:</span> 
-                      {{ selectedItem.reporter?.email || 'N/A' }}
-                    </p>
-                    <p class="text-gray-300">
-                      <span class="font-semibold">Contact:</span> 
-                      {{ selectedItem.reporter?.contact_number || 'N/A' }}
-                    </p>
+                    <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Name:</span> {{ selectedItem.reporter?.full_name || 'Anonymous' }}</p>
+                    <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Email:</span> {{ selectedItem.reporter?.email || 'N/A' }}</p>
+                    <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Contact:</span> {{ selectedItem.reporter?.contact_number || 'N/A' }}</p>
                   </div>
                 </div>
               </div>
@@ -189,10 +171,10 @@
     <!-- User Details Modal -->
     <transition name="fade">
       <div v-if="userModal && selectedUser" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-        <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-6 max-w-2xl w-full m-4">
-          <div class="flex justify-between items-start mb-4">
-            <h2 class="text-2xl font-semibold text-yellow-400">User Details</h2>
-            <button @click="closeUserModal" class="text-gray-500 hover:text-white">
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-8 max-w-2xl w-full m-4">
+          <div class="flex justify-between items-start mb-6">
+            <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">User Details</h2>
+            <button @click="closeUserModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -200,9 +182,8 @@
           </div>
 
           <div class="flex items-start space-x-6">
-            <!-- Profile Picture Column -->
             <div class="flex-shrink-0">
-              <div class="w-32 h-32 rounded-lg overflow-hidden bg-gray-800 border border-gray-700">
+              <div class="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                 <img
                   v-if="selectedUser.profile_picture"
                   :src="`${API_BASE_URL}${selectedUser.profile_picture}`"
@@ -211,40 +192,39 @@
                 />
                 <div
                   v-else
-                  class="w-full h-full flex items-center justify-center bg-blue-600 text-white text-4xl font-bold"
+                  class="w-full h-full flex items-center justify-center bg-emerald-600 text-white text-4xl font-bold"
                 >
                   {{ selectedUser.full_name ? selectedUser.full_name[0].toUpperCase() : '?' }}
                 </div>
               </div>
             </div>
 
-            <!-- User Info Column -->
             <div class="flex-grow space-y-4">
               <div>
-                <label class="text-gray-400 text-sm">Full Name</label>
-                <p class="text-white text-lg">{{ selectedUser.full_name || 'Not provided' }}</p>
+                <label class="text-sm font-semibold text-gray-600 dark:text-gray-400">Full Name</label>
+                <p class="text-gray-900 dark:text-white text-lg">{{ selectedUser.full_name || 'Not provided' }}</p>
               </div>
 
               <div>
-                <label class="text-gray-400 text-sm">Email</label>
-                <p class="text-white">{{ selectedUser.email }}</p>
+                <label class="text-sm font-semibold text-gray-600 dark:text-gray-400">Email</label>
+                <p class="text-gray-900 dark:text-white">{{ selectedUser.email }}</p>
               </div>
 
               <div>
-                <label class="text-gray-400 text-sm">Role</label>
-                <p class="text-white capitalize">
-                  <span v-if="selectedUser.role === 'security'" class="text-blue-400">Security Staff</span>
-                  <span v-else-if="selectedUser.role === 'admin'" class="text-yellow-400">Administrator</span>
-                  <span v-else class="text-green-400">University Member</span>
+                <label class="text-sm font-semibold text-gray-600 dark:text-gray-400">Role</label>
+                <p class="text-gray-900 dark:text-white capitalize">
+                  <span v-if="selectedUser.role === 'security'" class="text-blue-600 dark:text-blue-400 font-semibold">Security Staff</span>
+                  <span v-else-if="selectedUser.role === 'admin'" class="text-emerald-600 dark:text-emerald-400 font-semibold">Administrator</span>
+                  <span v-else class="text-green-600 dark:text-green-400 font-semibold">University Member</span>
                 </p>
               </div>
             </div>
           </div>
 
-          <div class="mt-6 flex justify-end space-x-3">
+          <div class="mt-8 flex justify-end">
             <button
               @click="closeUserModal"
-              class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition"
+              class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-semibold"
             >
               Close
             </button>
@@ -252,178 +232,208 @@
         </div>
       </div>
     </transition>
-    <div class="flex h-screen bg-gray-800 text-white">
+
+    <div class="flex h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
       <!-- Sidebar -->
-  <AdminSidebar @select-page="handleSidebarSelect" />
+      <AdminSidebar @select-page="handleSidebarSelect" />
+      
       <!-- Main Content -->
       <div class="flex-1 flex flex-col">
         <!-- Navbar -->
         <AdminNavbar />
-        <main class="p-6 overflow-y-auto flex-1">
+        
+        <main class="p-8 overflow-y-auto flex-1 bg-white dark:bg-gray-900">
           <!-- Dashboard Overview -->
           <div v-if="activePage === 'dashboard'">
+            <div class="mb-8">
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
+              <p class="text-gray-600 dark:text-gray-400">Overview of lost and found items and system statistics</p>
+            </div>
+
             <!-- Reports Statistics -->
-            <h2 class="text-2xl font-semibold text-yellow-500 mb-4">Reports Overview</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <DashboardCard title="Total Reports" :count="totalReports" color="yellow" />
-              <DashboardCard title="Resolved Items" :count="resolvedCount" color="green" />
-              <DashboardCard title="Pending Items" :count="pendingCount" color="red" />
+            <div class="mb-8">
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Reports Overview</h2>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <DashboardCard title="Total Reports" :count="totalReports" 
+                class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-50 dark:from-gray-800 to-white dark:to-gray-700" />
+                <DashboardCard title="Resolved Items" :count="resolvedCount" 
+                class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-50 dark:from-gray-800 to-white dark:to-gray-700" />
+                <DashboardCard title="Pending Items" :count="pendingCount" 
+                class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-50 dark:from-gray-800 to-white dark:to-gray-700" />
+              </div>
             </div>
 
             <!-- User Statistics -->
-            <h2 class="text-2xl font-semibold text-yellow-500 mb-4">User Statistics</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <DashboardCard title="Security Staff" :count="totalSecurityStaff" color="blue" />
-              <DashboardCard title="University Members" :count="totalUniversityMembers" color="purple" />
+            <div>
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">User Statistics</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <DashboardCard title="Security Staff" :count="totalSecurityStaff" 
+                class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-50 dark:from-gray-800 to-white dark:to-gray-900" />
+                <DashboardCard title="University Members" :count="totalUniversityMembers" 
+                class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-50 dark:from-gray-800 to-white dark:to-gray-900" />
+              </div>
             </div>
           </div>
 
-          <!-- ===================== -->
           <!-- REPORTED ITEMS SECTION -->
-          <!-- ===================== -->
           <div v-if="activePage === 'reported-items'">
+            <div class="mb-8">
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Reported Items</h1>
+              <p class="text-gray-600 dark:text-gray-400">Manage all lost and found item reports</p>
+            </div>
+
             <!-- Tabs -->
-            <div class="flex justify-center mb-6 space-x-4 relative">
+            <div class="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
               <button
                 v-for="tab in reportTabs"
                 :key="tab"
                 @click="activeReportTab = tab"
-                class="px-4 py-2 rounded-lg transition"
+                class="px-4 py-3 font-medium transition relative"
                 :class="activeReportTab === tab
-                  ? 'bg-yellow-500 text-black'
-                  : 'bg-gray-800 text-white hover:bg-gray-700'"
+                  ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'"
               >
                 {{ tab }}
                 <span
                   v-if="getUnreadCount(tab) > 0"
-                  class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                  class="ml-2 inline-flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs rounded-full font-semibold"
                 >
                   {{ getUnreadCount(tab) }}
                 </span>
               </button>
             </div>
 
-            <!-- Filter/Search -->
-            <div class="mb-4 flex justify-between items-center flex-wrap gap-2">
+            <!-- improved filter/search layout -->
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <input
                 v-model="reportSearch"
                 type="text"
-                placeholder="Search by Name or Student ID"
-                class="px-4 py-2 rounded-lg bg-gray-800 text-white w-64 focus:outline-none"
+                placeholder="Search by name, item, or student ID..."
+                class="px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
-              <select
-                v-model="categoryFilter"
-                class="px-4 py-2 rounded-lg bg-gray-800 text-white focus:outline-none"
-              >
-                <option value="">All Categories</option>
-                <option value="id">ID Items</option>
-                <option value="general">General Items</option>
-              </select>
-              <select
-                v-if="activeReportTab === 'Found Reports'"
-                v-model="statusFilter"
-                class="px-4 py-2 rounded-lg bg-gray-800 text-white focus:outline-none"
-              >
-                <option value="">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="in_security_custody">In Security Custody</option>
-              </select>
+              <div class="flex gap-2">
+                <select
+                  v-model="categoryFilter"
+                  class="px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="">All Categories</option>
+                  <option value="id">ID Items</option>
+                  <option value="general">General Items</option>
+                </select>
+                <select
+                  v-if="activeReportTab === 'Found Reports'"
+                  v-model="statusFilter"
+                  class="px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="in_security_custody">In Security Custody</option>
+                </select>
+              </div>
             </div>
 
-            <!-- Report Table -->
-            <table class="min-w-full bg-gray-900 text-left text-sm text-gray-300 rounded-lg mb-6 border border-gray-700">
-              <thead>
-                <tr class="border-b border-gray-700 bg-gray-800 text-gray-300">
-                  <th class="px-4 py-2">Image</th>
-                  <th class="px-4 py-2">Name</th>
-                  <th class="px-4 py-2">Category</th>
-                  <th class="px-4 py-2">Location</th>
-                  <th class="px-4 py-2">Date & Time</th>
-                  <th class="px-4 py-2">Status</th>
-                  <th class="px-4 py-2">Reported By</th>
-                  <th class="px-4 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="item in filteredReportItems"
-                  :key="item.id"
-                  class="border-b border-gray-700 hover:bg-gray-800"
-                >
-                  <td class="px-4 py-2">
-                    <img
-                      v-if="item.image_url && item.image_url !== 'null' && item.image_url.trim() !== '' && !item.imageError"
-                      :src="`${API_BASE_URL}${item.image_url}`"
-                      @error="item.imageError = true"
-                      class="w-12 h-12 object-cover rounded"
-                    />
-                    <span v-else class="text-gray-500">N/A</span>
-                  </td>
-                  <td class="px-4 py-2">{{ item.name || 'N/A' }}</td>
-                  <td class="px-4 py-2">{{ item.category || 'General' }}</td>
-                  <td class="px-4 py-2">{{ item.location || 'N/A' }}</td>
-                  <td class="px-4 py-2">{{ formatDate(item.datetime) }}</td>
-                  <td class="px-4 py-2">
-                    <span :class="formatStatus(item.status).class">
-                      {{ formatStatus(item.status).text }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-2 flex items-center space-x-2">
-                    <img
-                      v-if="item.reporter_profile_picture && !item.reporterImageError"
-                      :src="`${API_BASE_URL}${item.reporter_profile_picture}`"
-                      @error="item.reporterImageError = true"
-                      class="w-8 h-8 rounded-full object-cover border border-gray-600"
-                    />
-                    <div
-                      v-else
-                      class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold"
-                    >
-                      {{ item.reporter_name ? item.reporter_name[0].toUpperCase() : '?' }}
-                    </div>
-                    <span>{{ item.reporter_name || 'Anonymous' }}</span>
-                  </td>
-                  <td class="px-4 py-2 space-x-2">
-                    <button
-                      @click="viewItem(item)"
-                      class="px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600"
-                    >
-                      View
-                    </button>
-                    <button
-                      v-if="activeReportTab === 'Returned History'"
-                      @click="confirmDelete(item)"
-                      class="p-2 bg-red-500 text-white rounded hover:bg-red-600"
-                      title="Delete item"
-                    >
-                      <!-- 🗑️ Trash Icon -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <!-- improved table styling with better contrast -->
+            <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                  <tr>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Image</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Name</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Category</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Location</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Date & Time</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Status</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Reported By</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="item in filteredReportItems"
+                    :key="item.id"
+                    class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                  >
+                    <td class="px-6 py-4">
+                      <img
+                        v-if="item.image_url && item.image_url !== 'null' && item.image_url.trim() !== '' && !item.imageError"
+                        :src="`${API_BASE_URL}${item.image_url}`"
+                        @error="item.imageError = true"
+                        class="w-12 h-12 object-cover rounded"
+                      />
+                      <span v-else class="text-gray-400">N/A</span>
+                    </td>
+                    <td class="px-6 py-4 text-gray-900 dark:text-white">{{ item.name || 'N/A' }}</td>
+                    <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ item.category || 'General' }}</td>
+                    <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ item.location || 'N/A' }}</td>
+                    <td class="px-6 py-4 text-gray-700 dark:text-gray-300 text-xs">{{ formatDate(item.datetime) }}</td>
+                    <td class="px-6 py-4">
+                      <span :class="formatStatus(item.status).class">
+                        {{ formatStatus(item.status).text }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center space-x-2">
+                        <img
+                          v-if="item.reporter_profile_picture && !item.reporterImageError"
+                          :src="`${API_BASE_URL}${item.reporter_profile_picture}`"
+                          @error="item.reporterImageError = true"
+                          class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+                        />
+                        <div
+                          v-else
+                          class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold"
+                        >
+                          {{ item.reporter_name ? item.reporter_name[0].toUpperCase() : '?' }}
+                        </div>
+                        <span class="text-gray-900 dark:text-white">{{ item.reporter_name || 'Anonymous' }}</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 space-x-2">
+                      <button
+                        @click="viewItem(item)"
+                        class="px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition text-xs font-medium"
+                      >
+                        View
+                      </button>
+                      <button
+                        v-if="activeReportTab === 'Returned History'"
+                        @click="confirmDelete(item)"
+                        class="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                        title="Delete item"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <!-- ===================== -->
-          <!-- ✅ USERS MANAGEMENT (show table first, then admin account update) -->
-          <!-- ===================== -->
+          <!-- USERS MANAGEMENT SECTION -->
           <div v-if="activePage === 'users'">
-            <!-- Optional: Keep user management table first -->
-            <h3 class="text-xl font-semibold mb-4 text-yellow-400">Manage Other Users</h3>
-            <div class="mb-4 flex justify-between items-center flex-wrap gap-2">
-              <div class="flex items-center gap-2">
+            <div class="mb-8">
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">User Management</h1>
+              <p class="text-gray-600 dark:text-gray-400">Manage system users and their roles</p>
+            </div>
+
+            <!-- Users Table -->
+            <div class="mb-8">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Users</h3>
+              
+              <!-- improved filter section -->
+              <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <input
                   v-model="userSearch"
                   type="text"
-                  placeholder="Search by Name or Email"
-                  class="px-4 py-2 rounded-lg bg-gray-800 text-white w-64 focus:outline-none"
+                  placeholder="Search by name or email..."
+                  class="px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <select
                   v-model="userRoleFilter"
-                  class="px-3 py-2 rounded-lg bg-gray-800 text-white focus:outline-none"
+                  class="px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="">All Roles</option>
                   <option value="university_member">University Member</option>
@@ -431,200 +441,211 @@
                   <option value="admin">Administrator</option>
                 </select>
               </div>
-            </div>
-            <table class="min-w-full bg-gray-900 text-left text-sm text-gray-300 rounded-lg mb-6 border border-gray-700">
-              <thead>
-                <tr class="border-b border-gray-700 bg-gray-800 text-gray-300">
-                  <th class="px-4 py-2">Profile</th>
-                  <th class="px-4 py-2">Name</th>
-                  <th class="px-4 py-2">Email</th>
-                  <th class="px-4 py-2">Role</th>
-                  <th class="px-4 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="user in filteredUsers"
-                  :key="user.id"
-                  class="border-b border-gray-700 hover:bg-gray-800"
-                >
-                  <td class="px-4 py-2">
-                    <img
-                      v-if="user.profile_picture"
-                      :src="`${API_BASE_URL}${user.profile_picture}`"
-                      class="w-10 h-10 rounded-full object-cover border border-gray-600"
-                    />
-                    <div
-                      v-else
-                      class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold"
+
+              <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                    <tr>
+                      <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Profile</th>
+                      <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Name</th>
+                      <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Email</th>
+                      <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Role</th>
+                      <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="user in filteredUsers"
+                      :key="user.id"
+                      class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                     >
-                      {{ user.full_name ? user.full_name[0].toUpperCase() : '?' }}
+                      <td class="px-6 py-4">
+                        <img
+                          v-if="user.profile_picture"
+                          :src="`${API_BASE_URL}${user.profile_picture}`"
+                          class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+                        />
+                        <div
+                          v-else
+                          class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-sm"
+                        >
+                          {{ user.full_name ? user.full_name[0].toUpperCase() : '?' }}
+                        </div>
+    
+                      </td>
+                      <td class="px-6 py-4 text-gray-900 dark:text-white font-medium">{{ user.full_name || 'N/A' }}</td>
+                      <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ user.email || 'N/A' }}</td>
+                      <td class="px-6 py-4">
+                        <span v-if="user.role === 'security'" 
+                       
+                        class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">Security Staff</span>
+                        <span v-else-if="user.role === 'admin'" 
+                        class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 rounded-full text-xs font-semibold">Administrator</span>
+                        <span v-else class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full text-xs font-semibold">University Member</span>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="flex gap-2">
+                          <button
+                            @click="viewUser(user)"
+                            class="px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition text-xs font-medium"
+                          >
+                            View
+                          </button>
+                          <button
+                            v-if="user.role === 'university_member'"
+                            @click="changeUserRole(user, 'security')"
+                            class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-xs font-medium whitespace-nowrap"
+                          >
+                            Assign Security
+                          </button>
+                          <button
+                            v-else-if="user.role === 'security'"
+                            @click="changeUserRole(user, 'university_member')"
+                            class="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition text-xs font-medium whitespace-nowrap"
+                          >
+                            Revert Role
+                          </button>
+                          <button
+                            v-if="user.role !== 'admin'"
+                            @click="confirmUserDelete(user)"
+                            class="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                            title="Delete user"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Admin Account Update Section -->
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-8">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Admin Account</h2>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Update your admin credentials and security settings</p>
+                </div>
+                <button @click="showAdminUpdate = !showAdminUpdate" class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition font-medium">
+                  {{ showAdminUpdate ? 'Hide' : 'Update Account' }}
+                </button>
+              </div>
+
+              <div v-if="showAdminUpdate" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                <form @submit.prevent="updateAdminAccount" class="space-y-6">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">New Email Address</label>
+                      <input
+                        v-model="profileForm.email"
+                        type="email"
+                        placeholder="admin@carsu.edu.ph"
+                        class="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
                     </div>
-                  </td>
-                  <td class="px-4 py-2">{{ user.full_name || 'N/A' }}</td>
-                  <td class="px-4 py-2">{{ user.email || 'N/A' }}</td>
-                  <td class="px-4 py-2">
-                    <span v-if="user.role === 'security'">Security staff</span>
-                    <span v-else-if="user.role === 'admin'">Administrator</span>
-                    <span v-else>University member</span>
-                  </td>
-                  <td class="px-4 py-2">
-                    <div class="flex justify-between items-center min-w-[180px]">
-                      <button
-                        @click="viewUser(user)"
-                        class="px-3 py-1 text-sm bg-yellow-500 text-black rounded hover:bg-yellow-600 whitespace-nowrap"
-                      >
-                        View
-                      </button>
-                      <div class="flex gap-1">
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Current Password</label>
+                      <div class="relative">
+                        <input
+                          v-model="profileForm.oldPassword"
+                          :type="showOldPassword ? 'text' : 'password'"
+                          required
+                          placeholder="Enter your current password"
+                          class="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-10"
+                        />
                         <button
-                          v-if="user.role === 'university_member'"
-                          @click="changeUserRole(user, 'security')"
-                          class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
+                          type="button"
+                          @click="showOldPassword = !showOldPassword"
+                          class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400"
                         >
-                          Assign as Security
-                        </button>
-                        <button
-                          v-else-if="user.role === 'security'"
-                          @click="changeUserRole(user, 'university_member')"
-                          class="px-3 py-1 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 whitespace-nowrap"
-                        >
-                          Revert to University Member
+                          <svg v-if="showOldPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
+                          </svg>
+                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                          </svg>
                         </button>
                       </div>
-                      <button
-                        v-if="user.role !== 'admin'"
-                        @click="confirmUserDelete(user)"
-                        class="p-2 bg-red-500 text-white rounded hover:bg-red-600"
-                        title="Delete user"
-                      >
-                        <!-- 🗑️ Trash Icon -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                      </button>
                     </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </div>
 
-            <!-- Now show the Admin Account update section after the users table -->
-            <h2 class="text-2xl font-semibold mb-6 text-yellow-400">Admin Account</h2>
-            <button @click="showAdminUpdate = !showAdminUpdate" class="mb-4 px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-400 transition">
-              {{ showAdminUpdate ? 'Hide' : 'Update Admin Account' }}
-            </button>
-            <div v-if="showAdminUpdate" class="bg-gray-900 border border-gray-700 rounded-lg p-5 mb-6">
-              <h3 class="text-lg font-semibold text-yellow-300">Update Your Admin Account</h3>
-              <p class="text-sm text-gray-400 mt-1">
-                Change your email or password. You must verify your current password to update credentials.
-              </p>
-              <div class="mt-3">
-                <button @click="openProfile" class="text-sm text-yellow-300 hover:underline bg-transparent border-0 p-0">Open full profile page</button>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">New Password</label>
+                      <div class="relative">
+                        <input
+                          v-model="profileForm.newPassword"
+                          :type="showNewPassword ? 'text' : 'password'"
+                          placeholder="Enter new password"
+                          class="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-10"
+                        />
+                        <button
+                          type="button"
+                          @click="showNewPassword = !showNewPassword"
+                          class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400"
+                        >
+                          <svg v-if="showNewPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
+                          </svg>
+                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Confirm New Password</label>
+                      <div class="relative">
+                        <input
+                          v-model="profileForm.confirmNewPassword"
+                          :type="showConfirmPassword ? 'text' : 'password'"
+                          placeholder="Re-enter new password"
+                          class="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-10"
+                        />
+                        <button
+                          type="button"
+                          @click="showConfirmPassword = !showConfirmPassword"
+                          class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400"
+                        >
+                          <svg v-if="showConfirmPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
+                          </svg>
+                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <button
+                      type="submit"
+                      :disabled="profileFormLoading"
+                      class="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {{ profileFormLoading ? 'Updating...' : 'Update Account' }}
+                    </button>
+                  </div>
+
+                  <div v-if="profileFormError" class="p-3 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-lg text-sm">
+                    {{ profileFormError }}
+                  </div>
+                  <div v-if="profileFormSuccess" class="p-3 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-sm">
+                    {{ profileFormSuccess }}
+                  </div>
+                </form>
               </div>
-              <form @submit.prevent="updateAdminAccount" class="mt-4 grid grid-cols-1 gap-4">
-                <!-- Email Field -->
-                <div class="flex flex-col">
-                  <label class="text-sm text-gray-300 mb-1">New Email Address</label>
-                  <input
-                    v-model="profileForm.email"
-                    type="email"
-                    placeholder="admin@carsu.edu.ph"
-                    class="px-3 py-2 rounded bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                  />
-                </div>
-                <!-- Old Password -->
-                <div class="flex flex-col">
-                  <label class="text-sm text-gray-300 mb-1">Current Password</label>
-                  <div class="relative">
-                    <input
-                      v-model="profileForm.oldPassword"
-                      :type="showOldPassword ? 'text' : 'password'"
-                      required
-                      placeholder="Enter your current password"
-                      class="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-10"
-                    />
-                    <button
-                      type="button"
-                      @click="showOldPassword = !showOldPassword"
-                      class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-yellow-400"
-                    >
-                      <svg v-if="showOldPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
-                      </svg>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <!-- New Password -->
-                <div class="flex flex-col">
-                  <label class="text-sm text-gray-300 mb-1">New Password</label>
-                  <div class="relative">
-                    <input
-                      v-model="profileForm.newPassword"
-                      :type="showNewPassword ? 'text' : 'password'"
-                      placeholder="Enter new password"
-                      class="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-10"
-                    />
-                    <button
-                      type="button"
-                      @click="showNewPassword = !showNewPassword"
-                      class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-yellow-400"
-                    >
-                      <svg v-if="showNewPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
-                      </svg>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <!-- Confirm New Password -->
-                <div class="flex flex-col">
-                  <label class="text-sm text-gray-300 mb-1">Confirm New Password</label>
-                  <div class="relative">
-                    <input
-                      v-model="profileForm.confirmNewPassword"
-                      :type="showConfirmPassword ? 'text' : 'password'"
-                      placeholder="Re-enter new password"
-                      class="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-10"
-                    />
-                    <button
-                      type="button"
-                      @click="showConfirmPassword = !showConfirmPassword"
-                      class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-yellow-400"
-                    >
-                      <svg v-if="showConfirmPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
-                      </svg>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <!-- Submit Button -->
-                <div class="flex flex-col items-start gap-2">
-                  <button
-                    type="submit"
-                    :disabled="profileFormLoading"
-                    class="px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-400 transition disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {{ profileFormLoading ? 'Updating...' : 'Update Account' }}
-                  </button>
-                  <p v-if="profileFormError" class="text-sm text-red-400">{{ profileFormError }}</p>
-                  <p v-if="profileFormSuccess" class="text-sm text-green-400">{{ profileFormSuccess }}</p>
-                </div>
-              </form>
             </div>
           </div>
         </main>
@@ -632,6 +653,13 @@
     </div>
   </div>
 </template>
+
+<script setup>
+</script>
+
+<style scoped>
+</style>
+
 
 <script setup>
 /* eslint-disable no-unused-vars */

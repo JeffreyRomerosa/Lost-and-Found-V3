@@ -3,6 +3,7 @@ import pool from "../db.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { createMatchNotification } from "../services/notificationService.js";
 
 const router = express.Router();
 
@@ -102,22 +103,58 @@ router.post("/report", upload.single("photo"), async (req, res) => {
     // 🟢 MATCHING LOGIC — auto match for ANY category
     const oppositeType = type === "lost" ? "found" : "lost";
 
-    const matchQuery = await pool.query(
-      `SELECT * FROM items
-       WHERE type = $1
-         AND category = $2
-         AND status = 'in_security_custody'
-         AND id != $3
-       ORDER BY created_at ASC
-       LIMIT 1`,
-      [oppositeType, category, newItem.id]
-    );
+    console.log(`📋 Attempting to match ${type} report (category: ${category})`);
+    console.log(`   - Name: ${name}, Brand: ${brand}, Color: ${color}, Student ID: ${student_id}`);
+
+    // Build matching query based on category
+    let matchQuery;
+
+    if (category === 'id') {
+      // ✅ For ID category: Match by student_id ONLY
+      // NOTE: Match regardless of item `status` so the lost reporter is
+      // notified even if the found report hasn't been marked in security custody yet.
+      matchQuery = await pool.query(
+        `SELECT * FROM items
+         WHERE type = $1
+           AND category = $2
+           AND id != $3
+           AND student_id = $4
+         ORDER BY created_at ASC
+         LIMIT 1`,
+        [oppositeType, category, newItem.id, student_id]
+      );
+      console.log(`🔍 ID Match Query: Looking for ${oppositeType} report with student_id=${student_id}`);
+    } else {
+      // ✅ For general items: Match by name, brand, and color
+      // IMPORTANT: Only match with found reports in security custody
+      // For general items: Match by name, brand, and color
+      // NOTE: Match regardless of item `status` so notifications are not
+      // missed due to the item not yet being marked 'in_security_custody'.
+      matchQuery = await pool.query(
+        `SELECT * FROM items
+         WHERE type = $1
+           AND category = $2
+           AND id != $3
+           AND LOWER(TRIM(name)) = LOWER(TRIM($4))
+           AND LOWER(TRIM(COALESCE(brand, ''))) = LOWER(TRIM(COALESCE($5, '')))
+           AND LOWER(TRIM(COALESCE(color, ''))) = LOWER(TRIM(COALESCE($6, '')))
+         ORDER BY created_at ASC
+         LIMIT 1`,
+        [oppositeType, category, newItem.id, name || '', brand || '', color || '']
+      );
+      console.log(`🔍 Item Match Query: Looking for ${oppositeType} report with name="${name}", brand="${brand}", color="${color}"`);
+    }
 
     let matchedReport = null;
 
     if (matchQuery.rows.length > 0) {
       matchedReport = matchQuery.rows[0];
-      console.log("✅ Found potential match:", matchedReport.id);
+      console.log(`✅ Found potential match:`, {
+        matched_id: matchedReport.id,
+        matched_name: matchedReport.name,
+        matched_category: matchedReport.category,
+        matched_status: matchedReport.status,
+      });
 
       // ✅ Check if already matched (avoid duplicates)
       const existingMatch = await pool.query(
@@ -145,38 +182,86 @@ router.post("/report", upload.single("photo"), async (req, res) => {
 
         const match_id = matchInsert.rows[0].id;
 
-        // 🔔 Notify the lost-item reporter
+        // 🔔 CRITICAL: Notify ONLY the lost-item reporter
+        // The person who submitted the LOST report should be notified
         const lostReporterId =
           type === "lost" ? reporter_id : matchedReport.reporter_id;
         const lostItemId = type === "lost" ? newItem.id : matchedReport.id;
+        const foundItemId = type === "lost" ? matchedReport.id : newItem.id;
+        const foundReportData = type === "lost" ? matchedReport : newItem;
+        const lostReportData = type === "lost" ? newItem : matchedReport;
+
+        console.log(`📢 Match Details:`, {
+          lost_item_id: lostItemId,
+          lost_reporter_id: lostReporterId,
+          found_item_id: foundItemId,
+          found_reporter_name: foundReportData.reporter_id || "System",
+        });
 
         if (lostReporterId) {
-          await pool.query(
-            `INSERT INTO notifications (user_id, item_id, match_id, category, type)
-             VALUES ($1, $2, $3, $4, $5)`,
-            [lostReporterId, lostItemId, match_id, category, "match_found"]
+          // Get lost-item reporter's email and item details for notification
+          const lostReporterInfo = await pool.query(
+            `SELECT users.email, items.* 
+             FROM users 
+             JOIN items ON items.reporter_id = users.id 
+             WHERE users.id = $1 AND items.id = $2`,
+            [lostReporterId, lostItemId]
           );
 
-          // Optional: Emit real-time notification
-          if (io) {
-            io.emit("newNotification", {
-              user_id: lostReporterId,
-              item_id: lostItemId,
-              match_id,
+          if (lostReporterInfo.rows.length > 0) {
+            const matchDetails = {
+              itemName: lostReportData.name,
+              itemType: lostReportData.type,
+              itemLocation: lostReportData.location,
+              itemBrand: lostReportData.brand,
+              itemColor: lostReportData.color,
+              matchedItemName: foundReportData.name,
+              matchedType: foundReportData.type,
+              matchedLocation: foundReportData.location,
+              matchedBrand: foundReportData.brand,
+              matchedColor: foundReportData.color,
               category,
-              type: "match_found",
+              matchId: match_id,
+            };
+
+            // Create both in-app and email notifications
+            await createMatchNotification(pool, {
+              userId: lostReporterId,
+              userEmail: lostReporterInfo.rows[0]?.email,
+              itemId: lostItemId,
+              matchId: match_id,
+              category,
+              matchDetails
             });
+
+            // Optional: Emit real-time notification
+            if (io) {
+              console.log(`🔔 Emitting newNotification to user ${lostReporterId}`);
+              io.emit("newNotification", {
+                user_id: lostReporterId,
+                item_id: lostItemId,
+                match_id,
+                category,
+                type: "match_found",
+              });
+            }
+
+            console.log(`✅ Match found and notification sent to lost-item reporter (${lostReporterId})`);
+          } else {
+            console.warn(`⚠️ Could not find lost reporter info for user ${lostReporterId}`);
           }
+        } else {
+          console.warn(`⚠️ No lost reporter ID available - match created but no notification sent`);
         }
 
         console.log(
-          "💾 Match inserted into matches table and notification sent."
+          `💾 Match inserted into matches table (match_id: ${match_id})`
         );
       } else {
-        console.log("ℹ️ Match already exists — skipping insert.");
+        console.log(`ℹ️ Match already exists between these items — skipping insert.`);
       }
     } else {
-      console.log("❌ No matching record found for category:", category);
+      console.log(`❌ No matching record found for ${oppositeType} report (category: ${category})`);
     }
 
     // ✅ Respond back to reporter (include match if found)
@@ -196,13 +281,22 @@ router.post("/report", upload.single("photo"), async (req, res) => {
  * Retrieve all reported items (with reporter info)
  */
 router.get("/items", async (req, res) => {
+  const { user_id } = req.query;
+
   try {
-    const result = await pool.query(
-      `SELECT i.*, u.full_name AS reporter_name, u.email AS reporter_email, u.profile_picture AS reporter_profile_picture
+    const params = [];
+    let sql = `SELECT i.*, u.full_name AS reporter_name, u.email AS reporter_email, u.profile_picture AS reporter_profile_picture
        FROM items i
-       LEFT JOIN users u ON i.reporter_id = u.id
-       ORDER BY i.created_at DESC`
-    );
+       LEFT JOIN users u ON i.reporter_id = u.id`;
+
+    if (user_id) {
+      params.push(user_id);
+      sql += ` WHERE i.reporter_id = $${params.length}`;
+    }
+
+    sql += ` ORDER BY i.created_at DESC`;
+
+    const result = await pool.query(sql, params);
     res.json(result.rows);
   } catch (err) {
     console.error("❌ Error fetching items:", err);

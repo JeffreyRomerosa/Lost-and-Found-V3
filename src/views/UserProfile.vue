@@ -1,62 +1,76 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-white flex flex-col items-center justify-center p-6 animate-fade-in relative"
-  >
-    <!-- ✅ Success Message -->
-    <transition name="fade">
-      <div
-        v-if="showSuccess"
-        class="fixed top-8 right-8 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 border border-green-400"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-        <span class="font-semibold">{{ successMessageText }}</span>
-      </div>
-    </transition>
-
-    <!-- Profile Card -->
+  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 text-gray-900 dark:text-white p-4 sm:p-6 lg:p-8">
+    <!-- Moved notification to always be rendered but hidden with opacity -->
     <div
-      class="relative bg-gray-800 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden text-center"
+      :class="[
+        'fixed top-4 sm:top-8 right-4 sm:right-8 bg-emerald-500 dark:bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 border border-emerald-300 dark:border-emerald-400 transition-all duration-300',
+        showSuccess ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      ]"
     >
-      <div class="h-40 bg-gradient-to-r from-gray-900 to-gray-700"></div>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+      <span class="font-semibold text-sm sm:text-base">{{ successMessageText }}</span>
+    </div>
 
-      <div class="pb-8 px-8 -mt-16 flex flex-col items-center">
-        <!-- Profile Image -->
-        <div class="relative mb-4">
-          <img
-            :src="profilePhoto"
-            alt="Profile Photo"
-            class="w-32 h-32 rounded-full border-4 border-yellow-400 object-cover shadow-lg"
-          />
-            <div class="absolute inset-0 flex items-end justify-end pr-2 pb-1">
-              <label
-                v-if="editMode"
-                class="bg-yellow-500 text-black px-2 py-1 text-xs rounded cursor-pointer hover:bg-yellow-400 transition"
-              >
-                Change
-                <input type="file" accept="image/*" @change="openCropper" class="hidden" />
-              </label>
-
-              <button v-else @click="showImageOptions = true" class="bg-gray-800 text-yellow-400 px-2 py-1 text-xs rounded hover:bg-gray-700">Options</button>
+    <!-- Main Container -->
+    <div class="max-w-4xl mx-auto pb-20">
+      <!-- Updated card styling with responsive padding and borders -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl shadow-lg dark:shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden ">
+        
+        <!-- Profile Header with Image -->
+        <div class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-50 dark:from-emerald-900/20 to-white dark:to-gray-700">
+          <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
+            <!-- Profile Image -->
+            <div class="relative flex-shrink-0">
+              <img
+                :src="profilePhoto"
+                alt="Profile Photo"
+                class="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-yellow-400 dark:border-yellow-400 object-cover shadow-lg"
+              />
+              <div v-if="editMode" class="absolute inset-0 flex items-end justify-end p-1">
+                <label
+                  class="bg-yellow-500 text-gray-900 px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full cursor-pointer hover:bg-yellow-400 transition duration-300 font-semibold"
+                >
+                  Change
+                  <input type="file" accept="image/*" @change="onReplaceImage" class="hidden" />
+                </label>
+                <button @click="onDeleteImage" class="bg-red-500 text-white px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full cursor-pointer hover:bg-red-400 transition duration-300 font-semibold ml-2">
+                  Delete
+                </button>
+              </div>
             </div>
+
+            <!-- Profile Info -->
+            <div class="flex-1 text-center sm:text-left">
+              <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-yellow-400 mb-1">{{ name || 'Unnamed User' }}</h1>
+              <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4">{{ email }}</p>
+              <div v-if="editMode" class="space-y-3">
+                <input 
+                  v-model="editableName" 
+                  type="text" 
+                  placeholder="Full Name" 
+                  class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-gray-900 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none text-sm sm:text-base"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Image Cropper Modal -->
         <div
-          v-if="showCropper"
-          class="fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-50 p-6"
+          v-show="showCropper"
+          class="fixed inset-0 bg-black/80 dark:bg-black/90 flex flex-col items-center justify-center z-50 p-4"
         >
-          <div class="bg-gray-900 p-6 rounded-2xl shadow-lg w-full max-w-lg border border-gray-700">
-            <h2 class="text-yellow-400 font-semibold text-lg mb-4 text-center">
-              Adjust Your Profile Photo
-            </h2>
+          <div class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-gray-800">
+            <h2 class="text-yellow-600 dark:text-yellow-400 font-semibold text-lg mb-4 text-center">Adjust Your Profile Photo</h2>
 
-            <div class="relative w-full h-80 bg-gray-800 rounded-xl overflow-hidden">
+            <div class="relative w-full h-80 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
               <Cropper
+                v-if="tempPhoto"
                 ref="cropperRef"
                 :src="tempPhoto"
-                class="w-full h-full border-2 border-yellow-400 rounded-lg"
+                class="w-full h-full"
                 :stencil-props="{
                   aspectRatio: 1,
                   movable: true,
@@ -71,96 +85,171 @@
               />
             </div>
 
-            <div class="flex justify-center mt-6 gap-4">
-              <button @click="saveCroppedImage" class="bg-yellow-500 text-black px-5 py-2 rounded-lg font-semibold hover:bg-yellow-400 transition">
+            <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
+              <button @click="saveCroppedImage" class="px-4 sm:px-6 py-2 sm:py-3 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-yellow-400 transition duration-300 text-sm sm:text-base">
                 Save
               </button>
-              <button @click="cancelCrop" class="bg-gray-700 px-5 py-2 rounded-lg text-gray-200 hover:bg-gray-600 transition">
+              <button @click="cancelCrop" class="px-4 sm:px-6 py-2 sm:py-3 bg-gray-200 dark:bg-gray-700 rounded-lg text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-300 font-semibold text-sm sm:text-base">
                 Cancel
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Suggestion if profile is empty (only show for university members) -->
-        <div v-if="userRole === 'university_member' && !editMode && !name && !department && !contactNumber && (!birthday || birthday === 'Not set')" class="mb-4 p-4 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-300">
-          <strong>Please fill in your profile information.</strong>
-          <div class="text-sm mt-1">Complete your Full Name, Department, Contact Number, Birthday and Profile Photo so you can use all features.</div>
+        <!-- Personal Details Section -->
+        <div class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 border-b border-gray-200 dark:border-gray-800">
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-yellow-400 mb-6">Personal Details</h2>
+
+          <div v-if="!editMode" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <!-- Full Name -->
+            <div>
+              <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Full Name</label>
+              <p class="text-sm sm:text-base text-gray-900 dark:text-white mt-1">{{ name || 'Not set' }}</p>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Email</label>
+              <p class="text-sm sm:text-base text-gray-900 dark:text-white mt-1">{{ email || 'Not set' }}</p>
+            </div>
+
+            <!-- Date of Birth -->
+            <div>
+              <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Date of Birth</label>
+              <p class="text-sm sm:text-base text-gray-900 dark:text-white mt-1">{{ birthday || 'Not set' }}</p>
+            </div>
+
+            <!-- Gender -->
+            <div>
+              <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Gender</label>
+              <p class="text-sm sm:text-base text-gray-900 dark:text-white mt-1">{{ gender || 'Not set' }}</p>
+            </div>
+
+            <!-- Department -->
+            <div>
+              <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Department</label>
+              <p class="text-sm sm:text-base text-gray-900 dark:text-white mt-1">{{ department || 'Not set' }}</p>
+            </div>
+
+            <!-- Nationality -->
+            <div>
+              <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Nationality</label>
+              <p class="text-sm sm:text-base text-gray-900 dark:text-white mt-1">{{ nationality || 'Not set' }}</p>
+            </div>
+
+            <!-- Address -->
+            <div>
+              <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Address</label>
+              <p class="text-sm sm:text-base text-gray-900 dark:text-white mt-1">{{ address || 'Not set' }}</p>
+            </div>
+
+            <!-- Phone Number -->
+            <div>
+              <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Phone Number</label>
+              <p class="text-sm sm:text-base text-gray-900 dark:text-white mt-1">{{ contactNumber || 'Not set' }}</p>
+            </div>
+
+            <!-- User Type -->
+            <div>
+              <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">User Type</label>
+              <p class="text-sm sm:text-base text-gray-900 dark:text-white mt-1">{{ userType }}</p>
+            </div>
+
+            <!-- Member Since -->
+            <div>
+              <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Member Since</label>
+              <p class="text-sm sm:text-base text-gray-900 dark:text-white mt-1">{{ createdAt }}</p>
+            </div>
+          </div>
+
+          <!-- Edit Mode Form -->
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <input 
+              v-model="editableName" 
+              type="text" 
+              placeholder="Full Name" 
+              class="px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-gray-900 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none text-sm"
+            />
+            <input 
+              v-model="editableDepartment" 
+              type="text" 
+              placeholder="Department / Office" 
+              class="px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-gray-900 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none text-sm"
+            />
+            <input 
+              v-model="editableContactNumber" 
+              type="tel" 
+              placeholder="Contact Number" 
+              class="px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-gray-900 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none text-sm"
+            />
+            <input 
+              v-model="editableBirthday" 
+              type="date" 
+              class="px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-gray-900 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none text-sm"
+            />
+            <input 
+              v-model="editableGender" 
+              type="text" 
+              placeholder="Gender" 
+              class="px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-gray-900 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none text-sm"
+            />
+            <input 
+              v-model="editableNationality" 
+              type="text" 
+              placeholder="Nationality" 
+              class="px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-gray-900 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none text-sm"
+            />
+            <input 
+              v-model="editableAddress" 
+              type="text" 
+              placeholder="Address" 
+              class="px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-gray-900 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none text-sm"
+            />
+          </div>
         </div>
 
-        <!-- Profile Info -->
-        <div class="text-center mt-3 w-full">
-          <div v-if="!editMode">
-            <h1 class="text-3xl font-bold mb-1">{{ name }}</h1>
-            <p class="text-gray-400 mb-2">{{ email }}</p>
-            <p class="text-gray-300">{{ userType }}</p>
-            <p class="text-gray-300">{{ department }}</p>
-            <p class="text-gray-300">Contact: {{ contactNumber }}</p>
-            <p class="text-gray-400">Birthday: {{ birthday }}</p>
-          </div>
+      
 
-          <!-- Editable Fields -->
-          <div v-else class="space-y-3 max-w-sm mx-auto">
-            <input v-model="editableName" type="text" placeholder="Full Name" class="w-full p-2 rounded-lg text-black border border-gray-400 text-center" />
-            <!-- Role is managed by administrators; display only here -->
-            <div class="w-full p-2 rounded-lg text-black border border-gray-400 text-center bg-gray-100 text-sm text-gray-700">
-              {{ userType }}
-            </div>
-            <input v-model="editableDepartment" type="text" placeholder="Department / Office" class="w-full p-2 rounded-lg text-black border border-gray-400 text-center" />
-            <input v-model="editableContactNumber" type="tel" placeholder="Contact Number" class="w-full p-2 rounded-lg text-black border border-gray-400 text-center" />
-            <input v-model="editableBirthday" type="date" class="w-full p-2 rounded-lg text-black border border-gray-400 text-center" />
-          </div>
+    
+        <!-- Action Buttons -->
+        <div class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col sm:flex-row gap-3 items-center justify-center sm:justify-end">
+          <button
+            v-if="!editMode"
+            @click="toggleEdit"
+            class="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg bg-yellow-500 text-gray-900 font-semibold hover:bg-yellow-400 transition duration-300 shadow-md text-sm sm:text-base"
+          >
+            Edit Profile
+          </button>
 
-          <p class="text-gray-500 mt-3 text-sm">Member since: {{ createdAt }}</p>
+           
 
-          <!-- Buttons -->
-          <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-center sm:gap-3">
-            <button
-              v-if="!editMode"
-              @click="toggleEdit"
-              class="px-6 py-2 rounded-full bg-yellow-500 text-black font-semibold hover:bg-yellow-400 transition"
+          <template v-else>
+            <button 
+              @click="saveProfile" 
+              class="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg bg-yellow-500 text-gray-900 font-semibold hover:bg-yellow-400 transition duration-300 shadow-md text-sm sm:text-base"
             >
-              Edit Profile
+              Save Changes
             </button>
-
-            <div v-else class="flex items-center justify-center gap-3">
-              <button @click="saveProfile" class="px-6 py-2 rounded-full bg-green-600 text-white font-semibold hover:bg-green-500 transition">
-                Save
-              </button>
-              <button @click="cancelEdit" class="px-6 py-2 rounded-full bg-gray-600 text-white font-semibold hover:bg-gray-500 transition">
-                Cancel
-              </button>
-            </div>
-          </div>
-
-          <!-- ✅ Back to Home Button -->
-          <div class="mt-6 flex justify-center items-center text-gray-400">
-            <router-link
-              to="/userdashboard"
-              class="flex flex-col items-center hover:text-yellow-400 transition"
+            <button 
+              @click="cancelEdit" 
+              class="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold hover:bg-gray-400 dark:hover:bg-gray-600 transition duration-300 text-sm sm:text-base"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 12l2-2m0 0l7-7 7 7m-9 2v8m0-8H5m4 0h10" />
-              </svg>
-              Back to Home
-            </router-link>
-          </div>
+              Cancel
+            </button>
+          </template>
         </div>
-      </div>
-    </div>
 
-    <!-- Image Options Modal -->
-    <div v-if="showImageOptions" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
-      <div class="bg-gray-900 p-6 rounded-2xl border border-yellow-400 w-full max-w-md text-center">
-        <img :src="profilePhoto" alt="Profile" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-2 border-yellow-400" />
-        <div class="flex justify-center gap-3">
-          <label class="px-4 py-2 bg-yellow-500 text-black rounded cursor-pointer hover:bg-yellow-400 transition">
-            Replace
-            <input type="file" accept="image/*" @change="onReplaceImage" class="hidden" />
-          </label>
-          <button @click="onDeleteImage" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
-          <button @click="showImageOptions = false" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500">Cancel</button>
+        <!-- Back to Dashboard -->
+        <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-t border-gray-200 dark:border-gray-800 flex justify-center">
+          <router-link
+            to="/userdashboard"
+            class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition duration-300 font-semibold text-sm sm:text-base"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7m-9 2v8m0-8H5m4 0h10" />
+            </svg>
+            Back to Dashboard
+          </router-link>
         </div>
       </div>
     </div>

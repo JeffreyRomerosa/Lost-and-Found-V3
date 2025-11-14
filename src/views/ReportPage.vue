@@ -1,444 +1,516 @@
 <template>
-  <div
-    class="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950"
-  >
-    <h2 class="text-3xl font-bold mb-8 text-center text-white">Report an Item</h2>
+  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6">
+    <!-- Header -->
+    <div class="max-w-2xl mx-auto mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Report an Item</h1>
+        <button
+          v-if="!submitted"
+          @click="goBack"
+          class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 border border-gray-200 dark:border-gray-700 text-sm font-medium"
+        >
+          ← Back
+        </button>
+      </div>
 
-    <!-- Back Button -->
-    <div
-      v-if="!submitted"
-      class="w-full max-w-md sm:max-w-lg lg:max-w-xl flex justify-end mb-6"
-    >
-      <button
-        @click="goBack"
-        class="px-5 py-2.5 rounded-lg bg-gray-800 text-white text-sm font-medium hover:bg-gray-700 transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-700"
-      >
-        ← Back
-      </button>
+      <!-- Step Indicator -->
+      <div v-if="!submitted && !reviewing" class="flex items-center gap-2 mb-8">
+        <div v-for="s in 3" :key="s" class="flex items-center">
+          <div
+            :class="[
+              'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm',
+              s <= step
+                ? 'bg-emerald-500 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+            ]"
+          >
+            {{ s }}
+          </div>
+          <div v-if="s < 3" :class="['h-1 w-12 mx-2', s < step ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700']"></div>
+        </div>
+      </div>
     </div>
 
-    <!-- Lost or Found Buttons -->
-    <div
-      v-if="step === 1 && !submitted && !reviewing"
-      class="space-y-5 mb-6 w-full max-w-md sm:max-w-lg lg:max-w-xl"
-    >
-      <button
-        @click="selectType('lost')"
-        class="w-full py-5 rounded-xl bg-green-500 text-black font-semibold text-lg hover:bg-green-600 hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-2xl"
-      >
-        Report Lost Item
-      </button>
-      <button
-        @click="selectType('found')"
-        class="w-full py-5 rounded-xl bg-green-500 text-black font-semibold text-lg hover:bg-green-600 hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-2xl"
-      >
-        Report Found Item
-      </button>
+    <!-- Step 1: Choose Report Type -->
+    <div v-if="step === 1 && !submitted && !reviewing" class="max-w-2xl mx-auto">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">What are you reporting?</h2>
+        <div class="space-y-4">
+          <button
+            @click="selectType('lost')"
+            class="w-full p-6 rounded-xl bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-2 border-emerald-300 dark:border-emerald-600 hover:border-emerald-500 dark:hover:border-emerald-400 transition-all duration-200 text-left group"
+          >
+            <div class="flex items-center gap-4">
+              <div class="text-3xl group-hover:scale-110 transition-transform">🔍</div>
+              <div>
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Report Lost Item</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">I lost something and need help finding it</p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            @click="selectType('found')"
+            class="w-full p-6 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-2 border-amber-300 dark:border-amber-600 hover:border-amber-500 dark:hover:border-amber-400 transition-all duration-200 text-left group"
+          >
+            <div class="flex items-center gap-4">
+              <div class="text-3xl group-hover:scale-110 transition-transform">✨</div>
+              <div>
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Report Found Item</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">I found something and want to return it</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- ID or General Buttons -->
-    <div
-      v-if="step === 2 && !submitted && !reviewing"
-      class="space-y-5 mb-6 w-full max-w-md sm:max-w-lg lg:max-w-xl"
-    >
-      <button
-        @click="selectCategory('id')"
-        class="w-full py-5 rounded-xl bg-yellow-500 text-black font-semibold text-lg hover:bg-yellow-600 hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-2xl"
-      >
-        {{ reportType === "lost" ? "Lost ID" : "Found ID" }}
-      </button>
-      <button
-        @click="selectCategory('general')"
-        class="w-full py-5 rounded-xl bg-yellow-500 text-black font-semibold text-lg hover:bg-yellow-600 hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-2xl"
-      >
-        {{ reportType === "lost" ? "Lost General Item" : "Found General Item" }}
-      </button>
+    <!-- Step 2: Choose Item Category -->
+    <div v-if="step === 2 && !submitted && !reviewing" class="max-w-2xl mx-auto">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">What type of item?</h2>
+        <div class="space-y-4">
+          <button
+            @click="selectCategory('id')"
+            class="w-full p-6 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-2 border-blue-300 dark:border-blue-600 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-200 text-left group"
+          >
+            <div class="flex items-center gap-4">
+              <div class="text-3xl group-hover:scale-110 transition-transform">🆔</div>
+              <div>
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">{{ reportType === "lost" ? "Lost ID" : "Found ID" }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Student ID, passport, license, etc.</p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            @click="selectCategory('general')"
+            class="w-full p-6 rounded-xl bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-2 border-purple-300 dark:border-purple-600 hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-200 text-left group"
+          >
+            <div class="flex items-center gap-4">
+              <div class="text-3xl group-hover:scale-110 transition-transform">📦</div>
+              <div>
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">{{ reportType === "lost" ? "Lost General Item" : "Found General Item" }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Phone, laptop, bag, keys, etc.</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- ID Form -->
+    <!-- Step 3: ID Form -->
     <form
       v-if="step === 3 && itemCategory === 'id' && !reviewing && !submitted"
       @submit.prevent="prepareReview"
-      class="bg-gray-800 p-8 rounded-2xl space-y-5 w-full max-w-md sm:max-w-lg lg:max-w-xl shadow-2xl border border-gray-700"
+      class="max-w-2xl mx-auto"
     >
-      <h3 class="text-xl font-bold mb-4 text-white">
-        {{ reportType === "lost" ? "Lost ID Report" : "Found ID Report" }}
-      </h3>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ reportType === "lost" ? "Lost ID Details" : "Found ID Details" }}
+        </h2>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">Upload Photo:</label>
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          @change="handleImage($event, 'id')"
-          class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600 file:cursor-pointer"
-        />
-        
-        <!-- QR Detection Status Messages -->
-        <div v-if="isExtractingQR" class="mt-2 text-blue-400 text-sm">
-          🔍 Analyzing image for QR code...
-        </div>
-        <div v-else-if="qrDetected" class="mt-2 text-green-400 text-sm">
-          ✅ QR code detected! Student ID auto-filled.
-        </div>
-        <div v-else-if="qrDetectionFailed" class="mt-2 text-yellow-400 text-sm">
-          ⚠️ No QR code found. Please enter details manually.
-        </div>
-        
-        <!-- Contextual Guidance -->
-        <div v-if="reportType === 'lost'" class="mt-2 text-gray-400 text-xs">
-          💡 You can upload a photo of your ID (if you have one saved) — but it’s optional. Description alone is enough.
-        </div>
-        <div v-if="reportType === 'found'" class="mt-2 text-yellow-400 text-xs">
-          ⚠️ Please upload a clear photo of the ID you found — this helps verify authenticity.
-        </div>
-        
-        <div v-if="idForm.preview" class="mt-4 space-y-3">
-          <img
-            :src="idForm.preview"
-            alt="Preview"
-            class="w-32 h-32 object-cover rounded-xl border-2 border-gray-600 shadow-lg"
+        <!-- Image Upload -->
+        <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6">
+          <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-3 uppercase">Upload Photo</label>
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            @change="handleImage($event, 'id')"
+            class="w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 file:cursor-pointer"
           />
-          <button
-            type="button"
-            @click="removeImage('id')"
-            class="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 font-medium shadow-md"
-          >
-            Remove Photo
-          </button>
+
+          <div v-if="isExtractingQR" class="mt-3 p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm">
+            🔍 Analyzing image for QR code...
+          </div>
+          <div v-else-if="qrDetected" class="mt-3 p-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-sm">
+            ✅ QR code detected! Student ID auto-filled.
+          </div>
+          <div v-else-if="qrDetectionFailed" class="mt-3 p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-lg text-sm">
+            ⚠️ No QR code found. Please enter details manually.
+          </div>
+
+          <div v-if="idForm.preview" class="mt-4 flex items-center gap-4">
+            <img
+              :src="idForm.preview"
+              alt="Preview"
+              @click="openImageModal(idForm.preview)"
+              class="w-32 h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:opacity-80"
+            />
+            <button
+              type="button"
+              @click="removeImage('id')"
+              class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all text-sm font-medium"
+            >
+              Remove
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">Student Name:</label>
-        <input 
-          v-model="idForm.name" 
-          type="text" 
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
-          required 
-        />
-      </div>
+        <!-- Form Fields -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Student Name *</label>
+            <input 
+              v-model="idForm.name" 
+              type="text" 
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" 
+              required 
+            />
+          </div>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">Student ID (123-45678):</label>
-        <input
-          v-model="idForm.studentId"
-          type="text"
-          @input="formatStudentId"
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-          required
-        />
-      </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Student ID (123-45678) *</label>
+            <input
+              v-model="idForm.studentId"
+              type="text"
+              @input="formatStudentId"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              required
+            />
+          </div>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">Course / Program:</label>
-        <input 
-          v-model="idForm.course" 
-          type="text" 
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
-          required 
-        />
-      </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Course / Program *</label>
+            <input 
+              v-model="idForm.course" 
+              type="text" 
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" 
+              required 
+            />
+          </div>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">
-          {{ reportType === "lost" ? "Date & Time Lost:" : "Date & Time Found:" }}
-        </label>
-        <input
-          v-model="idForm.dateTime"
-          type="datetime-local"
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-          required
-        />
-      </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">
+              {{ reportType === "lost" ? "Date & Time Lost" : "Date & Time Found" }} *
+            </label>
+            <input
+              v-model="idForm.dateTime"
+              type="datetime-local"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              required
+            />
+          </div>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">
-          {{ reportType === "lost" ? "Location Lost:" : "Location Found:" }}
-        </label>
-        <input 
-          v-model="idForm.location" 
-          type="text" 
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
-          required 
-        />
-      </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">
+              {{ reportType === "lost" ? "Location Lost" : "Location Found" }} *
+            </label>
+            <input 
+              v-model="idForm.location" 
+              type="text" 
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" 
+              required 
+            />
+          </div>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">Description (optional):</label>
-        <textarea 
-          v-model="idForm.description" 
-          rows="3"
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 resize-none"
-        ></textarea>
-      </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">
+              Description (optional)
+            </label>
+            <textarea 
+              v-model="idForm.description" 
+              rows="3"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
+            ></textarea>
+          </div>
+        </div>
 
-      <button
-        type="submit"
-        class="w-full py-3.5 rounded-lg bg-yellow-500 text-black font-bold text-lg hover:bg-yellow-600 hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl mt-6"
-      >
-        Submit Report
-      </button>
+        <button
+          type="submit"
+          class="w-full py-3 rounded-lg bg-emerald-500 text-white font-bold text-lg hover:bg-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+        >
+          Review Report
+        </button>
+      </div>
     </form>
 
-    <!-- General Form -->
+    <!-- Step 3: General Form -->
     <form
       v-if="step === 3 && itemCategory === 'general' && !reviewing && !submitted"
       @submit.prevent="prepareReview"
-      class="bg-gray-800 p-8 rounded-2xl space-y-5 w-full max-w-md sm:max-w-lg lg:max-w-xl shadow-2xl border border-gray-700"
+      class="max-w-2xl mx-auto"
     >
-      <h3 class="text-xl font-bold mb-4 text-white">
-        {{ reportType === "lost" ? "Lost Item Report" : "Found Item Report" }}
-      </h3>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ reportType === "lost" ? "Lost Item Details" : "Found Item Details" }}
+        </h2>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">Upload Photo:</label>
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          @change="handleImage($event, 'general')"
-          class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600 file:cursor-pointer"
-        />
-        
-        <!-- Contextual Guidance -->
-        <div v-if="reportType === 'lost'" class="mt-2 text-gray-400 text-xs">
-          💡 You can upload a photo of the item (if available) — but description alone is enough.
-        </div>
-        <div v-if="reportType === 'found'" class="mt-2 text-yellow-400 text-xs">
-          ⚠️ A photo of the item you found is strongly recommended for verification.
-        </div>
-        
-        <div v-if="generalForm.preview" class="mt-4 space-y-3">
-          <img
-            :src="generalForm.preview"
-            alt="Preview"
-            class="w-32 h-32 object-cover rounded-xl border-2 border-gray-600 shadow-lg"
+        <!-- Image Upload -->
+        <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6">
+          <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-3 uppercase">Upload Photo</label>
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            @change="handleImage($event, 'general')"
+            class="w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 file:cursor-pointer"
           />
-          <button
-            type="button"
-            @click="removeImage('general')"
-            class="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 font-medium shadow-md"
-          >
-            Remove Photo
-          </button>
-        </div>
-        <!-- YOLO Analysis Status -->
-        <div v-if="isAnalyzing" class="mt-2 text-yellow-400 text-sm">
-          🔍 Analyzing image...
-        </div>
-        <div v-if="detectedObjects.length > 0" class="mt-2 p-3 bg-gray-700 rounded-lg">
-          <p class="text-green-400 text-sm font-medium mb-2">Detected Objects:</p>
-          <div class="flex flex-wrap gap-2">
-            <span 
-              v-for="obj in detectedObjects" 
-              :key="obj.class_name"
-              class="px-2 py-1 bg-green-600 text-white text-xs rounded-full"
+
+          <div v-if="isAnalyzing" class="mt-3 p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm">
+            🔍 Analyzing image...
+          </div>
+
+          <div v-if="detectedObjects.length > 0" class="mt-3 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+            <p class="text-green-700 dark:text-green-300 text-sm font-bold mb-2">Detected Objects:</p>
+            <div class="flex flex-wrap gap-2">
+              <span 
+                v-for="obj in detectedObjects" 
+                :key="obj.class_name"
+                class="px-3 py-1 bg-green-500 text-white text-xs rounded-full font-medium"
+              >
+                {{ obj.class_name }} ({{ Math.round(obj.confidence * 100) }}%)
+              </span>
+            </div>
+          </div>
+
+          <div v-if="generalForm.preview" class="mt-4 flex items-center gap-4">
+            <img
+              :src="generalForm.preview"
+              alt="Preview"
+              @click="openImageModal(generalForm.preview)"
+              class="w-32 h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:opacity-80"
+            />
+            <button
+              type="button"
+              @click="removeImage('general')"
+              class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all text-sm font-medium"
             >
-              {{ obj.class_name }} ({{ Math.round(obj.confidence * 100) }}%)
-            </span>
+              Remove
+            </button>
           </div>
         </div>
-      </div>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">Item Name:</label>
-        <input
-          v-model="generalForm.name"
-          type="text"
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-          @input="filterSuggestions"
-          list="item-suggestions"
-          required
-        />
-        <datalist id="item-suggestions">
-          <option v-for="item in filteredSuggestions" :key="item" :value="item" />
-        </datalist>
-      </div>
+        <!-- Form Fields -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Item Name *</label>
+            <input
+              v-model="generalForm.name"
+              type="text"
+              @input="filterSuggestions"
+              list="item-suggestions"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              required
+            />
+            <datalist id="item-suggestions">
+              <option v-for="item in filteredSuggestions" :key="item" :value="item" />
+            </datalist>
+          </div>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">Brand (optional):</label>
-        <input 
-          v-model="generalForm.brand" 
-          type="text" 
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
-        />
-      </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Brand (optional)</label>
+              <input 
+                v-model="generalForm.brand" 
+                type="text" 
+                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" 
+              />
+            </div>
 
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">Color:</label>
-        <input 
-          v-model="generalForm.color" 
-          type="text" 
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
-        />
-      </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Color *</label>
+              <input 
+                v-model="generalForm.color" 
+                type="text" 
+                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" 
+                required
+              />
+            </div>
+          </div>
 
-      <div v-if="showSmartphoneCover">
-        <label class="block text-gray-300 text-sm font-medium mb-2">
-          Does the smartphone have a cover?
-        </label>
-        <select 
-          v-model="generalForm.cover" 
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+          <div v-if="showSmartphoneCover">
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Phone Cover?</label>
+            <select 
+              v-model="generalForm.cover" 
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+            >
+              <option value="">Select</option>
+              <option value="No Cover">No Cover</option>
+              <option value="Color: Black">Black</option>
+              <option value="Color: White">White</option>
+              <option value="Color: Red">Red</option>
+              <option value="Color: Blue">Blue</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">
+              {{ reportType === "lost" ? "Date & Time Lost" : "Date & Time Found" }} *
+            </label>
+            <input
+              v-model="generalForm.dateTime"
+              type="datetime-local"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">
+              {{ reportType === "lost" ? "Location Lost" : "Location Found" }} *
+            </label>
+            <input 
+              v-model="generalForm.location" 
+              type="text" 
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" 
+              required 
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Description (optional)</label>
+            <textarea 
+              v-model="generalForm.description" 
+              rows="3"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full py-3 rounded-lg bg-emerald-500 text-white font-bold text-lg hover:bg-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl"
         >
-          <option value="">Select</option>
-          <option value="No Cover">No Cover</option>
-          <option value="Color: Black">Black</option>
-          <option value="Color: White">White</option>
-          <option value="Color: Red">Red</option>
-          <option value="Color: Blue">Blue</option>
-          <option value="Other">Other</option>
-        </select>
+          Review Report
+        </button>
       </div>
-
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">
-          {{ reportType === "lost" ? "Date & Time Lost:" : "Date & Time Found:" }}
-        </label>
-        <input
-          v-model="generalForm.dateTime"
-          type="datetime-local"
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-          required
-        />
-      </div>
-
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">
-          {{ reportType === "lost" ? "Location Lost:" : "Location Found:" }}
-        </label>
-        <input 
-          v-model="generalForm.location" 
-          type="text" 
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
-          required 
-        />
-      </div>
-
-      <div>
-        <label class="block text-gray-300 text-sm font-medium mb-2">Description (optional):</label>
-        <textarea 
-          v-model="generalForm.description" 
-          rows="3"
-          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 resize-none"
-        ></textarea>
-      </div>
-
-      <button
-        type="submit"
-        class="w-full py-3.5 rounded-lg bg-yellow-500 text-black font-bold text-lg hover:bg-yellow-600 hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl mt-6"
-      >
-        Submit Report
-      </button>
     </form>
 
     <!-- Review Step -->
     <div
       v-if="reviewing && !submitted"
-      class="bg-gray-800 p-8 rounded-2xl w-full max-w-md sm:max-w-lg lg:max-w-xl shadow-2xl border border-gray-700"
+      class="max-w-2xl mx-auto"
     >
-      <h3 class="text-2xl font-bold text-yellow-400 mb-6 text-center">
-        Review Your Report
-      </h3>
-      <div
-        class="bg-gray-900 p-6 rounded-xl space-y-4 text-left max-h-[500px] overflow-auto border border-gray-700"
-      >
-        <div v-if="reviewData.preview" class="flex justify-center mb-4">
-          <img
-            :src="reviewData.preview"
-            alt="Item Preview"
-            class="w-48 h-48 object-cover rounded-xl border-2 border-gray-600 shadow-lg"
-          />
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Review Your Report</h2>
+        
+        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 max-h-[500px] overflow-auto border border-gray-200 dark:border-gray-700 space-y-4">
+          <div v-if="reviewData.preview" class="flex justify-center">
+            <img
+              :src="reviewData.preview"
+              alt="Item Preview"
+              @click="openImageModal(reviewData.preview)"
+              class="w-48 h-48 object-cover rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:opacity-80"
+            />
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Type:</span>
+              <span class="text-gray-900 dark:text-white font-semibold capitalize">{{ reviewData.type }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Category:</span>
+              <span class="text-gray-900 dark:text-white font-semibold">{{ reviewData.category }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Name:</span>
+              <span class="text-gray-900 dark:text-white font-semibold">{{ reviewData.name }}</span>
+            </div>
+            <div v-if="reviewData.studentId" class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Student ID:</span>
+              <span class="text-gray-900 dark:text-white font-semibold">{{ reviewData.studentId }}</span>
+            </div>
+            <div v-if="reviewData.course" class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Course/Program:</span>
+              <span class="text-gray-900 dark:text-white font-semibold">{{ reviewData.course }}</span>
+            </div>
+            <div v-if="reviewData.brand" class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Brand:</span>
+              <span class="text-gray-900 dark:text-white font-semibold">{{ reviewData.brand }}</span>
+            </div>
+            <div v-if="reviewData.color" class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Color:</span>
+              <span class="text-gray-900 dark:text-white font-semibold">{{ reviewData.color }}</span>
+            </div>
+            <div v-if="reviewData.cover" class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Cover:</span>
+              <span class="text-gray-900 dark:text-white font-semibold">{{ reviewData.cover }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Date & Time:</span>
+              <span class="text-gray-900 dark:text-white font-semibold">{{ formatDateTime(reviewData.dateTime) }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Location:</span>
+              <span class="text-gray-900 dark:text-white font-semibold">{{ reviewData.location }}</span>
+            </div>
+            <div v-if="reviewData.description" class="py-2">
+              <span class="text-gray-600 dark:text-gray-400 font-medium block mb-2">Description:</span>
+              <span class="text-gray-900 dark:text-white">{{ reviewData.description }}</span>
+            </div>
+          </div>
         </div>
-        <div class="space-y-3">
-          <div class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400 font-medium">Type:</span>
-            <span class="text-white font-semibold capitalize">{{ reviewData.type }}</span>
-          </div>
-          <div class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400 font-medium">Category:</span>
-            <span class="text-white font-semibold">{{ reviewData.category }}</span>
-          </div>
-          <div class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400 font-medium">Name:</span>
-            <span class="text-white font-semibold">{{ reviewData.name }}</span>
-          </div>
-          <div v-if="reviewData.studentId" class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400 font-medium">Student ID:</span>
-            <span class="text-white font-semibold">{{ reviewData.studentId }}</span>
-          </div>
-          <div v-if="reviewData.course" class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400 font-medium">Course/Program:</span>
-            <span class="text-white font-semibold">{{ reviewData.course }}</span>
-          </div>
-          <div v-if="reviewData.brand" class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400 font-medium">Brand:</span>
-            <span class="text-white font-semibold">{{ reviewData.brand }}</span>
-          </div>
-          <div v-if="reviewData.color" class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400 font-medium">Color:</span>
-            <span class="text-white font-semibold">{{ reviewData.color }}</span>
-          </div>
-          <div v-if="reviewData.cover" class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400 font-medium">Cover:</span>
-            <span class="text-white font-semibold">{{ reviewData.cover }}</span>
-          </div>
-          <div class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400 font-medium">Date & Time:</span>
-            <span class="text-white font-semibold">{{ formatDateTime(reviewData.dateTime) }}</span>
-          </div>
-          <div class="flex justify-between py-2 border-b border-gray-700">
-            <span class="text-gray-400 font-medium">Location:</span>
-            <span class="text-white font-semibold">{{ reviewData.location }}</span>
-          </div>
-          <div v-if="reviewData.description" class="py-2">
-            <span class="text-gray-400 font-medium block mb-2">Description:</span>
-            <span class="text-white">{{ reviewData.description }}</span>
-          </div>
+
+        <div class="mt-8 flex justify-center gap-4">
+          <button
+            @click="confirmSubmit"
+            class="px-8 py-3 rounded-lg bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+          >
+            Confirm
+          </button>
+          <button
+            @click="editReport"
+            class="px-8 py-3 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white font-bold hover:bg-gray-400 dark:hover:bg-gray-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+          >
+            Edit
+          </button>
         </div>
-      </div>
-      <div class="mt-8 flex justify-center gap-4">
-        <button
-          @click="confirmSubmit"
-          class="px-8 py-3 rounded-lg bg-green-500 text-black font-bold hover:bg-green-600 hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl"
-        >
-          Confirm
-        </button>
-        <button
-          @click="editReport"
-          class="px-8 py-3 rounded-lg bg-red-500 text-black font-bold hover:bg-red-600 hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl"
-        >
-          Edit
-        </button>
       </div>
     </div>
 
     <!-- Success -->
     <div
       v-if="submitted"
-      class="bg-gray-800 p-8 rounded-2xl text-center w-full max-w-md sm:max-w-lg lg:max-w-xl shadow-2xl border border-gray-700"
+      class="max-w-2xl mx-auto"
     >
-      <h3 class="text-2xl font-bold text-green-400 mb-4">Report Submitted!</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg text-center">
+        <div class="text-5xl mb-4">✅</div>
+        <h2 class="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Report Submitted!</h2>
 
-      <!-- 🔸 Dynamic success message -->
-      <p v-if="reportType === 'lost'" class="text-gray-300 mb-6">
-        Your lost item report has been successfully submitted. You will be notified if a matching found item is reported.
-      </p>
-      <p v-else class="text-gray-300 mb-6">
-        Your found item report has been successfully submitted. You will be notified if a matching lost item claim is verified.
-      </p>
+        <p class="text-gray-600 dark:text-gray-300 text-lg mb-8">
+          {{ reportType === "lost" 
+            ? "Your lost item report has been submitted. You'll be notified if a matching item is found."
+            : "Your found item report has been submitted. The owner will be notified if they match."
+          }}
+        </p>
 
-      <!-- 🔸 Button changed to "Okay" -->
+        <button
+          @click="resetForm"
+          class="px-8 py-3 rounded-lg bg-emerald-500 text-white font-bold text-lg hover:bg-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+        >
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔍 IMAGE MODAL (added from working template) -->
+  <div
+    v-if="showImageModal"
+    @click="closeImageModal"
+    class="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4"
+  >
+    <div class="relative max-w-3xl w-full" @click.stop>
+      <img
+        :src="enlargedImageSrc"
+        alt="Enlarged Preview"
+        class="w-full h-auto rounded-xl shadow-2xl"
+      />
       <button
-        @click="resetForm"
-        class="px-6 py-3 rounded-lg bg-yellow-500 text-black font-bold hover:bg-yellow-600 hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl"
+        @click="closeImageModal"
+        class="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-all duration-200"
       >
-        Okay
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
       </button>
     </div>
   </div>
+
 </template>
 
 <script setup>
@@ -462,8 +534,13 @@ const qrDetected = ref(false);
 const qrDetectionFailed = ref(false);
 const isAnalyzing = ref(false);
 const detectedObjects = ref([]);
+const objectDetected = ref(false);
 
-const yoloApiUrl = "http://localhost:8000";
+// Image Modal state
+const showImageModal = ref(false);
+const enlargedImageSrc = ref(null);
+
+const yoloApiUrl = "http://localhost:8080";
 const backendUrl = "http://localhost:5000/api";
 
 const idForm = reactive({
@@ -489,8 +566,38 @@ const generalForm = reactive({
   preview: null,
 });
 
+
+//nov13
+
 const reviewData = reactive({});
-const suggestions = ["Phone", "Wallet", "Keys", "ID", "Bag", "Laptop", "Charger", "Earphones"];
+// Item suggestions from YOLO class mapping
+const suggestions = [
+  "Airpods",
+  "Backpack",
+  "Calculator",
+  "Cap",
+  "Eyeglasses",
+  "Flash-drive",
+  "Handbag",
+  "Headphone",
+  "Helmet",
+  "Key",
+  "Laptop",
+  "Laptop Bag",
+  "Phone Charger",
+  "Powerbank",
+  "Sling bag",
+  "Smart Watch",
+  "Wallet",
+  "Smartphone",
+  "Tablet",
+  "Totebag",
+  "Tumbler",
+  "Umbrella",
+  "Watch"
+];
+//end of nov13
+
 const filteredSuggestions = ref([]);
 
 // ✅ Automatically save progress (only core state)
@@ -701,13 +808,14 @@ const extractStudentIdFromQR = (qrText) => {
 
 const analyzeImageWithYOLO = async (file) => {
   isAnalyzing.value = true;
+  objectDetected.value = false;
   detectedObjects.value = [];
 
   try {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${yoloApiUrl}/detect/`, {
+    const response = await fetch(`${yoloApiUrl}/predict_yolo`, {
       method: "POST",
       body: formData,
     });
@@ -721,7 +829,8 @@ const analyzeImageWithYOLO = async (file) => {
       const topObject = detectedObjects.value.reduce((prev, curr) =>
         curr.confidence > prev.confidence ? curr : prev
       );
-      generalForm.name = topObject.class_name || "";
+      generalForm.name = topObject.classname || "";
+      objectDetected.value = true;
       detectedObjects.value = [topObject];
     }
   } catch (error) {
@@ -742,6 +851,7 @@ const removeImage = (formType) => {
     generalForm.preview = null;
     generalForm.file = null;
     detectedObjects.value = [];
+    objectDetected.value = false;
   }
 };
 
@@ -833,4 +943,14 @@ const formatDateTime = (dt) => {
 const showSmartphoneCover = computed(() => {
   return generalForm.name.toLowerCase().includes("phone") || generalForm.name.toLowerCase().includes("smartphone");
 });
+
+const openImageModal = (imageSrc) => {
+  enlargedImageSrc.value = imageSrc;
+  showImageModal.value = true;
+};
+
+const closeImageModal = () => {
+  showImageModal.value = false;
+  enlargedImageSrc.value = null;
+};
 </script>

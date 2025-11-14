@@ -1,13 +1,13 @@
 <template>
   <div
-    class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 animate-fade-in"
+    class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-gray-100 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 animate-fade-in"
   >
     <div
-      class="w-full max-w-2xl bg-gray-900/80 border border-gray-800 rounded-2xl shadow-lg p-8 space-y-6"
+      class="w-full max-w-2xl bg-white/90 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg p-8 space-y-6"
     >
       <header class="text-center space-y-2">
-        <h1 class="text-3xl font-bold text-yellow-400">Administrator Access</h1>
-        <p class="text-sm text-gray-400">
+        <h1 class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">Administrator Access</h1>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
           Only authorized campus administrators may sign in. Use your @carsu.edu.ph email address.
         </p>
       </header>
@@ -15,9 +15,9 @@
       <section class="grid md:grid-cols-2 gap-6">
         <div class="space-y-4">
           <div
-            class="bg-gray-800/60 border border-gray-700 rounded-xl p-4 text-sm text-gray-300 space-y-2"
+            class="bg-gray-100/80 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700 rounded-xl p-4 text-sm text-gray-700 dark:text-gray-300 space-y-2"
           >
-            <p class="font-semibold text-yellow-300">Manual Sign In</p>
+            <p class="font-semibold text-yellow-600 dark:text-yellow-300">Manual Sign In</p>
             <p>
               Admin accounts are provisioned by the system team. Enter the email and password associated with
               your administrator profile.
@@ -25,25 +25,25 @@
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-2 text-sm font-medium">Email</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Email</label>
             <input
               v-model="loginEmail"
               type="email"
               autocomplete="username"
               placeholder="admin.name@carsu.edu.ph"
-              class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
+              class="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
             />
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-2 text-sm font-medium">Password</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Password</label>
             <div class="relative">
               <input
                 v-model="loginPassword"
                 :type="showAdminLoginPassword ? 'text' : 'password'"
                 autocomplete="current-password"
                 placeholder="Enter password"
-                class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
+                class="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
               />
               <button type="button" @click="showAdminLoginPassword = !showAdminLoginPassword" class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-yellow-400">
                 <svg v-if="showAdminLoginPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -66,10 +66,10 @@
           </button>
         </div>
 
-        <div class="flex flex-col justify-between bg-gray-900/70 border border-gray-800 rounded-xl p-5 space-y-4">
+        <div class="flex flex-col justify-between bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 rounded-xl p-5 space-y-4">
           <div>
-            <p class="font-semibold text-gray-100">Sign in with Google</p>
-            <p class="text-sm text-gray-400 mt-1">
+            <p class="font-semibold text-gray-900 dark:text-gray-100">Sign in with Google</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Use your university Google account. Access is granted only to emails that have administrator
               privileges assigned in the system.
             </p>
@@ -79,7 +79,7 @@
             <div id="googleButtonAdmin" class="w-full flex justify-center"></div>
           </div>
 
-          <ul class="text-xs text-gray-500 space-y-1">
+          <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
             <li>• Successful login routes directly to the admin dashboard.</li>
             <li>• Contact the system maintainer if your account needs access.</li>
           </ul>
@@ -87,16 +87,16 @@
       </section>
 
       <div class="space-y-2">
-        <p v-if="errorMessage" class="text-sm text-red-400 text-center">
+        <p v-if="errorMessage" class="text-sm text-red-500 dark:text-red-400 text-center">
           {{ errorMessage }}
         </p>
-        <p v-if="successMessage" class="text-sm text-green-400 text-center">
+        <p v-if="successMessage" class="text-sm text-green-500 dark:text-green-400 text-center">
           {{ successMessage }}
         </p>
       </div>
 
-      <div class="flex flex-col items-center space-y-2 text-sm text-gray-400">
-        <router-link to="/login" class="text-yellow-400 hover:underline">
+      <div class="flex flex-col items-center space-y-2 text-sm text-gray-600 dark:text-gray-400">
+        <router-link to="/login" class="text-yellow-600 dark:text-yellow-400 hover:underline">
           Back to user & security sign in
         </router-link>
       </div>

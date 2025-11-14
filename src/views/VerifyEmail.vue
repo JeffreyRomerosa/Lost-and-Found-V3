@@ -1,38 +1,38 @@
 <template>
-  <div class="min-h-screen bg-gray-900 flex items-center justify-center px-4">
-    <div class="max-w-xl w-full p-8 bg-gray-800 rounded-2xl shadow-2xl border border-gray-700">
+  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-4">
+    <div class="max-w-xl w-full p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
       <!-- Status Icon -->
       <div class="flex justify-center mb-6">
-        <div v-if="status === 'checking'" class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-400"></div>
-        <div v-else-if="status === 'success'" class="bg-green-900/30 p-4 rounded-full">
-          <svg class="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div v-if="status === 'checking'" class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500 dark:border-yellow-400"></div>
+        <div v-else-if="status === 'success'" class="bg-green-100/80 dark:bg-green-900/30 p-4 rounded-full">
+          <svg class="h-8 w-8 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
           </svg>
         </div>
-        <div v-else-if="status === 'failed'" class="bg-red-900/30 p-4 rounded-full">
-          <svg class="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div v-else-if="status === 'failed'" class="bg-red-100/80 dark:bg-red-900/30 p-4 rounded-full">
+          <svg class="h-8 w-8 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </div>
       </div>
 
       <!-- Title and Message -->
-      <h2 class="text-2xl font-bold text-center mb-4 text-yellow-400">Email Verification</h2>
+      <h2 class="text-2xl font-bold text-center mb-4 text-yellow-600 dark:text-yellow-400">Email Verification</h2>
       <div class="text-center mb-8">
-        <p v-if="status === 'checking'" class="text-gray-300 text-lg">
+        <p v-if="status === 'checking'" class="text-gray-700 dark:text-gray-300 text-lg">
           Verifying your email address<span class="animate-pulse">...</span>
         </p>
         <div v-else-if="status === 'success'" class="space-y-2">
-          <p class="text-green-400 text-lg font-medium">Verification Successful!</p>
-          <p class="text-gray-400">Your email has been verified. You can now proceed to login.</p>
-          <p v-if="countdown > 0" class="text-sm text-gray-500">
+          <p class="text-green-600 dark:text-green-400 text-lg font-medium">Verification Successful!</p>
+          <p class="text-gray-600 dark:text-gray-400">Your email has been verified. You can now proceed to login.</p>
+          <p v-if="countdown > 0" class="text-sm text-gray-500 dark:text-gray-500">
             Redirecting to login in {{ countdown }} seconds...
           </p>
         </div>
         <div v-else-if="status === 'failed'" class="space-y-2">
-          <p class="text-red-400 text-lg font-medium">Verification Failed</p>
-          <p class="text-gray-400">The verification link has expired or is invalid.</p>
-          <p class="text-gray-400">Please request a new verification email.</p>
+          <p class="text-red-600 dark:text-red-400 text-lg font-medium">Verification Failed</p>
+          <p class="text-gray-600 dark:text-gray-400">The verification link has expired or is invalid.</p>
+          <p class="text-gray-600 dark:text-gray-400">Please request a new verification email.</p>
         </div>
       </div>
 
@@ -42,13 +42,13 @@
         <router-link
           v-if="loginPath"
           :to="loginPath"
-          class="w-full py-3 px-4 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-medium rounded-xl text-center transition-colors duration-300"
+          class="w-full py-3 px-4 bg-yellow-500 hover:bg-yellow-400 text-black font-medium rounded-xl text-center transition duration-300"
         >
           Go to Login
         </router-link>
         <router-link 
           to="/" 
-          class="w-full py-3 px-4 bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium rounded-xl text-center transition-colors duration-300">
+          class="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-300 font-medium rounded-xl text-center transition duration-300">
           Return to Home
         </router-link>
       </div>

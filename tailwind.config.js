@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class', // <---  dark mode toggling
   content: [
     "./public/index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",

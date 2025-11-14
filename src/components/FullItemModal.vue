@@ -3,7 +3,7 @@
     v-if="show"
     class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
   >
-    <div class="bg-gray-800 p-6 rounded-2xl shadow-xl max-w-lg w-full relative">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl max-w-lg w-full relative">
       <!-- Close Button -->
       <button
         class="absolute top-3 right-3 text-gray-400 hover:text-white"
@@ -20,8 +20,8 @@
       />
 
       <!-- Info -->
-      <h2 class="text-2xl font-bold mb-2">{{ item.title }}</h2>
-      <p class="text-gray-300">{{ item.description }}</p>
+      <h2 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{{ item.title }}</h2>
+      <p class="text-gray-600 dark:text-gray-300">{{ item.description }}</p>
     </div>
   </div>
 </template>

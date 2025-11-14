@@ -1,442 +1,557 @@
 <template>
   <div
-    class="relative min-h-screen overflow-y-auto bg-gray-950 flex flex-col items-center pb-24 pt-20"
+    class="relative min-h-screen bg-white dark:bg-gray-950 flex flex-col items-center pb-24 pt-20 transition-colors duration-200"
   >
-    <!-- ✅ Top-Right Profile & Notification -->
-    <div class="absolute top-6 right-6 flex items-center space-x-4">
-      <!-- 🔔 Notifications -->
-      <div class="relative">
-        <button
-          @click="toggleNotifications"
-          class="relative w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center shadow-lg hover:bg-yellow-500 transition"
-          title="Notifications"
-        >
-          <svg
-            class="w-6 h-6 text-black"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            />
-          </svg>
+    <!-- Header with step indicator -->
+    <div class="w-full max-w-4xl px-6 mb-12">
+      <div class="flex justify-between items-center">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white">
+          <text-balance>Find Your Lost Item</text-balance>
+        </h1>
+        
 
-          <span
-            v-if="unreadNotificationCount > 0"
-            class="absolute top-1 right-1 bg-red-600 text-white text-xs rounded-full px-2 py-0.5 font-bold"
-          >
-            {{ unreadNotificationCount }}
-          </span>
-        </button>
-
-        <!-- Notifications Dropdown -->
-        <div
-          v-if="showNotifications"
-          class="absolute right-0 mt-2 w-80 bg-yellow-100 rounded-xl shadow-lg z-50"
-        >
-          <div class="p-4 border-b border-yellow-300">
-            <h2 class="text-lg font-semibold text-yellow-900 mb-2">
-              Notifications
-            </h2>
-          </div>
-          <ul v-if="notifications.length > 0">
-            <li
-              v-for="notif in notifications"
-              :key="notif.id"
-              class="text-yellow-900 py-3 px-4 border-b border-yellow-300"
-            >
-              <p class="font-medium mb-1">{{ notif.message }}</p>
-            </li>
-          </ul>
-          <div v-else class="p-4 text-yellow-900 text-center">
-            No new notifications.
-          </div>
+           <!-- Added step progress indicator -->
+        <div v-if="step > 1" class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <span class="font-medium">Step {{ step }} of 4</span>
         </div>
       </div>
-
-      <!-- 👤 Profile -->
-      <div class="relative">
-        <button
-          @click="showProfileMenu = !showProfileMenu"
-          class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center shadow-lg hover:bg-blue-700 transition overflow-hidden border-2 border-yellow-400"
-          title="Profile"
-        >
-          <template v-if="user && user.profile_picture">
-            <img
-              :src="user.profile_picture"
-              alt="Profile"
-              class="w-full h-full object-cover rounded-full"
-            />
-          </template>
-          <template v-else>
-            <span class="text-white text-xl font-bold">
-              {{ profileInitial }}
-            </span>
-          </template>
-        </button>
-
+      
+      <!-- Progress bar -->
+      <div class="mt-8 w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1">
         <div
-          v-if="showProfileMenu"
-          class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-50"
-        >
-          <ul>
-            <li>
-              <button
-                @click="goToProfile"
-                class="w-full text-left px-4 py-2 hover:bg-blue-100 flex items-center space-x-2"
-              >
-                <span>Go to Profile</span>
-              </button>
-            </li>
-            <li>
-              <button
-                @click="logout"
-                class="w-full text-left px-4 py-2 hover:bg-blue-100 text-red-600"
-              >
-                Logout
-              </button>
-            </li>
-          </ul>
-        </div>
+          class="bg-emerald-500 h-1 rounded-full transition-all duration-300"
+          :style="{ width: `${(step / 4) * 100}%` }"
+        ></div>
       </div>
     </div>
 
-    <!-- 🟡 Page Title -->
-    <h1 class="text-3xl font-semibold mb-10 mt-16 text-yellow-400">
-      Search Found Items in Security Custody
-    </h1>
-
     <!-- Step 1: Choose Category -->
-    <div v-if="step === 1" class="flex flex-col gap-4 w-full max-w-sm text-center">
-      <h2 class="text-xl text-white font-semibold mb-3">
-        What type of item did you lose?
-      </h2>
-      <button
-        @click="selectCategory('id')"
-        class="py-3 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition"
-      >
-        Student ID
-      </button>
-      <button
-        @click="selectCategory('general')"
-        class="py-3 rounded-xl bg-purple-500 text-white font-semibold hover:bg-purple-600 transition"
-      >
-        General Item
-      </button>
+    <div v-if="step === 1" class="w-full max-w-2xl px-6">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+          What did you lose?
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400">
+          Select the type of item to help us find it faster
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Redesigned category buttons with better styling and icons -->
+        <button
+          @click="selectCategory('id')"
+          class="p-8 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-gray-900 transition-all duration-200 text-left group"
+        >
+          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🎓</div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Student ID</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Scan or enter your ID number</p>
+        </button>
+
+        <button
+          @click="selectCategory('general')"
+          class="p-8 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-amber-500 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-gray-900 transition-all duration-200 text-left group"
+        >
+          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📦</div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">General Item</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Describe or show your item</p>
+        </button>
+      </div>
     </div>
 
     <!-- Step 2: Choose Search Method -->
-    <div
-      v-if="step === 2"
-      class="flex flex-col items-center text-center mt-6 w-full max-w-md bg-gray-900 p-6 rounded-2xl shadow-lg"
-    >
-      <h2 class="text-xl text-yellow-400 font-semibold mb-3">
-        How do you want to search your {{ category === 'id' ? 'Student ID' : 'general' }}?
-      </h2>
+    <div v-if="step === 2" class="w-full max-w-2xl px-6">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+          How would you like to search?
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400">
+          {{ category === 'id' ? 'Choose how to identify your Student ID' : 'Pick your preferred search method' }}
+        </p>
+      </div>
 
-      <button
-        @click="selectMethod('image')"
-        class="py-3 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition mb-3 w-full"
-      >
-        Upload Image
-      </button>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Redesigned method selection with better visual hierarchy -->
+        <button
+          @click="selectMethod('image')"
+          class="p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 border-2 border-blue-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200 text-left group"
+        >
+          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📸</div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Upload Image</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {{ category === 'id' ? 'Scan QR code' : 'Use AI to detect items' }}
+          </p>
+        </button>
 
-      <button
-        @click="selectMethod('manual')"
-        class="py-3 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition w-full"
-      >
-        Enter {{ category === 'id' ? 'Student ID' : 'Item Name' }}
-      </button>
+        <button
+          @click="selectMethod('manual')"
+          class="p-8 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-gray-800 dark:to-gray-900 border-2 border-emerald-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all duration-200 text-left group"
+        >
+          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">✏️</div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Manual Entry</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {{ category === 'id' ? 'Type ID number' : 'Describe the item' }}
+          </p>
+        </button>
+      </div>
 
-      <button
-        class="mt-3 text-gray-400 text-sm underline hover:text-gray-300"
-        @click="step = 1"
-      >
-        ← Back
-      </button>
+      <!-- Better back button styling -->
+      <div class="mt-8 flex justify-center">
+        <button
+          @click="step = 1"
+          class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
+        >
+          ← Back to Category
+        </button>
+      </div>
     </div>
 
     <!-- Step 3A: Upload Image for General Items (AI-assisted) -->
     <div
       v-if="step === 3 && searchMethod === 'image' && category === 'general'"
-      class="w-full max-w-4xl mt-6 bg-gray-900 p-6 rounded-2xl shadow-lg"
+      class="w-full max-w-4xl px-6"
     >
-      <div class="text-left mb-4">
-        <h2 class="text-xl font-semibold text-yellow-400">Lost and Found Objects using AI</h2>
-        <p class="text-sm text-gray-300">Upload an image to detect objects. Left: your upload preview. Right: prediction result.</p>
+      <div class="mb-8">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+          Describe your item with a photo
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400">
+          Upload a clear image and AI will help detect what you lost
+        </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Left column: Preview + Upload -->
-        <div class="flex flex-col">
-          <div class="w-full h-64 bg-white/80 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center">
-            <template v-if="previewImageCurrent">
-              <img :src="previewImageCurrent" alt="Preview" class="object-contain w-full h-full" />
-            </template>
-            <template v-else>
-              <div class="text-gray-500">Preview will appear here</div>
-            </template>
+      <!-- Improved two-column layout with better visual separation -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Left column: Upload -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            Your Photo
+          </label>
+          <div class="mb-6">
+            <div class="relative border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 text-center hover:border-blue-500 dark:hover:border-blue-500 transition-colors cursor-pointer group">
+              <input
+                type="file"
+                @change="handleImageUpload"
+                id="file"
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div v-if="!previewImageCurrent" class="py-12">
+                <div class="text-4xl mb-3">📷</div>
+                <p class="text-gray-900 dark:text-white font-medium">Click or drag to upload</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">PNG, JPG up to 10MB</p>
+              </div>
+              <div v-else class="relative">
+                <img :src="previewImageCurrent" alt="Preview" class="w-full h-64 object-cover rounded-lg" />
+              </div>
+            </div>
           </div>
+        
 
-          <form @submit.prevent="submitForm" enctype="multipart/form-data" class="mt-4 w-full flex flex-col gap-3">
-            <input
-              type="file"
-              @change="handleImageUpload"
-              id="file"
-              class="block w-full text-sm text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-yellow-400 file:text-black hover:file:bg-yellow-500"
-            />
-
+          <form @submit.prevent="submitForm" class="space-y-3">
             <button
               type="submit"
               :disabled="!hasSelectedFile"
-              :class="hasSelectedFile ? 'bg-yellow-500 hover:bg-yellow-600 text-black' : 'bg-gray-700 text-gray-400 cursor-not-allowed'"
-              class="py-2 px-4 rounded-lg font-semibold"
+              :class="hasSelectedFile 
+                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'"
+              class="w-full py-3 px-4 rounded-lg font-semibold transition-colors"
             >
-              Start Prediction
+              {{ hasSelectedFile ? 'Analyze Image' : 'Select an image first' }}
             </button>
           </form>
         </div>
 
-        <!-- Right column: Predicted image + classes -->
-        <div class="flex flex-col">
-          <div class="w-full h-64 bg-white/80 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center">
-            <template v-if="predictedImage">
-              <img :src="'data:image/jpeg;base64,' + predictedImage" alt="Prediction Result" class="object-contain w-full h-full" />
-            </template>
-            <template v-else>
-              <div class="text-gray-500">Prediction result will appear here</div>
-            </template>
-          </div>
+        <!-- Right column: Results -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            AI Detection Result
+          </label>
+          <div class="space-y-4">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-gray-50 dark:bg-gray-900/50 min-h-64 flex items-center justify-center">
+              <template v-if="predictedImage">
+                <img :src="'data:image/jpeg;base64,' + predictedImage" alt="Prediction Result" class="w-full h-full object-cover rounded-lg" />
+              </template>
+              <template v-else>
+                <div class="text-center text-gray-500 dark:text-gray-400">
+                  <div class="text-4xl mb-2">🔍</div>
+                  <p>Results will appear here</p>
+                </div>
+              </template>
+            </div>
 
-          <div v-if="classNames" class="mt-4 bg-white/90 p-3 rounded-lg">
-            <h4 class="font-semibold text-gray-800">Detected Object:</h4>
-            <div class="mt-2 text-gray-700">
-              <span class="font-medium">{{ classNames }}</span>
-              <span v-if="detectedConfidence !== null" class="text-sm text-gray-500"> — {{ detectedConfidence }}</span>
+            <div v-if="classNames" class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Detected Object</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ classNames }}</p>
+              <p v-if="detectedConfidence" class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Confidence: {{ detectedConfidence }}
+              </p>
+            </div>
+
+            <div v-if="errorMessage" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+              <p class="text-red-700 dark:text-red-400 text-sm">{{ errorMessage }}</p>
             </div>
           </div>
-
-          <div v-if="errorMessage" class="mt-4 text-red-400">{{ errorMessage }}</div>
         </div>
       </div>
-      <button
-        class="mt-3 text-gray-400 text-sm underline hover:text-gray-300"
-        @click="step = 2"
-      >
-        ← Back
-      </button>
+
+      <div class="mt-8 flex justify-center">
+        <button
+          @click="step = 2"
+          class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
+        >
+          ← Back
+        </button>
+      </div>
     </div>
 
     <!-- Step 3B: Upload Student ID Image (QR scan) -->
     <div
       v-if="step === 3 && searchMethod === 'image' && category === 'id'"
-      class="w-full max-w-3xl mt-6 bg-gray-900 p-6 rounded-2xl shadow-lg"
+      class="w-full max-w-4xl px-6"
     >
-      <div class="text-left mb-4">
-        <h2 class="text-xl font-semibold text-green-400">Scan Student ID QR</h2>
-        <p class="text-sm text-gray-300">Upload a clear photo of the ID. We will read the QR code to fill the student number, then you can search for matches.</p>
+      <div class="mb-8">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+          Scan your Student ID
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400">
+          Take a clear photo of the QR code on your Student ID
+        </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- ID Preview + Upload -->
-        <div class="flex flex-col">
-          <div class="w-full h-64 bg-white/80 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center">
-            <template v-if="previewImageCurrent">
-              <img :src="previewImageCurrent" alt="ID Preview" class="object-contain w-full h-full" />
-            </template>
-            <template v-else>
-              <div class="text-gray-500">ID preview will appear here</div>
-            </template>
-          </div>
-
-          <div class="mt-4 w-full flex flex-col gap-3">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Upload -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            ID Photo
+          </label>
+          <div class="relative border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 text-center hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors cursor-pointer group mb-4">
             <input
               type="file"
               accept="image/*"
               @change="handleImageUpload"
-              class="block w-full text-sm text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-yellow-400 file:text-black hover:file:bg-yellow-500"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-
-            <button
-              type="button"
-              @click="resetIdUpload"
-              class="py-2 px-4 rounded-lg font-semibold bg-gray-800 text-gray-300 hover:bg-gray-700 transition"
-              v-if="selectedFileId"
-            >
-              Clear Image
-            </button>
-          </div>
-        </div>
-
-        <!-- QR status + extracted ID -->
-        <div class="flex flex-col">
-          <div class="bg-white/90 p-3 rounded-lg space-y-2">
-            <h4 class="font-semibold text-gray-800">QR Scan Status</h4>
-            <p v-if="isExtractingQR" class="text-blue-600 text-sm flex items-center gap-2">
-              <span>🔍</span><span>Analyzing image for QR code…</span>
-            </p>
-            <p v-else-if="qrDetected" class="text-green-600 text-sm flex items-center gap-2">
-              <span>✅</span><span>QR code detected! Student ID auto-filled below.</span>
-            </p>
-            <p v-else-if="qrDetectionFailed" class="text-yellow-600 text-sm flex items-center gap-2">
-              <span>⚠️</span><span>No QR code found. Try another angle or clearer photo.</span>
-            </p>
-            <p v-if="qrErrorMessage" class="text-red-500 text-sm">{{ qrErrorMessage }}</p>
-            <p v-if="!isExtractingQR && !qrDetected && !qrDetectionFailed && !qrErrorMessage" class="text-gray-600 text-sm">
-              Upload an image to start scanning.
-            </p>
-          </div>
-
-          <div class="mt-4 text-left">
-            <label class="block text-sm text-gray-300 mb-2">Detected Student ID</label>
-            <input
-              v-model="studentId"
-              @input="formatStudentId"
-              placeholder="Auto-filled after QR scan"
-              class="w-full bg-gray-800 border border-gray-700 p-3 rounded-lg text-gray-300 outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <p v-if="studentId && !isValidStudentId" class="text-red-500 text-sm mt-2">
-              ❌ Invalid format. Use 3 digits + dash + 5 digits.
-            </p>
+            <div v-if="!previewImageCurrent" class="py-12">
+              <div class="text-4xl mb-3">🎓</div>
+              <p class="text-gray-900 dark:text-white font-medium">Upload ID photo</p>
+            </div>
+            <div v-else class="relative">
+              <img :src="previewImageCurrent" alt="ID Preview" class="w-full h-64 object-cover rounded-lg" />
+            </div>
           </div>
 
           <button
             type="button"
-            :disabled="isExtractingQR || !studentId || !isValidStudentId"
-            @click="performSearch"
-            class="mt-4 py-2 px-4 rounded-lg font-semibold transition"
-            :class="(isExtractingQR || !studentId || !isValidStudentId)
-              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-              : 'bg-yellow-500 hover:bg-yellow-600 text-black'"
+            @click="resetIdUpload"
+            v-if="selectedFileId"
+            class="w-full py-2 px-4 rounded-lg font-semibold bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
           >
-            Search Using Student ID
+            Clear Image
           </button>
+        </div>
+
+        <!-- QR Results -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            Detected Student ID
+          </label>
+          <div class="space-y-4">
+            <!-- Status -->
+            <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">Scan Status</p>
+              <div class="space-y-2">
+                <p v-if="isExtractingQR" class="text-blue-600 dark:text-blue-400 text-sm flex items-center gap-2">
+                  <span class="animate-spin">⏳</span> Analyzing QR code...
+                </p>
+                <p v-else-if="qrDetected" class="text-emerald-600 dark:text-emerald-400 text-sm flex items-center gap-2">
+                  <span>✅</span> QR code detected!
+                </p>
+                <p v-else-if="qrDetectionFailed" class="text-amber-600 dark:text-amber-400 text-sm flex items-center gap-2">
+                  <span>⚠️</span> No QR code found
+                </p>
+                <p v-if="qrErrorMessage" class="text-red-600 dark:text-red-400 text-sm">{{ qrErrorMessage }}</p>
+              </div>
+            </div>
+
+            <!-- Student ID Input -->
+            <div>
+              <label class="block text-sm text-gray-600 dark:text-gray-400 mb-2">Student ID Number</label>
+              <input
+                v-model="studentId"
+                @input="formatStudentId"
+                placeholder="e.g. 221-01878"
+                class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 p-3 rounded-lg text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              />
+              <p v-if="studentId && !isValidStudentId" class="text-red-600 dark:text-red-400 text-sm mt-2">
+                ❌ Format: 3 digits + dash + 5 digits
+              </p>
+            </div>
+
+            <!-- Search Button -->
+            <button
+              type="button"
+              :disabled="isExtractingQR || !studentId || !isValidStudentId"
+              @click="performSearch"
+              class="w-full py-3 px-4 rounded-lg font-semibold transition-colors"
+              :class="(isExtractingQR || !studentId || !isValidStudentId)
+                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white'"
+            >
+              Search Using Student ID
+            </button>
+          </div>
         </div>
       </div>
 
-      <button
-        class="mt-3 text-gray-400 text-sm underline hover:text-gray-300"
-        @click="step = 2"
-      >
-        ← Back
-      </button>
+      <div class="mt-8 flex justify-center">
+        <button
+          @click="step = 2"
+          class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
+        >
+          ← Back
+        </button>
+      </div>
     </div>
-
-    
 
     <!-- Step 3C: Manual Input -->
     <div
       v-if="step === 3 && searchMethod === 'manual'"
-      class="flex flex-col items-center text-center mt-6 w-full max-w-md bg-gray-900 p-6 rounded-2xl shadow-lg"
+      class="w-full max-w-2xl px-6"
     >
-      <h2
-        class="text-xl font-semibold mb-3"
-        :class="category === 'id' ? 'text-green-400' : 'text-purple-400'"
-      >
-        Enter {{ category === 'id' ? 'Student ID' : 'Item Name' }}
-      </h2>
-
-      <!-- Student ID Input -->
-      <div v-if="category === 'id'" class="w-full mb-6">
-        <input
-          v-model="studentId"
-          @input="formatStudentId"
-          placeholder="e.g. 221-01878"
-          class="w-full bg-gray-800 border border-gray-700 p-3 rounded-lg text-gray-300 outline-none focus:ring-2 focus:ring-yellow-500"
-        />
-        <p v-if="studentId && !isValidStudentId" class="text-red-500 text-sm mt-2">
-          ❌ Invalid format. Use 3 digits + dash + 5 digits.
+      <div class="text-center mb-10">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+          {{ category === 'id' ? 'Enter Your Student ID' : 'Describe Your Item' }}
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400">
+          {{ category === 'id' ? 'Type your student ID number to search' : 'Tell us what you lost' }}
         </p>
       </div>
 
-      <!-- Item Name Input with Suggestions -->
-      <div v-if="category === 'general'" class="w-full mb-6 relative">
-        <input
-          v-model="itemName"
-          @input="filterSuggestions"
-          @focus="showSuggestions = true"
-          @blur="hideSuggestions"
-          placeholder="e.g. Black Umbrella"
-          class="w-full bg-gray-800 border border-gray-700 p-3 rounded-lg text-gray-300 outline-none focus:ring-2 focus:ring-purple-500"
-        />
-        <ul
-          v-if="showSuggestions && filteredSuggestions && filteredSuggestions.length"
-          class="absolute z-50 mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-lg text-gray-300 max-h-48 overflow-y-auto"
-        >
-          <li
-            v-for="(suggestion, index) in filteredSuggestions"
-            :key="index"
-            @mousedown.prevent="selectSuggestion(suggestion)"
-            class="px-4 py-2 cursor-pointer hover:bg-yellow-500 hover:text-black transition"
+      <div class="space-y-6">
+        <!-- Student ID Input -->
+        <div v-if="category === 'id'">
+          <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+            Student ID Number
+          </label>
+          <input
+            v-model="studentId"
+            @input="formatStudentId"
+            placeholder="e.g. 221-01878"
+            class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 p-4 rounded-lg text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          />
+          <p v-if="studentId && !isValidStudentId" class="text-red-600 dark:text-red-400 text-sm mt-2">
+            ❌ Format: 3 digits + dash + 5 digits (e.g. 221-01878)
+          </p>
+        </div>
+
+        <!-- Item Name Input -->
+        <div v-if="category === 'general'" class="relative">
+          <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+            Item Name
+          </label>
+          <input
+            v-model="itemName"
+            @input="filterSuggestions"
+            @focus="showSuggestions = true"
+            @blur="hideSuggestions"
+            placeholder="e.g. Black Umbrella, Silver Laptop"
+            class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 p-4 rounded-lg text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+          />
+          
+          <!-- Suggestions Dropdown -->
+          <ul
+            v-if="showSuggestions && filteredSuggestions && filteredSuggestions.length"
+            class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto"
           >
-            {{ suggestion }}
-          </li>
-        </ul>
+            <li
+              v-for="(suggestion, index) in filteredSuggestions"
+              :key="index"
+              @mousedown.prevent="selectSuggestion(suggestion)"
+              class="px-4 py-3 cursor-pointer hover:bg-amber-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-300 transition-colors"
+            >
+              {{ suggestion }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Search Button -->
+        <button
+          :disabled="(category === 'id' && !isValidStudentId) || (category === 'general' && !itemName)"
+          @click="performSearch"
+          class="w-full py-4 px-6 rounded-lg font-semibold transition-colors"
+          :class="((category === 'id' && !isValidStudentId) || (category === 'general' && !itemName))
+            ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+            : 'bg-amber-500 hover:bg-amber-600 text-white'"
+        >
+          Start Search
+        </button>
       </div>
 
-      <button
-        :disabled="(category === 'id' && !isValidStudentId) || (category === 'general' && !itemName)"
-        @click="performSearch"
-        class="w-full py-3 rounded-xl font-semibold transition"
-        :class="((category === 'id' && !isValidStudentId) || (category === 'general' && !itemName))
-          ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-          : 'bg-yellow-500 hover:bg-yellow-600 text-black'"
-      >
-        Start Search
-      </button>
-
-      <button
-        class="mt-3 text-gray-400 text-sm underline hover:text-gray-300"
-        @click="step = 2"
-      >
-        ← Back
-      </button>
+      <div class="mt-8 flex justify-center">
+        <button
+          @click="step = 2"
+          class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
+        >
+          ← Back
+        </button>
+      </div>
     </div>
 
     <!-- Step 4: Results -->
-    <div v-if="step === 4" class="mt-10 w-full max-w-4xl text-center">
-      <h2 class="text-2xl text-yellow-400 font-semibold mb-6">Search Results</h2>
+    <div v-if="step === 4" class="w-full max-w-6xl px-6">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-semibold text-gray-900 dark:text-white mb-2">
+          Search Results
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400">
+          {{ results.length > 0 ? `Found ${results.length} matching item${results.length !== 1 ? 's' : ''}` : noResultsMessage }}
+        </p>
+      </div>
 
-      <div v-if="loading" class="text-gray-400 italic">Searching...</div>
-
-      <div
-        v-if="!loading && results.length > 0"
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
-      >
-        <div
-          v-for="(item, index) in results"
-          :key="index"
-          class="bg-gray-900 p-4 rounded-xl shadow-lg"
-        >
-          <img
-            :src="formatImageUrl(item.image_url)"
-            alt="Found Item"
-            class="w-full h-48 object-cover rounded-lg mb-3"
-          />
-          <h3 class="text-lg font-semibold text-white">{{ item.name }}</h3>
-          <p class="text-gray-400">{{ item.category }}</p>
-          <p class="text-gray-400">Location: {{ item.location }}</p>
-          <p v-if="item.student_id" class="text-yellow-400">
-            Tagged Student ID: {{ item.student_id }}
-          </p>
+      <div v-if="loading" class="text-center py-12">
+        <div class="inline-block">
+          <div class="animate-spin text-4xl mb-4">⏳</div>
+          <p class="text-gray-600 dark:text-gray-400">Searching...</p>
         </div>
       </div>
 
-      <p v-else-if="!loading" class="text-gray-400">{{ noResultsMessage }}</p>
-
-      <button
-        class="mt-6 py-3 px-6 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition"
-        @click="resetSearch"
+      <!-- Results Grid -->
+      <div
+        v-if="!loading && results.length > 0"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
       >
-        New Search
-      </button>
+        <!-- Improved result card styling with better visual hierarchy -->
+        <div
+          v-for="(item, index) in results"
+          :key="index"
+          class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:shadow-lg dark:hover:shadow-lg/50 transition-shadow duration-300"
+        >
+          <div class="relative overflow-hidden bg-gray-100 dark:bg-gray-800 h-48">
+            <img
+              :src="formatImageUrl(item.image_url)"
+              alt="Found Item"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-300 blur-sm"
+            />
+          </div>
+          <div class="p-5">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ item.name }}</h3>
+            <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <!-- If this result represents a Student ID item, show student details -->
+              <template v-if="item.student_id">
+                <p class="flex items-center gap-2">
+                  <span class="text-emerald-500">🎓</span>
+                  <span class="text-gray-900 dark:text-white font-medium">{{ item.name }}</span>
+                </p>
+                <p class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                  <span>🎫</span> ID: {{ item.student_id }}
+                </p>
+                <p class="flex items-center gap-2">
+                  <span>📄</span> Type: ID
+                </p>
+                <p class="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                  <span>🔒</span> In custody of the security office
+                </p>
+              </template>
+
+              <!-- Otherwise treat as a general item: show name, brand, and custody status -->
+              <template v-else>
+                <p class="flex items-center gap-2">
+                  <span class="text-amber-500">📦</span> {{ item.name }}
+                </p>
+                <p v-if="item.brand" class="flex items-center gap-2">
+                  <span>🏷️</span> Brand: {{ item.brand }}
+                </p>
+                <p class="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                  <span>🔒</span> In custody of the security office
+                </p>
+              </template>
+            </div>
+            <div class="mt-4 flex items-center gap-3 px-5">
+              <button
+                @click="openClaimModal(item)"
+                class="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 shadow-md hover:shadow-xl transition-transform transform hover:-translate-y-0.5"
+              >
+                I want to claim this item
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Results Message -->
+      <div v-if="!loading && results.length === 0" class="text-center py-16">
+        <div class="text-6xl mb-4">🔍</div>
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No items found</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-8">{{ noResultsMessage }}</p>
+      </div>
+
+      <!-- New Search Button -->
+      <div class="flex justify-center">
+        <button
+          @click="resetSearch"
+          class="py-3 px-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors"
+        >
+          Start New Search
+        </button>
+      </div>
+    </div>
+    
+    <!-- Claim Request Modal (uses existing logic in script) -->
+    <div
+      v-if="showClaimModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4 py-6"
+      @click="closeClaimModal"
+    >
+      <div
+        @click.stop
+        class="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-700 shadow-xl animate-fade-in"
+      >
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Claim Item</h3>
+          <button @click="closeClaimModal" class="text-gray-500 hover:text-gray-300">✕</button>
+        </div>
+
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800">
+              <img v-if="selectedClaimItem && selectedClaimItem.image_url" :src="formatImageUrl(selectedClaimItem.image_url)" alt="item" class="w-full h-full object-cover" />
+            </div>
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">You are claiming:</p>
+            <p class="font-semibold text-gray-900 dark:text-white">{{ selectedClaimItem && selectedClaimItem.name }}</p>
+          </div>
+        </div>
+
+        <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">Message (optional)</label>
+        <textarea
+          v-model="claimMessage"
+          rows="4"
+          class="w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none mb-3"
+          placeholder="Add a short message for the security office (e.g. where you lost it, contact info)"
+        ></textarea>
+
+        <div v-if="claimError" class="text-sm text-red-600 dark:text-red-400 mb-3">{{ claimError }}</div>
+        <div v-if="claimSuccess" class="text-sm text-green-600 dark:text-green-400 mb-3">{{ claimSuccess }}</div>
+
+        <div class="flex justify-end gap-3">
+          <button
+            @click="closeClaimModal"
+            class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            @click="submitClaim"
+            :disabled="isSubmittingClaim"
+            class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-semibold transition-colors disabled:opacity-60"
+          >
+            {{ isSubmittingClaim ? 'Submitting...' : 'Confirm Claim' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
+
+
 
 <script>
 import axios from "axios";
@@ -484,6 +599,12 @@ export default {
       qrDetected: false,
       qrDetectionFailed: false,
       qrErrorMessage: "",
+      showClaimModal: false,
+      selectedClaimItem: null,
+      claimMessage: "",
+      isSubmittingClaim: false,
+      claimError: "",
+      claimSuccess: "",
     };
   },
   computed: {
@@ -897,6 +1018,60 @@ export default {
       this.selectedFileId = null;
       this.resetQrState(true);
     },
+    openClaimModal(item) {
+      this.selectedClaimItem = item;
+      this.claimMessage = "";
+      this.claimError = "";
+      this.claimSuccess = "";
+      this.showClaimModal = true;
+    },
+    closeClaimModal() {
+      this.showClaimModal = false;
+      this.selectedClaimItem = null;
+      this.claimMessage = "";
+      this.claimError = "";
+      this.claimSuccess = "";
+    },
+    async submitClaim() {
+      if (!this.selectedClaimItem || !this.user) {
+        this.claimError = "Unable to process claim at this time.";
+        return;
+      }
+
+      this.isSubmittingClaim = true;
+      this.claimError = "";
+      this.claimSuccess = "";
+
+      try {
+        const itemId = this.selectedClaimItem.id;
+        const API_BASE = "http://localhost:5000";
+
+        // Submit claim directly to the claims route (same flow as NotificationsPage.vue)
+        const claimRes = await axios.post(`${API_BASE}/api/claims`, {
+          user_id: this.user.id,
+          item_id: itemId,
+          // No existing notification id in this flow
+          notification_id: null,
+          message: this.claimMessage || null,
+        });
+
+        if (claimRes.status === 201 || claimRes.status === 200) {
+          this.claimSuccess = "✅ Your claim request has been submitted and is now received by the security office. Please visit the security office for claiming and verification of the item.";
+          setTimeout(() => {
+            this.closeClaimModal();
+            this.resetSearch();
+          }, 2000);
+        } else {
+          this.claimError = claimRes.data?.message || "Failed to submit claim.";
+        }
+      } catch (err) {
+        console.error("Error submitting claim:", err);
+        const errorMsg = err?.response?.data?.message || err.message || "Failed to submit claim.";
+        this.claimError = errorMsg;
+      } finally {
+        this.isSubmittingClaim = false;
+      }
+    },
   },
   watch: {
     "$route.query"(next = {}) {
@@ -908,7 +1083,7 @@ export default {
       }
     },
   },
-  mounted() {
+  async mounted() {
     // Restore authenticated context so the search API knows who is searching.
     try {
       const storedUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -916,6 +1091,19 @@ export default {
         this.user = storedUser;
         if (!this.reporterId && storedUser.id) {
           this.reporterId = storedUser.id;
+        }
+
+        // Fetch profile data including profile picture
+        try {
+          const response = await axios.get(`http://localhost:5000/api/profile/${storedUser.id}`);
+          if (response.data) {
+            // Update user data with profile information including profile picture
+            this.user = { ...storedUser, ...response.data };
+            // Update localStorage with the new user data including profile picture
+            localStorage.setItem("user", JSON.stringify(this.user));
+          }
+        } catch (err) {
+          console.error("Error fetching user profile:", err);
         }
       }
     } catch (err) {
@@ -931,3 +1119,20 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+}
+</style>

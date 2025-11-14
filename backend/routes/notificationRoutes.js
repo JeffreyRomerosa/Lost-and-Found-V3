@@ -77,7 +77,7 @@ router.get("/:user_id", async (req, res) => {
       LEFT JOIN items matched_i ON (
         CASE WHEN i.type = 'lost' THEN m.found_item_id ELSE m.lost_item_id END = matched_i.id
       )
-      WHERE n.user_id = $1
+      WHERE n.user_id = $1 AND n.cleared_at IS NULL
 
       UNION
 
@@ -145,6 +145,66 @@ router.get("/:user_id", async (req, res) => {
   }
 });
 
+  /**
+   * ✅ GET /api/notifications/id/:id
+   * Fetch a single notification by its id with rich item/match context
+   */
+  router.get("/id/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      const result = await pool.query(
+        `
+        SELECT
+          n.id,
+          n.user_id,
+          n.item_id,
+          n.match_id,
+          n.category,
+          n.type,
+          n.is_read,
+          n.created_at,
+
+          i.name AS item_name,
+          i.brand,
+          i.color,
+          i.location AS item_location,
+          i.type AS item_type,
+          i.image_url AS item_image_url,
+          i.student_id AS item_student_id,
+          i.reporter_id AS item_user_id,
+
+          matched_i.id AS matched_item_id,
+          matched_i.name AS matched_item_name,
+          matched_i.type AS matched_type,
+          matched_i.image_url AS matched_image_url,
+          matched_i.status AS matched_status,
+          matched_i.student_id AS matched_student_id,
+          matched_i.location AS matched_location,
+          matched_i.description AS matched_description
+
+        FROM notifications n
+        LEFT JOIN items i ON n.item_id = i.id
+        LEFT JOIN matches m ON n.match_id = m.id
+        LEFT JOIN items matched_i ON (
+          CASE WHEN i.type = 'lost' THEN m.found_item_id ELSE m.lost_item_id END = matched_i.id
+        )
+        WHERE n.id = $1
+        LIMIT 1
+        `,
+        [id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+
+      res.json(result.rows[0]);
+    } catch (err) {
+      console.error("❌ Error fetching notification by id:", err);
+      res.status(500).json({ error: "Failed to fetch notification" });
+    }
+  });
+
 /**
  * ✅ PUT /api/notifications/:id/read
  * Mark notification as read
@@ -173,11 +233,38 @@ router.put("/:id/read", async (req, res) => {
 });
 
 /**
+ * 🆕 PUT /api/notifications/:id/clear
+ * Mark notification as cleared/dismissed (won't appear in the list anymore)
+ */
+router.put("/:id/clear", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      "UPDATE notifications SET cleared_at = NOW() WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    res.json({
+      message: "Notification cleared successfully",
+      notification: result.rows[0],
+    });
+  } catch (err) {
+    console.error("❌ Error clearing notification:", err);
+    res.status(500).json({ error: "Failed to clear notification" });
+  }
+});
+
+/**
  * 🆕 PUT /api/notifications/:id/claim
  * Allows user to initiate a claim directly from their notification
  * and emits a Socket.IO event to the security dashboard
  */
-router.put("/:id/claim", async (req, res) => 
+router.put("/:id/claim", async (req, res) => {
   const { id } = req.params; // notification ID
   const { claimant_id } = req.body;
 
@@ -256,4 +343,32 @@ router.put("/:id/claim", async (req, res) =>
   }
 });
 
+/**
+ * ✅ DELETE /api/notifications/:notification_id
+ * Delete a notification by ID
+ */
+router.delete("/:notification_id", async (req, res) => {
+  const { notification_id } = req.params;
+
+  try {
+    const result = await pool.query(
+      "DELETE FROM notifications WHERE id = $1 RETURNING id",
+      [notification_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    res.status(200).json({
+      message: "Notification deleted successfully",
+      deleted_id: result.rows[0].id,
+    });
+  } catch (err) {
+    console.error("❌ Error deleting notification:", err);
+    res.status(500).json({ error: "Failed to delete notification" });
+  }
+});
+
 export default router;
+

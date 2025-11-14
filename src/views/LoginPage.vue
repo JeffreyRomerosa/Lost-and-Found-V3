@@ -1,18 +1,18 @@
 <template>
   <div
-    class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 animate-fade-in"
+    class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-gray-100 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 animate-fade-in"
   >
     <div
-      class="w-full max-w-2xl bg-gray-900/80 border border-gray-800 rounded-2xl shadow-lg p-8 space-y-6"
+  class="w-full max-w-2xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg p-8 space-y-6 transition-colors duration-200"
     >
       <header class="text-center space-y-2">
-        <h1 class="text-3xl font-bold text-yellow-400">Campus Lost &amp; Found Access</h1>
-        <p class="text-sm text-gray-400">
+        <h1 class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">Campus Lost &amp; Found Access</h1>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
           Use your @carsu.edu.ph email to sign in or register.
         </p>
       </header>
 
-      <div class="flex bg-gray-800/70 rounded-xl p-1">
+      <div class="flex bg-gray-200 dark:bg-gray-800/70 rounded-xl p-1">
         <button :class="tabClass('login')" @click="switchTab('login')">
           Sign In
         </button>
@@ -24,10 +24,10 @@
       <section v-if="activeTab === 'login'" class="grid md:grid-cols-2 gap-6">
         <div class="space-y-4">
           <div>
-            <label class="block text-gray-300 mb-2 text-sm font-medium">Login as</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Login as</label>
             <select
               v-model="role"
-              class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-sm text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
+              class="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
             >
               <option value="university_member">University Member</option>
               <option value="security">Security Staff</option>
@@ -35,27 +35,27 @@
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-2 text-sm font-medium">Email</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Email</label>
             <input
               v-model="loginEmail"
               type="email"
               autocomplete="username"
               placeholder="your.name@carsu.edu.ph"
-              class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
+              class="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
             />
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-2 text-sm font-medium">Password</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Password</label>
             <div class="relative">
               <input
                 v-model="loginPassword"
                 :type="showLoginPassword ? 'text' : 'password'"
                 autocomplete="current-password"
                 placeholder="Enter password"
-                class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
+                class="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
               />
-              <button type="button" @click="showLoginPassword = !showLoginPassword" class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-yellow-400">
+              <button type="button" @click="showLoginPassword = !showLoginPassword" class="absolute inset-y-0 right-2 flex items-center text-gray-600 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400">
                 <svg v-if="showLoginPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
@@ -77,11 +77,11 @@
         </div>
 
         <div
-          class="flex flex-col justify-between bg-gray-900/70 border border-gray-800 rounded-xl p-5 space-y-4"
+          class="flex flex-col justify-between bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 rounded-xl p-5 space-y-4 transition-colors duration-200"
         >
           <div>
-            <p class="font-semibold text-gray-100">Sign in with Google</p>
-            <p class="text-sm text-gray-400 mt-1">
+            <p class="font-semibold text-gray-900 dark:text-gray-100">Sign in with Google</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Use your CarSU email. Choose your role first so we can send you to the right dashboard.
             </p>
           </div>
@@ -95,7 +95,7 @@
             ></div>
           </div>
 
-          <ul class="text-xs text-gray-500 space-y-1">
+          <ul class="text-xs text-gray-600 dark:text-gray-500 space-y-1">
             <li>• University members are redirected to their dashboard.</li>
             <li>• Security staff will see the security dashboard.</li>
           </ul>
@@ -353,7 +353,7 @@ const initializeGoogle = () => {
 // === Fetch Client ID & Initialize ===
 const initGoogle = async () => {
   try {
-    const res = await fetch("http://localhost:5000/api/auth/google-client-id");
+    const res = await fetch("/api/auth/google-client-id");
     const data = await res.json();
     clientId = data.clientId;
 

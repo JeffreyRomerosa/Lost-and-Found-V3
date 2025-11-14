@@ -1,15 +1,15 @@
 <template>
   <!-- Navbar will NOT show on login or register pages -->
   <nav v-if="showNavbar"
-       class="fixed top-0 left-1/2 -translate-x-1/2 
-              bg-brand-black border-b border-gray-700 
-              flex justify-around w-full max-w-md 
-              rounded-b-2xl py-3 shadow-xl z-50">
+       class="fixed bottom-4 left-1/2 -translate-x-1/2 
+         bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
+         flex justify-around w-[90%] max-w-md 
+         rounded-2xl py-3 shadow-lg z-50 transition-colors duration-200 backdrop-blur-sm bg-white/90 dark:bg-gray-900/90">
     <RouterLink v-for="item in nav" :key="item.to" 
       :to="item.to"
-      class="flex flex-col items-center text-sm transition-all 
-             hover:text-brand-yellow"
-      :class="{ 'text-brand-yellow': $route.path === item.to }">
+      class="flex flex-col items-center text-sm transition-all text-gray-700 dark:text-gray-400
+             hover:text-yellow-600 dark:hover:text-yellow-400"
+      :class="{ 'text-yellow-600 dark:text-yellow-400': $route.path === item.to }">
       <component :is="item.icon" class="w-6 h-6 mb-1" />
       {{ item.label }}
     </RouterLink>
