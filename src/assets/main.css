@@ -13,3 +13,11 @@
     to { opacity: 1; transform: translateY(0); }
   }
 }
+
+/* Smooth theme transitions: animate background, text, borders and shadows when theme toggles */
+:root {
+  --theme-transition-duration: 800ms;
+}
+* {
+  transition: background-color var(--theme-transition-duration) ease, color var(--theme-transition-duration) ease, border-color var(--theme-transition-duration) ease, box-shadow var(--theme-transition-duration) ease;
+}

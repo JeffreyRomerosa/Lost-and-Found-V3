@@ -1,103 +1,90 @@
 <template>
   <aside class="w-64 bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6 flex flex-col space-y-6 text-gray-900 dark:text-white h-screen overflow-y-auto fixed left-0 top-16 border-r border-gray-200 dark:border-gray-800 transition-colors duration-200">
-    <!-- Security Officer Info -->
-    <div class="flex items-center space-x-3 border-b border-gray-200 dark:border-gray-800 pb-4">
-      <div v-if="avatarUrl" class="w-12 h-12">
-        <img
-          :src="avatarUrl"
-          alt="Security Avatar"
-          class="w-12 h-12 rounded-full object-cover border-2 border-emerald-500 dark:border-yellow-400"
-        />
-      </div>
-      <div
-        v-else
-        class="w-12 h-12 rounded-full bg-emerald-500 dark:bg-yellow-500 text-white dark:text-gray-900 flex items-center justify-center text-xl font-bold border-2 border-emerald-500 dark:border-yellow-400"
-      >
-        {{ avatarInitial }}
-      </div>
-      <div>
-        <p class="font-semibold text-gray-900 dark:text-white">{{ displayName }}</p>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Security</p>
-      </div>
-    </div>
+   
 
     <!-- Navigation Buttons -->
-    <nav class="flex flex-col space-y-3">
+    <nav class="flex flex-col space-y-3 pt-3">
       <button
         @click="selectPage('dashboard')"
         :class="navButtonClass('dashboard')"
-        class="px-4 py-2 rounded-lg transition-colors text-left font-medium"
       >
-        Dashboard
+        <span class="text-lg">📊</span>
+        <span class="font-medium">Dashboard</span>
+        <span v-if="activePage === 'dashboard'" class="ml-auto w-1 h-6 bg-emerald-600 rounded-r"></span>
       </button>
 
-      <div class="pt-2">
-        <h3 class="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400 px-2 mb-2">Items Management</h3>
+      <div class="pt-2 border-t border-gray-200 dark:border-gray-800">
         <button
           @click="selectPage('lost-reports')"
           :class="navButtonClass('lost-reports')"
-          class="w-full px-4 py-2 rounded-lg transition-colors text-left"
         >
-          Lost Reports
-          <span v-if="unreadLost > 0" class="ml-2 bg-red-500 text-white text-xs rounded-full px-2">{{ unreadLost }}</span>
+          <span class="text-lg">📌</span>
+          <span class="font-medium">Lost Reports</span>
+          <span v-if="unreadLost > 0" class="ml-auto text-xs bg-red-500 text-white rounded-full px-2 py-0.5 font-bold">{{ unreadLost }}</span>
+          <span v-if="activePage === 'lost-reports'" class="ml-auto w-1 h-6 bg-emerald-600 rounded-r"></span>
         </button>
         <button
           @click="selectPage('found-reports')"
           :class="navButtonClass('found-reports')"
-          class="w-full px-4 py-2 rounded-lg transition-colors text-left"
         >
-          Found Reports
-          <span v-if="unreadFound > 0" class="ml-2 bg-red-500 text-white text-xs rounded-full px-2">{{ unreadFound }}</span>
+          <span class="text-lg">📦</span>
+          <span class="font-medium">Found Reports</span>
+          <span v-if="unreadFound > 0" class="ml-auto text-xs bg-red-500 text-white rounded-full px-2 py-0.5 font-bold">{{ unreadFound }}</span>
+          <span v-if="activePage === 'found-reports'" class="ml-auto w-1 h-6 bg-emerald-600 rounded-r"></span>
         </button>
         <button
           @click="selectPage('returned-history')"
           :class="navButtonClass('returned-history')"
-          class="w-full px-4 py-2 rounded-lg transition-colors text-left"
         >
-          Returned History
-          <span v-if="unreadReturned > 0" class="ml-2 bg-red-500 text-white text-xs rounded-full px-2">{{ unreadReturned }}</span>
+          <span class="text-lg">✅</span>
+          <span class="font-medium">Returned History</span>
+          <span v-if="unreadReturned > 0" class="ml-auto text-xs bg-red-500 text-white rounded-full px-2 py-0.5 font-bold">{{ unreadReturned }}</span>
+          <span v-if="activePage === 'returned-history'" class="ml-auto w-1 h-6 bg-emerald-600 rounded-r"></span>
         </button>
       </div>
 
       <div class="pt-2 border-t border-gray-200 dark:border-gray-800">
-        <h3 class="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400 px-2 mb-2">Claim Management</h3>
         <button
           @click="selectPage('claim-requests')"
           :class="navButtonClass('claim-requests')"
-          class="w-full px-4 py-2 rounded-lg transition-colors text-left font-medium"
         >
-          Claim Requests
-          <span v-if="pendingClaims > 0" class="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">{{ pendingClaims }}</span>
+          <span class="text-lg">🤝</span>
+          <span class="font-medium">Claim Requests</span>
+          <span v-if="pendingClaims > 0" class="ml-auto text-xs bg-red-500 text-white rounded-full px-2 py-0.5 font-bold">{{ pendingClaims }}</span>
+          <span v-if="activePage === 'claim-requests'" class="ml-auto w-1 h-6 bg-emerald-600 rounded-r"></span>
         </button>
       </div>
 
       <div class="pt-2 border-t border-gray-200 dark:border-gray-800">
-        <h3 class="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400 px-2 mb-2">Office Management</h3>
         <button
           @click="selectPage('office-hours')"
           :class="navButtonClass('office-hours')"
-          class="w-full px-4 py-2 rounded-lg transition-colors text-left"
         >
-          Office Hours
+          <span class="text-lg">⏰</span>
+          <span class="font-medium">Office Hours</span>
+          <span v-if="activePage === 'office-hours'" class="ml-auto w-1 h-6 bg-emerald-600 rounded-r"></span>
         </button>
       </div>
 
       <div class="pt-2 border-t border-gray-200 dark:border-gray-800">
         <button
           @click="goToProfile"
-          class="w-full px-4 py-2 text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-yellow-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-left"
+          :class="navButtonClass('profile')"
         >
-          My Profile
+          <span class="text-lg">👤</span>
+          <span class="font-medium">My Profile</span>
+          <span v-if="activePage === 'profile'" class="ml-auto w-1 h-6 bg-emerald-600 rounded-r"></span>
         </button>
       </div>
     </nav>
+
+    
   </aside>
 </template>
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 
-const API_BASE_URL = "http://localhost:5000";
 const router = useRouter();
 
 // Props to receive unread counts from parent
@@ -142,23 +129,6 @@ onMounted(() => {
   }
 });
 
-const displayName = computed(() => {
-  if (!securityUser.value) return "Security Officer";
-  return (
-    securityUser.value.full_name ||
-    securityUser.value.email?.split("@")[0] ||
-    "Security Officer"
-  );
-});
-
-const avatarUrl = computed(() => {
-  const path = securityUser.value?.profile_picture;
-  if (!path) return "";
-  return path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
-});
-
-const avatarInitial = computed(() => displayName.value.charAt(0).toUpperCase());
-
 // Emit event to parent when page is selected
 const emit = defineEmits(["select-page"]);
 
@@ -175,16 +145,20 @@ watch(activePage, (newPage) => {
 
 // Dynamic button styling
 const navButtonClass = (page) => {
+  const isActive = activePage.value === page;
   return [
-    activePage.value === page
-      ? "bg-yellow-500 text-black font-semibold"
-      : "text-gray-700 dark:text-white hover:text-yellow-400 dark:hover:text-yellow-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+    "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 text-sm relative group",
+    isActive
+      ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400"
+      : "text-foreground hover:bg-muted dark:hover:bg-slate-800"
   ];
 };
 
 // Logout removed from sidebar; other components/pages still provide logout if needed.
 
 const goToProfile = () => {
+  activePage.value = 'profile';
+  localStorage.setItem('security-current-page', 'profile');
   router.push("/profile");
 };
 </script>

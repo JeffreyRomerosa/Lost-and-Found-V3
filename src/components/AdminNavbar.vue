@@ -7,6 +7,8 @@
         <p class="text-xs text-gray-600 dark:text-gray-400">{{ displayEmail }}</p>
       </div>
 
+   <!-- Profile Button -->
+
       <div class="relative" ref="menuRef">
         <button
           @click="toggleMenu"
@@ -44,6 +46,23 @@
             </svg>
             <span>My Profile</span>
           </button>
+
+<!-- Theme toggle -->
+
+<div class="w-full px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center justify-between transition text-gray-900 dark:text-white">
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-amber-500 dark:text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M12 7a5 5 0 100 10 5 5 0 000-10z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span class="text-sm">Theme</span>
+                </div>
+
+                <div>
+                  <ThemeToggle @change="showProfileMenu = false" />
+                </div>
+              </div>
+
+              <!-- End of Theme toggle -->
+
+
           <button
             @click="logout"
             class="w-full px-4 py-2 flex items-center gap-2 text-left text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -73,6 +92,9 @@
 import { computed, onMounted, onBeforeUnmount, ref } from "vue";
 import { useRouter } from "vue-router";
 import { disconnectSocket } from "../socket";
+import ThemeToggle from '../components/ThemeToggle.vue';
+
+
 
 const router = useRouter();
 const adminUser = ref(null);

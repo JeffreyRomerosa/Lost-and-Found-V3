@@ -4,7 +4,7 @@
     <div class="p-6 border-b border-border dark:border-slate-800">
       <div class="flex items-center gap-3 group cursor-pointer">
         <!-- Logo Badge -->
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0">
           <span class="text-white text-lg">🔍</span>
         </div>
         <!-- Brand Text -->
@@ -83,7 +83,7 @@
 
     <!-- Footer -->
     <div class="px-4 py-3 border-t border-border dark:border-slate-800 text-xs text-muted-foreground text-center">
-      <p>Admin Dashboard v1.0</p>
+      <p>Admin Dashboard </p>
     </div>
   </aside>
 </template>

@@ -11,9 +11,19 @@
 
     <!-- Navbar -->
     <nav
-      class="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-md z-40 flex justify-between items-center px-6 h-16 transition-colors duration-200"
+      class="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-md z-40 flex justify-between items-center px-6 h-20 transition-colors duration-200"
     >
-      <h1 class="text-xl font-semibold text-yellow-500 dark:text-yellow-400">Security Dashboard</h1>
+      <div class="pl-1 flex items-center gap-3 group cursor-pointer">
+        <!-- Logo Badge -->
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0">
+          <span class="text-white text-lg">🔍</span>
+        </div>
+        <!-- Brand Text -->
+        <div class="flex-1 min-w-0">
+          <h1 class="text-sm font-bold text-foreground truncate">CSU Lost & Found</h1>
+          <p class="text-xs text-muted-foreground">Security Portal</p>
+        </div>
+      </div>
       <div class="flex items-center gap-4" ref="profileMenuRef">
         <!-- Notification (bell) button placed before name/email as requested -->
         <div class="relative" ref="notificationsRef">
@@ -147,6 +157,9 @@
           />
           <span v-else>{{ securityInitial }}</span>
         </button>
+
+          <!-- Profile Button -->
+
         <div
           v-if="showProfileMenu"
           class="absolute right-6 top-14 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-50 transition-colors"
@@ -170,6 +183,23 @@
             </svg>
             <span>My Profile</span>
           </button>
+
+
+<!-- Theme toggle -->
+
+<div class="w-full px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center justify-between transition text-gray-900 dark:text-white">
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-amber-500 dark:text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M12 7a5 5 0 100 10 5 5 0 000-10z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span class="text-sm">Theme</span>
+                </div>
+
+                <div>
+                  <ThemeToggle @change="showProfileMenu = false" />
+                </div>
+              </div>
+
+              <!-- End of Theme toggle -->
+
           <button
             @click="logout"
             class="w-full px-4 py-2 flex items-center gap-2 text-left text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -1311,6 +1341,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import initSocket, { disconnectSocket } from "../socket";
+import ThemeToggle from '../components/ThemeToggle.vue';
 import SecuritySidebar from "../components/SecuritySidebar.vue";
 import OfficeHoursWidget from "../components/OfficeHoursWidget.vue";
 import EditableOfficeHours from "../components/EditableOfficeHours.vue";
