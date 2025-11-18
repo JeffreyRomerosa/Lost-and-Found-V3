@@ -94,7 +94,7 @@
   </aside>
 </template>
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 
 const API_BASE_URL = "http://localhost:5000";
@@ -120,8 +120,8 @@ defineProps({
   }
 });
 
-// Track active page
-const activePage = ref("dashboard");
+// Track active page - load from localStorage to persist across page refreshes
+const activePage = ref(localStorage.getItem('security-current-page') || 'dashboard');
 const securityUser = ref(null);
 
 onMounted(() => {
@@ -133,6 +133,12 @@ onMounted(() => {
   } catch (err) {
     console.error("Failed to parse security user from storage:", err);
     securityUser.value = null;
+  }
+  
+  // Sync with localStorage when component mounts
+  const savedPage = localStorage.getItem('security-current-page');
+  if (savedPage) {
+    activePage.value = savedPage;
   }
 });
 
@@ -158,8 +164,14 @@ const emit = defineEmits(["select-page"]);
 
 const selectPage = (page) => {
   activePage.value = page;
+  localStorage.setItem('security-current-page', page);
   emit("select-page", page);
 };
+
+// Watch for changes to activePage and save to localStorage
+watch(activePage, (newPage) => {
+  localStorage.setItem('security-current-page', newPage);
+});
 
 // Dynamic button styling
 const navButtonClass = (page) => {

@@ -26,79 +26,90 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h11z" />
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.73 21a2 2 0 01-3.46 0" />
             </svg>
-            <span v-if="!notificationsSeen && claimNotifications.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center">{{ claimNotifications.length }}</span>
+            <span v-if="!notificationsSeen && sidebarPendingCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center">{{ sidebarPendingCount }}</span>
           </button>
 
           <!-- Minimal Claim Detail Modal - Show only latest claim -->
           <div
             v-if="showNotificationsDropdown && claimNotifications.length > 0"
-            class="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl shadow-lg border border-yellow-400 dark:border-yellow-600 z-50 p-4 transition-colors"
+            class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg shadow-lg border border-yellow-400 dark:border-yellow-600 z-50 p-2.5 transition-colors"
           >
-            <!-- Header with close button -->
-            <div class="flex items-center justify-between mb-3">
+            <!-- Header with close and delete buttons -->
+            <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-2">
-                <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                <h3 class="font-semibold text-sm">New Claim Request</h3>
+                <div class="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></div>
+                <h3 class="font-semibold text-xs">New Claim Request</h3>
               </div>
-              <button
-                @click.stop="showNotificationsDropdown = false"
-                class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <div class="flex gap-1">
+                <button
+                  @click.stop="deleteClaimNotification()"
+                  title="Delete this notification"
+                  class="text-red-500 hover:text-red-700 dark:hover:text-red-400 p-0.5"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+                <button
+                  @click.stop="showNotificationsDropdown = false"
+                  class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-0.5"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <!-- Latest claim minimal details -->
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+            <div class="bg-gray-50 dark:bg-gray-800 rounded p-2">
               <!-- Item Image -->
-              <div class="mb-3 flex justify-center">
+              <div class="mb-2 flex justify-center">
                 <img
                   v-if="claimNotifications[0] && (claimNotifications[0].item_image || claimNotifications[0].display_image) && !claimNotifications[0]._modalImageError"
                   :src="getFullUrl(claimNotifications[0].item_image || claimNotifications[0].display_image)"
                   @error="claimNotifications[0]._modalImageError = true"
-                  class="h-32 w-32 object-cover rounded-lg border-2 border-yellow-500"
+                  class="h-16 w-16 object-cover rounded border-2 border-yellow-500"
                 />
-                <div v-else class="h-32 w-32 rounded-lg bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
-                  <span class="text-xs">No Image</span>
+                <div v-else class="h-16 w-16 rounded bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
+                  <span class="text-[9px]">No Image</span>
                 </div>
               </div>
 
               <!-- Item Name -->
-              <h4 class="font-semibold text-center text-gray-900 dark:text-white mb-1 text-sm">
-                {{ claimNotifications[0]?.item_name || claimNotifications[0]?.display_name || 'Unknown Item' }}
+              <h4 class="font-semibold text-center text-gray-900 dark:text-white mb-1 text-xs line-clamp-2">
+                {{ claimNotifications[0] && claimNotifications[0].item_name || claimNotifications[0] && claimNotifications[0].display_name || 'Unknown Item' }}
               </h4>
 
               <!-- Claimant Info -->
-              <div class="flex items-center gap-2 mb-3 p-2 bg-white dark:bg-gray-900 rounded">
+              <div class="flex items-center gap-1 mb-1.5 p-1 bg-white dark:bg-gray-900 rounded">
                 <img
-                  v-if="claimNotifications[0]?.claimant_profile_picture && !claimNotifications[0]?._claimantImageError"
+                  v-if="claimNotifications[0] && claimNotifications[0].claimant_profile_picture && !claimNotifications[0]._claimantImageError"
                   :src="getFullUrl(claimNotifications[0].claimant_profile_picture)"
                   @error="claimNotifications[0]._claimantImageError = true"
-                  class="w-7 h-7 rounded-full object-cover border border-yellow-500"
+                  class="w-4 h-4 rounded-full object-cover border border-yellow-500"
                 />
-                <div v-else class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                  {{ (claimNotifications[0]?.claimant_name || 'U')[0].toUpperCase() }}
+                <div v-else class="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-white text-[9px] font-bold">
+                  {{ (claimNotifications[0] && claimNotifications[0].claimant_name || 'U')[0].toUpperCase() }}
                 </div>
-                <div class="flex-1">
-                  <p class="font-medium text-xs text-gray-900 dark:text-white">{{ claimNotifications[0]?.claimant_name || 'Unknown Claimant' }}</p>
-                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ claimNotifications[0]?.claimant_email || 'N/A' }}</p>
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-xs text-gray-900 dark:text-white truncate">{{ claimNotifications[0] && claimNotifications[0].claimant_name || 'Unknown' }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 truncate">{{ claimNotifications[0] && claimNotifications[0].claimant_email || 'N/A' }}</p>
                 </div>
               </div>
 
               <!-- Timestamp -->
-              <p class="text-xs text-gray-600 dark:text-gray-400 text-center mb-3">
-                {{ formatDate(claimNotifications[0]?.created_at) }}
+              <p class="text-[10px] text-gray-600 dark:text-gray-400 text-center mb-1.5">
+                {{ formatDate(claimNotifications[0] && claimNotifications[0].created_at) }}
               </p>
             </div>
 
             <!-- Action Button -->
             <button 
-              @click.stop="viewClaimDetails(claimNotifications[0])"
-              class="mt-3 w-full px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-medium rounded text-sm transition-colors"
+              @click.stop="viewClaimDetails(claimNotifications[0]); showNotificationsDropdown = false"
+              class="w-full px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-medium rounded text-xs transition-colors"
             >
-              View Full Details
+              View Details
             </button>
           </div>
 
@@ -615,8 +626,8 @@
           <input
             v-model="returnedSearch"
             type="text"
-            placeholder="Search by Item Name or Student ID"
-            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-64 focus:outline-none transition-colors"
+            placeholder="Search by Item Name, Student ID, or Claimant Name"
+            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-96 focus:outline-none transition-colors"
           />
           <select
             v-model="returnedCategoryFilter"
@@ -1660,14 +1671,16 @@ const toggleNotifications = () => {
   }
 };
 
-// Mark notifications as seen but keep them in the list (they're in the Claim Requests section)
-const viewClaimRequests = () => {
-  // Navigate to claim-requests page
-  handleSidebarSelect('claim-requests');
-  // Mark notifications as seen
-  notificationsSeen.value = true;
+// Delete a claim notification (removes it permanently)
+const deleteClaimNotification = () => {
+  if (claimNotifications.value.length > 0) {
+    claimNotifications.value.splice(0, 1);
+    showNotificationsDropdown.value = false;
+    console.log('🗑️ Claim notification deleted');
+  }
 };
 
+// Mark notifications as seen but keep them in the list (they're in the Claim Requests section)
 // 🔄 Periodic sync: Check for new claims (OPTIMIZED: longer interval, only when needed)
 // Track claim IDs we've seen to prevent re-processing
 let isSyncing = false;
@@ -2100,6 +2113,13 @@ const addClaimNotification = async (rawClaim) => {
 
   // prepend so newest appear at top
   claimNotifications.value.unshift(note);
+  
+  // 🔹 KEEP ONLY THE LATEST CLAIM IN THE MODAL (for cleaner UX - no stacking)
+  // Keep only the first item (newest) in claimNotifications for modal display
+  if (claimNotifications.value.length > 1) {
+    claimNotifications.value = [claimNotifications.value[0]];
+  }
+  
   // mark as unseen so the bell shows the badge for this new notification
   notificationsSeen.value = false;
     // Also save to persistent claim requests store so clearing the bell
@@ -3237,7 +3257,10 @@ const filteredReturnedHistory = computed(() => {
     items = items.filter(
       (i) =>
         i.name?.toLowerCase().includes(returnedSearch.value.toLowerCase()) ||
-        (i.student_id && i.student_id.includes(returnedSearch.value))
+        (i.student_id && i.student_id.includes(returnedSearch.value)) ||
+        (i.claimant_name && i.claimant_name.toLowerCase().includes(returnedSearch.value.toLowerCase())) ||
+        (i.transaction_claimant_name && i.transaction_claimant_name.toLowerCase().includes(returnedSearch.value.toLowerCase())) ||
+        (i.reporter_name && i.reporter_name.toLowerCase().includes(returnedSearch.value.toLowerCase()))
     );
   if (returnedCategoryFilter.value)
     items = items.filter((i) => i.category === returnedCategoryFilter.value);
