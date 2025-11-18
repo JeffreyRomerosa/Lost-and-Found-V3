@@ -1,7 +1,16 @@
 <template>
   <div
-    class="relative min-h-screen bg-white dark:bg-gray-950 flex flex-col items-center pb-24 pt-20 transition-colors duration-200"
+    class="relative min-h-screen bg-white dark:bg-gray-950 flex flex-col items-center pb-32 pt-20 transition-colors duration-200"
   >
+    <!-- Back button (top-right) - visible for steps 2, 3 -->
+    <button
+      v-if="step > 1"
+      @click="handleBackClick"
+      class="fixed top-6 right-6 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2 z-40 bg-white dark:bg-gray-900 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+    >
+      ← Back
+    </button>
+
     <!-- Header with step indicator -->
     <div class="w-full max-w-4xl px-6 mb-12">
       <div class="flex justify-between items-center">
@@ -93,16 +102,6 @@
           </p>
         </button>
       </div>
-
-      <!-- Better back button styling -->
-      <div class="mt-8 flex justify-center">
-        <button
-          @click="step = 1"
-          class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
-        >
-          ← Back to Category
-        </button>
-      </div>
     </div>
 
     <!-- Step 3A: Upload Image for General Items (AI-assisted) -->
@@ -119,87 +118,146 @@
         </p>
       </div>
 
-      <!-- Improved two-column layout with better visual separation -->
+      <!-- Two-column layout matching Student ID format -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Left column: Upload -->
         <div>
           <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-4">
             Your Photo
           </label>
-          <div class="mb-6">
-            <div class="relative border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 text-center hover:border-blue-500 dark:hover:border-blue-500 transition-colors cursor-pointer group">
-              <input
-                type="file"
-                @change="handleImageUpload"
-                id="file"
-                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-              <div v-if="!previewImageCurrent" class="py-12">
-                <div class="text-4xl mb-3">📷</div>
-                <p class="text-gray-900 dark:text-white font-medium">Click or drag to upload</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">PNG, JPG up to 10MB</p>
-              </div>
-              <div v-else class="relative">
-                <img :src="previewImageCurrent" alt="Preview" class="w-full h-64 object-cover rounded-lg" />
-              </div>
+          <div class="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-300 dark:border-yellow-700 rounded mb-4">
+            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+              <strong>Note:</strong> This AI search assistant is not perfect. For better results, please provide a clearer, close-up photo of the item you want to search for.
+            </p>
+          </div>
+
+          <div class="relative border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 text-center hover:border-blue-500 dark:hover:border-blue-500 transition-colors cursor-pointer group mb-6">
+            <input
+              type="file"
+              @change="handleImageUpload"
+              id="file"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <div v-if="!previewImageCurrent" class="py-12">
+              <div class="text-4xl mb-3">📷</div>
+              <p class="text-gray-900 dark:text-white font-medium">Click or drag to upload</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">PNG, JPG up to 10MB</p>
+            </div>
+            <div v-else class="relative">
+              <img :src="previewImageCurrent" alt="Preview" class="w-full h-64 object-cover rounded-lg" />
             </div>
           </div>
-        
 
-          <form @submit.prevent="submitForm" class="space-y-3">
-            <button
-              type="submit"
-              :disabled="!hasSelectedFile"
-              :class="hasSelectedFile 
-                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'"
-              class="w-full py-3 px-4 rounded-lg font-semibold transition-colors"
-            >
-              {{ hasSelectedFile ? 'Analyze Image' : 'Select an image first' }}
-            </button>
-          </form>
+          <button
+            type="button"
+            @click="resetImageUpload"
+            v-if="selectedFileGeneral"
+            class="w-full py-2 px-4 rounded-lg font-semibold bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors mb-3"
+          >
+            Clear Image
+          </button>
+
+          <button
+            type="button"
+            @click="leftSearchButtonClicked"
+            :disabled="!hasSelectedFile || isAnalyzingImage"
+            :class="(hasSelectedFile && !isAnalyzingImage)
+              ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+              : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'"
+            class="w-full py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <span v-if="isAnalyzingImage" class="inline-block">
+              <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </span>
+            {{ isAnalyzingImage ? 'Analyzing...' : hasSelectedFile ? 'Search Item' : 'Select an image first' }}
+          </button>
         </div>
 
-        <!-- Right column: Results -->
+        <!-- Right column: AI Detection Results -->
         <div>
           <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-4">
             AI Detection Result
           </label>
           <div class="space-y-4">
-            <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-gray-50 dark:bg-gray-900/50 min-h-64 flex items-center justify-center">
-              <template v-if="predictedImage">
-                <img :src="'data:image/jpeg;base64,' + predictedImage" alt="Prediction Result" class="w-full h-full object-cover rounded-lg" />
-              </template>
-              <template v-else>
-                <div class="text-center text-gray-500 dark:text-gray-400">
-                  <div class="text-4xl mb-2">🔍</div>
-                  <p>Results will appear here</p>
-                </div>
-              </template>
+            <!-- Detection Status -->
+            <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">Detection Status</p>
+              <div class="space-y-2">
+                <p v-if="isAnalyzingImage" class="text-blue-600 dark:text-blue-400 text-sm flex items-center gap-2">
+                  <span class="animate-spin">⏳</span> Analyzing image...
+                </p>
+                <p v-else-if="classNames" class="text-emerald-600 dark:text-emerald-400 text-sm flex items-center gap-2">
+                  <span>✅</span> Object detected!
+                </p>
+                <p v-else-if="errorMessage" class="text-red-600 dark:text-red-400 text-sm flex items-center gap-2">
+                  <span>⚠️</span> Detection failed
+                </p>
+                <p v-if="errorMessage" class="text-red-600 dark:text-red-400 text-sm">{{ errorMessage }}</p>
+              </div>
             </div>
 
+            <!-- Detected Object Info (Success Case) - now editable -->
             <div v-if="classNames" class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Detected Object</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ classNames }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Edit the name of the item (suggestions available)</p>
+                <div class="relative">
+                  <input
+                    ref="detectedInput"
+                    v-model="tempDetectedName"
+                    @input="filterDetectedSuggestions"
+                    @focus="showDetectedSuggestions = true"
+                    @blur="hideDetectedSuggestions"
+                    type="text"
+                    class="w-full bg-transparent border border-emerald-200 rounded-md px-3 py-2 text-lg font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    placeholder="Edit detected name"
+                  />
+                  <button
+                    type="button"
+                    @click.prevent="focusDetectedInput"
+                    class="absolute -top-3 -right-3 bg-emerald-600 text-white px-3 py-1 rounded-full text-xs shadow-sm hover:bg-emerald-700 focus:outline-none"
+                    title="Edit detected name"
+                  >
+                    ✏️ Edit
+                  </button>
+                  <ul
+                    v-if="showDetectedSuggestions && detectedFilteredSuggestions && detectedFilteredSuggestions.length"
+                    class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-40 overflow-y-auto"
+                  >
+                    <li
+                      v-for="(sugg, idx) in detectedFilteredSuggestions"
+                      :key="`det-sugg-` + idx"
+                      @mousedown.prevent="selectDetectedSuggestion(sugg)"
+                      class="px-3 py-2 hover:bg-emerald-50 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-gray-200"
+                    >
+                      {{ sugg }}
+                    </li>
+                  </ul>
+                </div>
               <p v-if="detectedConfidence" class="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 Confidence: {{ detectedConfidence }}
               </p>
+              <!-- Note moved above upload area so users see guidance before choosing a photo -->
             </div>
 
-            <div v-if="errorMessage" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
-              <p class="text-red-700 dark:text-red-400 text-sm">{{ errorMessage }}</p>
+            <!-- Manual Entry Suggestion (Failure Case) -->
+            <div v-else-if="errorMessage && !isAnalyzingImage" class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Alternative Option</p>
+              <p class="text-sm text-amber-800 dark:text-amber-300 mb-3">Unable to detect the object. Try uploading a clearer image or describe your item manually.</p>
+              <button
+                type="button"
+                @click="switchToManualEntry"
+                class="w-full py-2 px-4 rounded-lg font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors"
+              >
+                Enter Item Manually
+              </button>
             </div>
+
+            <!-- Right-column search button removed (left button handles detected-object search) -->
           </div>
         </div>
-      </div>
-
-      <div class="mt-8 flex justify-center">
-        <button
-          @click="step = 2"
-          class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
-        >
-          ← Back
-        </button>
       </div>
     </div>
 
@@ -301,15 +359,6 @@
           </div>
         </div>
       </div>
-
-      <div class="mt-8 flex justify-center">
-        <button
-          @click="step = 2"
-          class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
-        >
-          ← Back
-        </button>
-      </div>
     </div>
 
     <!-- Step 3C: Manual Input -->
@@ -383,15 +432,6 @@
             : 'bg-amber-500 hover:bg-amber-600 text-white'"
         >
           Start Search
-        </button>
-      </div>
-
-      <div class="mt-8 flex justify-center">
-        <button
-          @click="step = 2"
-          class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
-        >
-          ← Back
         </button>
       </div>
     </div>
@@ -510,10 +550,10 @@
           <button @click="closeClaimModal" class="text-gray-500 hover:text-gray-300">✕</button>
         </div>
 
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800">
-              <img v-if="selectedClaimItem && selectedClaimItem.image_url" :src="formatImageUrl(selectedClaimItem.image_url)" alt="item" class="w-full h-full object-cover" />
-            </div>
+        <div class="flex flex-col items-center gap-4 mb-4 text-center">
+          <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 mx-auto">
+            <img v-if="selectedClaimItem && selectedClaimItem.image_url" :src="formatImageUrl(selectedClaimItem.image_url)" alt="item" class="w-full h-full object-cover blur-sm" />
+          </div>
           <div>
             <p class="text-sm text-gray-600 dark:text-gray-400">You are claiming:</p>
             <p class="font-semibold text-gray-900 dark:text-white">{{ selectedClaimItem && selectedClaimItem.name }}</p>
@@ -544,6 +584,77 @@
             class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-semibold transition-colors disabled:opacity-60"
           >
             {{ isSubmittingClaim ? 'Submitting...' : 'Confirm Claim' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Claim Success Modal with Office Hours -->
+    <div v-if="showClaimSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4 py-6 overflow-y-auto">
+      <div class="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl animate-fade-in my-6">
+        <!-- Success Message -->
+        <div class="text-center p-6 mb-4 border-b border-gray-200 dark:border-gray-800">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
+            <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">Claim Request Submitted!</h2>
+          <p class="text-gray-600 dark:text-gray-300 text-sm">
+            Your claim request has been sent to the security office. Please visit the office for verification and claiming of your item.
+          </p>
+        </div>
+
+        <!-- Office Hours Section -->
+        <div class="px-6 pb-6 space-y-4">
+          <!-- Today's Hours -->
+          <div v-if="officeHours" :class="[
+            'p-4 rounded border-l-4',
+            isOfficeOpenToday 
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-500 dark:border-green-400'
+              : 'bg-amber-50 dark:bg-amber-900/20 border-amber-500 dark:border-amber-400'
+          ]">
+            <h3 class="font-semibold mb-3 flex items-center gap-2" :class="[
+              isOfficeOpenToday 
+                ? 'text-green-900 dark:text-green-100'
+                : 'text-amber-900 dark:text-amber-100'
+            ]">
+              <svg v-if="isOfficeOpenToday" class="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 3.002v6a3 3 0 01-.709 1.938l-5.854 7.381a3 3 0 01-4.474 0L3.172 10.938A3 3 0 012.5 9V3.457a3.066 3.066 0 012.767-3.002z" clip-rule="evenodd" />
+              </svg>
+              <svg v-else class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+              {{ isOfficeOpenToday ? '✓ Office is Open Today!' : '⚠ Office is Closed Today' }}
+            </h3>
+            
+            <!-- Today's Hours Display -->
+            <div class="p-3 bg-white dark:bg-gray-800 rounded border" :class="[
+              isOfficeOpenToday
+                ? 'border-green-200 dark:border-green-700'
+                : 'border-amber-200 dark:border-amber-700'
+            ]">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Today ({{ officeHours ? officeHours.todayName : '' }}):</p>
+              <div v-if="isOfficeOpenToday" class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                <p class="text-sm font-bold text-green-700 dark:text-green-300">
+                  {{ officeHours.today.open }} - {{ officeHours.today.close }}
+                </p>
+                <span class="text-xs bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded font-semibold">OPEN</span>
+              </div>
+              <div v-else class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                <p class="text-sm font-semibold text-red-700 dark:text-red-300">Closed Today</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Close Button -->
+          <button
+            @click="closeClaimSuccessModal"
+            class="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors text-center"
+          >
+            Done
           </button>
         </div>
       </div>
@@ -579,6 +690,7 @@ export default {
       itemName: "",
       results: [],
       loading: false,
+      isAnalyzingImage: false,
       showNotifications: false,
       showProfileMenu: false,
       notifications: [],
@@ -587,6 +699,8 @@ export default {
       sourceItemId: null,
       showSuggestions: false,
       filteredSuggestions: [],
+      showDetectedSuggestions: false,
+      detectedFilteredSuggestions: [],
       itemSuggestions: [
         "Airpods", "Backpack", "Cap", "Eyeglasses", "Flash Drive", "Handbag",
         "Handheld Mini Fan", "Headphone", "Helmet", "Laptop", "Laptop Briefcase",
@@ -599,17 +713,45 @@ export default {
       qrDetected: false,
       qrDetectionFailed: false,
       qrErrorMessage: "",
+      // Optional override to force a status param when searching (e.g., 'in_security_custody')
+      searchStatusOverride: null,
+      // Temporary editable field for detected classname so user can correct it
+      tempDetectedName: '',
       showClaimModal: false,
       selectedClaimItem: null,
       claimMessage: "",
       isSubmittingClaim: false,
       claimError: "",
       claimSuccess: "",
+      showClaimSuccessModal: false,
+      weekSchedule: [],
     };
   },
   computed: {
     unreadNotificationCount() {
       return this.notifications.filter((n) => !n.is_read).length;
+    },
+    officeHours() {
+      if (this.weekSchedule.length === 0) return null;
+      const today = new Date();
+      const todayIndex = today.getDay();
+      const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const todaySchedule = this.weekSchedule[todayIndex] || {};
+      const isOpen = todaySchedule.is_open;
+      return {
+        today: {
+          open: isOpen ? this.formatTime(todaySchedule.opening_time) : "Closed",
+          close: isOpen ? this.formatTime(todaySchedule.closing_time) : "-",
+        },
+        todayName: dayNames[todayIndex]
+      };
+    },
+    isOfficeOpenToday() {
+      if (this.weekSchedule.length === 0) return false;
+      const today = new Date();
+      const todayIndex = today.getDay();
+      const todaySchedule = this.weekSchedule[todayIndex] || {};
+      return todaySchedule.is_open || false;
     },
     profileInitial() {
       return this.user?.full_name?.[0]?.toUpperCase() || "U";
@@ -686,6 +828,8 @@ export default {
         return;
       }
 
+      this.isAnalyzingImage = true;
+
       const formData = new FormData();
       formData.append('file', fileToUpload); // Append the selected file
       // include category so backend can differentiate if needed
@@ -713,28 +857,22 @@ export default {
             const top = result.detections[0];
             // Support both {classname} or legacy {name} or simple string
             this.classNames = top.classname || top.name || (typeof top === 'string' ? top : '');
+            // populate editable temp field so user can correct before searching
+            this.tempDetectedName = this.classNames;
             this.detectedConfidence = top.confidence ?? null;
           } else {
             this.classNames = '';
             this.detectedConfidence = null;
+            this.tempDetectedName = '';
           }
           this.errorMessage = '';
-          // If category is general, set detected class as itemName so user can search by it
-          if (this.category === 'general' && this.classNames) {
-            this.itemName = this.classNames;
-            // Automatically perform search using the predicted class
-            try {
-              // small delay to allow UI to update (optional)
-              await new Promise((r) => setTimeout(r, 200));
-              await this.performSearch();
-            } catch (e) {
-              console.error('Auto-search after prediction failed:', e);
-            }
-          }
+          // If category is general, don't auto-search - let user click the Search button
+          // This allows the user to see the detected object and optionally adjust before searching
         } else {
           this.predictedImage = null;
           this.classNames = '';
           this.detectedConfidence = null;
+          this.tempDetectedName = '';
           // Prefer backend message if present
           this.errorMessage = (result && (result.error || result.message)) || 'Error occurred during prediction';
           console.error('Prediction error response:', result);
@@ -744,8 +882,11 @@ export default {
         this.predictedImage = null;
         this.classNames = '';
         this.detectedConfidence = null;
+        this.tempDetectedName = '';
         this.errorMessage = 'Could not reach prediction server. Please ensure the model server is running.';
         console.error('Request failed:', error);
+      } finally {
+        this.isAnalyzingImage = false;
       }
     },
     selectCategory(cat) {
@@ -754,6 +895,30 @@ export default {
     },
     selectMethod(method) {
       this.searchMethod = method;
+      this.step = 3;
+    },
+    handleBackClick() {
+      if (this.step === 2) {
+        this.step = 1;
+        this.category = null;
+        this.searchMethod = null;
+      } else if (this.step === 3) {
+        this.step = 2;
+        this.searchMethod = null;
+      } else if (this.step === 4) {
+        this.step = 1;
+        this.category = null;
+        this.searchMethod = null;
+        this.results = [];
+        this.itemName = '';
+        this.studentId = '';
+      }
+    },
+    // (removed) handleDetectionSearch - left button now performs detected-object search
+    switchToManualEntry() {
+      // Reset the image-based search state and switch to manual entry
+      this.resetImageUpload();
+      this.searchMethod = 'manual';
       this.step = 3;
     },
     formatStudentId() {
@@ -780,6 +945,14 @@ export default {
         }
         this.selectedFileGeneral = file;
         this.previewImageGeneral = URL.createObjectURL(file);
+        // Automatically analyze the image after selecting it for general category
+        // (run asynchronously so UI updates immediately)
+        setTimeout(() => {
+          // only run if a file is still selected and not currently analyzing
+          if (this.selectedFileGeneral && !this.isAnalyzingImage) {
+            this.submitForm();
+          }
+        }, 80);
       } else {
         // fallback to generic slot
         if (this.previewImage) {
@@ -791,8 +964,44 @@ export default {
       // clear previous prediction when a new file is chosen
       this.predictedImage = null;
       this.classNames = '';
+      this.tempDetectedName = '';
       this.detectedConfidence = null;
       this.errorMessage = '';
+    },
+
+    // Left primary button handler: if detection already present, perform search using detected class.
+    // Otherwise, analyze the image then search if detection succeeds.
+    async leftSearchButtonClicked() {
+      // If category is general and there's a detected class, use it
+      if (this.category === 'general' && this.classNames) {
+        // prefer user-edited name if provided
+        this.itemName = (this.tempDetectedName && this.tempDetectedName.trim()) ? this.tempDetectedName.trim() : this.classNames;
+        // force search to only return items in security custody
+        this.searchStatusOverride = 'in_security_custody';
+        this.performSearch();
+        return;
+      }
+
+      // If no file selected, do nothing
+      if (!this.hasSelectedFile) return;
+
+      // If an analysis is in progress, wait for it to finish
+      if (this.isAnalyzingImage) return;
+
+      // Trigger analysis first
+      try {
+        await this.submitForm();
+      } catch (err) {
+        // submitForm handles its own errors; swallow here
+      }
+
+      // After analysis, if we have a detected classname, search for it
+      if (this.classNames) {
+        this.itemName = this.classNames;
+        // force search to only return items in security custody
+        this.searchStatusOverride = 'in_security_custody';
+        this.performSearch();
+      }
     },
     async readFileAsDataURL(file) {
       return new Promise((resolve, reject) => {
@@ -888,6 +1097,27 @@ export default {
         item.toLowerCase().includes(input)
       );
     },
+    filterDetectedSuggestions() {
+      const input = (this.tempDetectedName || '').toLowerCase();
+      this.detectedFilteredSuggestions = this.itemSuggestions.filter((item) =>
+        item.toLowerCase().includes(input)
+      );
+    },
+    selectDetectedSuggestion(suggestion) {
+      this.tempDetectedName = suggestion;
+      this.showDetectedSuggestions = false;
+    },
+    hideDetectedSuggestions() {
+      setTimeout(() => (this.showDetectedSuggestions = false), 150);
+    },
+    focusDetectedInput() {
+      // focus the detected-name input for quicker editing
+      try {
+        this.$refs.detectedInput && this.$refs.detectedInput.focus();
+      } catch (e) {
+        // ignore
+      }
+    },
     selectSuggestion(suggestion) {
       this.itemName = suggestion;
       this.showSuggestions = false;
@@ -918,6 +1148,8 @@ export default {
           if (this.sourceItemId) params.source_item_id = this.sourceItemId;
           const reporterId = this.reporterId || this.user?.id;
           if (reporterId) params.reporter_id = reporterId;
+          // Include status override if present
+          if (this.searchStatusOverride) params.status = this.searchStatusOverride;
           const resp = await axios.get('http://localhost:5000/api/items/search', {
             params,
           });
@@ -941,6 +1173,8 @@ export default {
           if (this.sourceItemId) params.source_item_id = this.sourceItemId;
           const reporterId = this.reporterId || this.user?.id;
           if (reporterId) params.reporter_id = reporterId;
+          // Include status override if present
+          if (this.searchStatusOverride) params.status = this.searchStatusOverride;
           const resp = await axios.get('http://localhost:5000/api/items/search', {
             params,
           });
@@ -959,6 +1193,8 @@ export default {
           this.errorMessage = 'An error occurred while searching. Please try again.';
         }
       } finally {
+        // clear override after search so subsequent searches are normal
+        this.searchStatusOverride = null;
         this.loading = false;
       }
     },
@@ -987,6 +1223,7 @@ export default {
       this.results = [];
       this.predictedImage = null;
       this.classNames = '';
+      this.tempDetectedName = '';
       this.detectedConfidence = null;
       this.errorMessage = '';
       this.resetQrState(true);
@@ -1018,6 +1255,18 @@ export default {
       this.selectedFileId = null;
       this.resetQrState(true);
     },
+    resetImageUpload() {
+      if (this.previewImageGeneral) {
+        URL.revokeObjectURL(this.previewImageGeneral);
+      }
+      this.previewImageGeneral = null;
+      this.selectedFileGeneral = null;
+      this.predictedImage = null;
+      this.classNames = '';
+      this.tempDetectedName = '';
+      this.detectedConfidence = null;
+      this.errorMessage = '';
+    },
     openClaimModal(item) {
       this.selectedClaimItem = item;
       this.claimMessage = "";
@@ -1031,6 +1280,32 @@ export default {
       this.claimMessage = "";
       this.claimError = "";
       this.claimSuccess = "";
+    },
+    formatTime(timeStr) {
+      if (!timeStr) return "N/A";
+      try {
+        const [hours, minutes] = timeStr.split(":");
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? "PM" : "AM";
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minutes} ${ampm}`;
+      } catch {
+        return timeStr;
+      }
+    },
+    async loadOfficeHours() {
+      try {
+        const response = await fetch("http://localhost:5000/api/office-hours/week");
+        if (!response.ok) throw new Error("Failed to fetch office hours");
+        this.weekSchedule = await response.json();
+      } catch (err) {
+        console.error("Failed to load office hours:", err);
+        this.weekSchedule = [];
+      }
+    },
+    closeClaimSuccessModal() {
+      this.showClaimSuccessModal = false;
+      this.resetSearch();
     },
     async submitClaim() {
       if (!this.selectedClaimItem || !this.user) {
@@ -1056,11 +1331,10 @@ export default {
         });
 
         if (claimRes.status === 201 || claimRes.status === 200) {
-          this.claimSuccess = "✅ Your claim request has been submitted and is now received by the security office. Please visit the security office for claiming and verification of the item.";
-          setTimeout(() => {
-            this.closeClaimModal();
-            this.resetSearch();
-          }, 2000);
+          // Load office hours before showing success modal
+          await this.loadOfficeHours();
+          this.showClaimModal = false;
+          this.showClaimSuccessModal = true;
         } else {
           this.claimError = claimRes.data?.message || "Failed to submit claim.";
         }

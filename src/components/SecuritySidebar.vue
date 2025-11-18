@@ -72,6 +72,17 @@
       </div>
 
       <div class="pt-2 border-t border-gray-200 dark:border-gray-800">
+        <h3 class="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400 px-2 mb-2">Office Management</h3>
+        <button
+          @click="selectPage('office-hours')"
+          :class="navButtonClass('office-hours')"
+          class="w-full px-4 py-2 rounded-lg transition-colors text-left"
+        >
+          Office Hours
+        </button>
+      </div>
+
+      <div class="pt-2 border-t border-gray-200 dark:border-gray-800">
         <button
           @click="goToProfile"
           class="w-full px-4 py-2 text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-yellow-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-left"

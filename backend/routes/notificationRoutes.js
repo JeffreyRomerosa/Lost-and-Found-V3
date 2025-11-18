@@ -344,6 +344,67 @@ router.put("/:id/claim", async (req, res) => {
 });
 
 /**
+ * ✅ POST /api/notifications/item-received
+ * Create a notification when an item is marked as received by security staff
+ * Request body: { item_id, user_id }
+ */
+router.post("/item-received", async (req, res) => {
+  const { item_id, user_id } = req.body;
+
+  if (!item_id || !user_id) {
+    return res.status(400).json({ error: "Missing item_id or user_id" });
+  }
+
+  try {
+    // Create the notification
+    const result = await pool.query(
+      `
+      INSERT INTO notifications (user_id, item_id, type, category, is_read, created_at)
+      VALUES ($1, $2, 'item_received', 'delivery', FALSE, NOW())
+      RETURNING *
+      `,
+      [user_id, item_id]
+    );
+
+    const notification = result.rows[0];
+
+    // Fetch the item details
+    const itemResult = await pool.query(
+      `SELECT name, category, student_id FROM items WHERE id = $1`,
+      [item_id]
+    );
+
+    const item = itemResult.rows[0];
+
+    if (!item) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+
+    // Emit real-time notification via socket
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`user_${user_id}`).emit("itemReceived", {
+        notification_id: notification.id,
+        item_id: item_id,
+        item_name: item.name,
+        item_category: item.category,
+        item_student_id: item.student_id,
+        message: "The item you delivered or turned over to the security office has been received successfully. Thank you for your cooperation.",
+        timestamp: notification.created_at,
+      });
+    }
+
+    res.status(201).json({
+      message: "Item received notification created successfully",
+      notification,
+    });
+  } catch (err) {
+    console.error("❌ Error creating item received notification:", err);
+    res.status(500).json({ error: "Failed to create notification" });
+  }
+});
+
+/**
  * ✅ DELETE /api/notifications/:notification_id
  * Delete a notification by ID
  */

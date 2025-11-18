@@ -103,6 +103,14 @@ app.set("io", io);
 io.on("connection", (socket) => {
   console.log("✅ Client connected:", socket.id);
 
+  // ✅ When user joins, add them to a user-specific room
+  socket.on("joinUserRoom", (userId) => {
+    if (userId) {
+      socket.join(`user_${userId}`);
+      console.log(`✅ User ${userId} joined room user_${userId}`);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("❌ Client disconnected:", socket.id);
   });
@@ -119,6 +127,7 @@ import userRoutes from "./routes/user.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import itemRoutes from "./routes/itemRoutes.js";
 import claimRoutes from "./routes/claimRoutes.js";
+import officeHoursRoutes from "./routes/officeHoursRoutes.js";
 
 // ====================
 // API Routes
@@ -131,6 +140,7 @@ app.use("/api/profile", profileRoutes); // Profile management
 app.use("/api/notifications", notificationRoutes); // Notifications
 app.use("/api/items", itemRoutes); // Items management ✅
 app.use("/api/claims", claimRoutes);
+app.use("/api/office-hours", officeHoursRoutes); // Office hours management
 
 // ====================
 // Catch-All 404 Handler

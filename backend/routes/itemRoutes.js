@@ -385,7 +385,7 @@ router.post("/", async (req, res) => {
         user_id, name, description, category, brand, color, location, type, image_url, student_id, department, status
       )
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
-        CASE WHEN $8 = 'found' THEN 'in_security_custody' ELSE 'reported_lost' END
+        CASE WHEN $8 = 'found' THEN 'pending' ELSE 'reported_lost' END
       )
       RETURNING *;
       `,
@@ -430,6 +430,21 @@ router.put("/:id", async (req, res) => {
   } = req.body;
 
   try {
+    // First, get the current item to check old status
+    const currentItem = await pool.query(
+      `SELECT status, reporter_id, type FROM items WHERE id = $1`,
+      [id]
+    );
+
+    if (currentItem.rowCount === 0) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    const oldStatus = currentItem.rows[0].status;
+    const reporterId = currentItem.rows[0].reporter_id;
+    const itemType = currentItem.rows[0].type;
+
+    // Update the item
     const result = await pool.query(
       `
       UPDATE items
@@ -465,7 +480,42 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "Item not found" });
     }
 
-    res.json({ message: "Item updated successfully", item: result.rows[0] });
+    const updatedItem = result.rows[0];
+
+    // ✅ If status changed to 'in_security_custody', create a notification for the reporter
+    if (status === 'in_security_custody' && oldStatus !== 'in_security_custody' && reporterId && itemType === 'found') {
+      try {
+        const notificationResult = await pool.query(
+          `
+          INSERT INTO notifications (user_id, item_id, type, category, is_read, created_at)
+          VALUES ($1, $2, 'item_received', 'delivery', FALSE, NOW())
+          RETURNING *
+          `,
+          [reporterId, id]
+        );
+
+        const notification = notificationResult.rows[0];
+
+        // Emit real-time notification via socket
+        const io = req.app.get("io");
+        if (io) {
+          const payload = {
+            notification_id: notification.id,
+            item_id: id,
+            item_name: updatedItem.name,
+            item_category: updatedItem.category,
+            item_student_id: updatedItem.student_id,
+            message: "The item you delivered or turned over to the security office has been received successfully. Thank you for your cooperation.",
+            timestamp: notification.created_at,
+          };
+          io.to(`user_${reporterId}`).emit("itemReceived", payload);
+        }
+      } catch (notificationErr) {
+        console.error("⚠️ Error creating item received notification:", notificationErr);
+      }
+    }
+
+    res.json({ message: "Item updated successfully", item: updatedItem });
   } catch (err) {
     console.error("❌ Error updating item:", err);
     res.status(500).json({ error: "Failed to update item" });

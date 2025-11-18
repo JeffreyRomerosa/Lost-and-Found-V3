@@ -29,56 +29,93 @@
             <span v-if="!notificationsSeen && claimNotifications.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center">{{ claimNotifications.length }}</span>
           </button>
 
-          <!-- Notifications dropdown (claim requests for items in security custody) -->
+          <!-- Minimal Claim Detail Modal - Show only latest claim -->
           <div
-            v-if="showNotificationsDropdown"
-            class="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-50 p-3 max-h-96 overflow-auto transition-colors"
+            v-if="showNotificationsDropdown && claimNotifications.length > 0"
+            class="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl shadow-lg border border-yellow-400 dark:border-yellow-600 z-50 p-4 transition-colors"
           >
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="font-semibold text-gray-900 dark:text-white">Claim Requests</h4>
-              <button @click.stop="clearAllNotifications" class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Clear</button>
+            <!-- Header with close button -->
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                <h3 class="font-semibold text-sm">New Claim Request</h3>
+              </div>
+              <button
+                @click.stop="showNotificationsDropdown = false"
+                class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            <div v-if="claimNotifications.length === 0" class="text-gray-600 dark:text-gray-400 text-sm">No claim requests at the moment.</div>
-            <div v-for="note in claimNotifications" :key="note.claim_id" class="border-t border-gray-200 dark:border-gray-800 pt-3 mt-3">
-                      <div class="flex gap-3">
-                        <img
-                          v-if="((note.item && note.item.image_url) || note.item_image || note.display_image) && !note.itemImageError"
-                          :src="getFullUrl((note.item && note.item.image_url) || note.item_image || note.display_image)"
-                          @error="note.itemImageError=true"
-                          class="w-12 h-12 object-cover rounded"
-                        />
-                        <div v-else class="w-12 h-12 rounded bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400">N/A</div>
 
-                <div class="flex-1 text-sm">
-                  <div class="flex justify-between items-start">
-                    <div>
-                      <div class="font-medium text-gray-900 dark:text-white">{{ (note.item && note.item.name) || note.item_name || 'Unknown item' }}</div>
-                      <div class="text-xs text-gray-600 dark:text-gray-400">Status: {{ formatStatus((note.item && note.item.status) || note.item_status) }}</div>
-                    </div>
-                    <div class="text-xs text-gray-600 dark:text-gray-400">{{ formatDate(note.created_at) }}</div>
-                  </div>
-
-                    <div class="mt-2 text-xs text-gray-700 dark:text-gray-300">
-                    <div class="mb-1"><strong>Message:</strong> <span class="text-sm">{{ note.message || note.claimant_message || '—' }}</span></div>
-                    <div class="flex items-center gap-2 mt-1">
-                      <img
-                        v-if="note.claimant_profile_picture"
-                        :src="getFullUrl(note.claimant_profile_picture)"
-                        class="w-7 h-7 rounded-full object-cover"
-                        @error="note._claimantImageError = true; $event.target.style.display='none'"
-                      />
-                      <div v-else class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs">{{ (note.claimant_name || 'U')[0].toUpperCase() }}</div>
-                      <div class="text-xs">
-                        <div class="font-medium text-gray-900 dark:text-white">{{ note.claimant_name || note.user_name || 'Unknown' }}</div>
-                        <div class="text-gray-600 dark:text-gray-400">{{ note.claimant_email || note.user_email || '' }}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="mt-3 flex justify-end">
-                    <button @click.stop="openRequestFromNotification(note)" class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-gray-900 dark:text-black rounded text-sm transition-colors font-medium">View Request</button>
-                  </div>
+            <!-- Latest claim minimal details -->
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+              <!-- Item Image -->
+              <div class="mb-3 flex justify-center">
+                <img
+                  v-if="claimNotifications[0] && (claimNotifications[0].item_image || claimNotifications[0].display_image) && !claimNotifications[0]._modalImageError"
+                  :src="getFullUrl(claimNotifications[0].item_image || claimNotifications[0].display_image)"
+                  @error="claimNotifications[0]._modalImageError = true"
+                  class="h-32 w-32 object-cover rounded-lg border-2 border-yellow-500"
+                />
+                <div v-else class="h-32 w-32 rounded-lg bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
+                  <span class="text-xs">No Image</span>
                 </div>
+              </div>
+
+              <!-- Item Name -->
+              <h4 class="font-semibold text-center text-gray-900 dark:text-white mb-1 text-sm">
+                {{ claimNotifications[0]?.item_name || claimNotifications[0]?.display_name || 'Unknown Item' }}
+              </h4>
+
+              <!-- Claimant Info -->
+              <div class="flex items-center gap-2 mb-3 p-2 bg-white dark:bg-gray-900 rounded">
+                <img
+                  v-if="claimNotifications[0]?.claimant_profile_picture && !claimNotifications[0]?._claimantImageError"
+                  :src="getFullUrl(claimNotifications[0].claimant_profile_picture)"
+                  @error="claimNotifications[0]._claimantImageError = true"
+                  class="w-7 h-7 rounded-full object-cover border border-yellow-500"
+                />
+                <div v-else class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                  {{ (claimNotifications[0]?.claimant_name || 'U')[0].toUpperCase() }}
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-xs text-gray-900 dark:text-white">{{ claimNotifications[0]?.claimant_name || 'Unknown Claimant' }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ claimNotifications[0]?.claimant_email || 'N/A' }}</p>
+                </div>
+              </div>
+
+              <!-- Timestamp -->
+              <p class="text-xs text-gray-600 dark:text-gray-400 text-center mb-3">
+                {{ formatDate(claimNotifications[0]?.created_at) }}
+              </p>
+            </div>
+
+            <!-- Action Button -->
+            <button 
+              @click.stop="viewClaimDetails(claimNotifications[0])"
+              class="mt-3 w-full px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-medium rounded text-sm transition-colors"
+            >
+              View Full Details
+            </button>
+          </div>
+
+          <!-- No Claims Message -->
+          <div
+            v-if="showNotificationsDropdown && claimNotifications.length === 0"
+            class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-50 p-4 transition-colors"
+          >
+            <div class="flex items-center gap-3">
+              <div class="flex-shrink-0">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900 dark:text-white">No new claim requests</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">You're all caught up!</p>
               </div>
             </div>
           </div>
@@ -150,6 +187,10 @@
       <!-- DASHBOARD -->
       <div v-if="currentPage === 'dashboard'">
         <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Dashboard Overview</h2>
+        
+        <!-- Office Hours Widget -->
+        <OfficeHoursWidget />
+        
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-colors">
             <p class="text-gray-600 dark:text-gray-400 text-sm">Lost Reports</p>
@@ -454,8 +495,20 @@
           <div
             v-for="claim in filteredClaimRequests"
             :key="claim.claim_id"
-            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors"
+            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors relative"
           >
+            <!-- Delete Button (Top-Right Corner) - For Approved & Rejected Claims -->
+            <button
+              v-if="claim.status === 'approved' || claim.status === 'rejected'"
+              @click="claim.status === 'approved' ? deleteApprovedClaim(claim) : deleteRejectedClaim(claim)"
+              class="absolute top-3 right-3 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-700 transition shadow-lg hover:shadow-xl z-10"
+              :title="`Delete ${claim.status} claim`"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
             <div class="flex gap-3">
               <!-- Item Image -->
               <div class="flex-shrink-0">
@@ -539,15 +592,7 @@
                 <!-- View Details Button at Bottom Right -->
                 <div class="flex justify-between items-center pt-2">
                   <div>
-                    <!-- Delete button for rejected claims -->
-                    <button
-                      v-if="claim.status === 'rejected'"
-                      @click="deleteRejectedClaim(claim)"
-                      class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-medium transition"
-                      title="Delete rejected claim"
-                    >
-                      Delete
-                    </button>
+                    <!-- Delete button moved to top-right X button -->
                   </div>
                   <button
                     @click="viewClaimDetails(claim)"
@@ -1176,6 +1221,76 @@
           </div>
         </div>
       </div>
+
+      <!-- Delete Claim Confirmation Modal -->
+      <div v-if="showDeleteConfirmModal && claimToDelete" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg p-6 w-96 border border-gray-300 dark:border-gray-700 shadow-2xl">
+          <!-- Header -->
+          <h3 class="text-xl font-bold text-red-600 dark:text-red-500 mb-4">Delete Approved Claim</h3>
+          
+          <!-- Content -->
+          <div class="space-y-4 mb-6">
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              Are you sure you want to permanently delete this approved claim? This action cannot be undone.
+            </p>
+            
+            <!-- Claim Details -->
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2 border border-gray-200 dark:border-gray-700">
+              <div class="flex items-center gap-3">
+                <img
+                  v-if="claimToDelete.claimant_profile_picture"
+                  :src="getFullUrl(claimToDelete.claimant_profile_picture)"
+                  class="w-10 h-10 rounded-full object-cover"
+                  @error="$event.target.style.display='none'"
+                />
+                <div v-else class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                  {{ (claimToDelete.claimant_name || 'U')[0].toUpperCase() }}
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-white text-sm">{{ claimToDelete.claimant_name || 'Unknown' }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ claimToDelete.claimant_email || 'N/A' }}</p>
+                </div>
+              </div>
+              
+              <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                  <strong>Item:</strong> {{ claimToDelete.item_name || 'Unknown item' }}
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                  <strong>Requested:</strong> {{ formatDate(claimToDelete.created_at) }}
+                </p>
+              </div>
+            </div>
+
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-lg p-3">
+              <p class="text-xs text-red-700 dark:text-red-400">
+                <strong>⚠️ Warning:</strong> This will permanently remove the claim from the system. The claimant will not receive a notification.
+              </p>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-3">
+            <button
+              @click="cancelDeleteApprovedClaim"
+              class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition font-medium text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmDeleteApprovedClaim"
+              class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium text-sm"
+            >
+              Delete Permanently
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- OFFICE HOURS MANAGEMENT PAGE -->
+      <div v-if="currentPage === 'office-hours'">
+        <EditableOfficeHours />
+      </div>
     </div>
   </div>
 </template>
@@ -1186,6 +1301,8 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import initSocket, { disconnectSocket } from "../socket";
 import SecuritySidebar from "../components/SecuritySidebar.vue";
+import OfficeHoursWidget from "../components/OfficeHoursWidget.vue";
+import EditableOfficeHours from "../components/EditableOfficeHours.vue";
 
 const API_BASE_URL = "http://localhost:5000";
 const router = useRouter();
@@ -1200,6 +1317,12 @@ watch(currentPage, (newPage) => {
 
 const handleSidebarSelect = (page) => {
   currentPage.value = page;
+  
+  // Hide notifications dropdown and mark as seen when sidebar is clicked
+  if (showNotificationsDropdown.value) {
+    showNotificationsDropdown.value = false;
+  }
+  notificationsSeen.value = true;
   
   // 🔄 Fetch claims from database when navigating to claim-requests page
   if (page === 'claim-requests') {
@@ -1250,6 +1373,10 @@ const claimReviewItemSafe = computed(() => {
   return c.item || null;
 });
 const claimReviewItemImageError = ref(false);
+
+// Delete claim confirmation modal
+const showDeleteConfirmModal = ref(false);
+const claimToDelete = ref(null);
 
 
 // Unread counters
@@ -1533,11 +1660,12 @@ const toggleNotifications = () => {
   }
 };
 
-const clearAllNotifications = () => {
-  claimNotifications.value = [];
-  pendingClaimsCount.value = 0;
+// Mark notifications as seen but keep them in the list (they're in the Claim Requests section)
+const viewClaimRequests = () => {
+  // Navigate to claim-requests page
+  handleSidebarSelect('claim-requests');
+  // Mark notifications as seen
   notificationsSeen.value = true;
-  showNotificationsDropdown.value = false;
 };
 
 // 🔄 Periodic sync: Check for new claims (OPTIMIZED: longer interval, only when needed)
@@ -2000,45 +2128,6 @@ const addClaimNotification = async (rawClaim) => {
   }
 };
 
-const openRequestFromNotification = async (note) => {
-  try {
-    const id = note.claimed_item_id || note.item?.id || note.item_id || (note.related_item_ids && note.related_item_ids[0]);
-    let item = note.item;
-    if (!item && id) item = await fetchItemById(id);
-    if (!item) {
-      alert('Item details not available.');
-      return;
-    }
-
-    // set modal notification details so the modal can render notification info
-    modalNotificationDetails.value = note.notification || {
-      id: note.notification_id || note.notification?.id || null,
-      item_id: note.notification_item_id || note.item?.id || null,
-      matched_item_id: note.notification_matched_item_id || null,
-    };
-
-    // open the claims modal for this item (this will fetch claims)
-    await openClaimsModal(item);
-    claimModalItem.value = item;
-    // close dropdown
-    // remove this notification from the bell (but keep it in the persistent store)
-    try {
-      const idx = claimNotifications.value.findIndex(n => (n.claim_id || n.id) === (note.claim_id || note.id));
-      if (idx !== -1) {
-        claimNotifications.value.splice(idx, 1);
-      }
-      // if no more notifications, mark as seen so the badge hides
-      if (claimNotifications.value.length === 0) notificationsSeen.value = true;
-    } catch (e) {
-      console.warn('Failed to remove notification from bell after opening:', e);
-    }
-    showNotificationsDropdown.value = false;
-  } catch (e) {
-    console.error('Failed to open request from notification', e);
-    alert('Failed to open request.');
-  }
-};
-
 const normalizeClaim = (raw = {}) => {
   const normalized = { ...raw };
 
@@ -2367,11 +2456,25 @@ const confirmClaimRejection = async (claim) => {
     console.log("[SecurityDashboard] Rejecting claim", { claimId: rawId, trimmed, url });
     await axios.put(url);
 
-    // Keep status as "pending" when rejecting (don't change to "rejected")
-    // The rejection is just a notification, status stays pending for future reconsideration
-    console.log(`✅ Claim ${claimId} rejected (status remains pending)`);
+    // Update the claim status to "rejected" locally
+    claim.status = "rejected";
     
-    alert("❌ Claim rejected. The claim status remains pending.");
+    // Also update in all local lists
+    const updateClaimStatus = (list) => {
+      const idx = list.findIndex((c) => (c.claim_id || c.id) === claimId);
+      if (idx !== -1) {
+        list[idx].status = "rejected";
+      }
+    };
+    
+    updateClaimStatus(claimRequests.value);
+    updateClaimStatus(claimNotifications.value);
+    updateClaimStatus(claimRequestsStore.value);
+    updateClaimStatus(dbClaimRequests.value);
+
+    console.log(`✅ Claim ${claimId} rejected and status updated to 'rejected'. Claim is now deletable.`);
+    
+    alert("❌ Claim rejected. The claimant has been notified. You can now delete this claim.");
     closeClaimReviewModal();
   } catch (err) {
     console.error("Error rejecting claim:", err);
@@ -2499,6 +2602,99 @@ const deleteRejectedClaim = async (claim) => {
   }
 };
 
+const deleteApprovedClaim = async (claim) => {
+  // Show confirmation modal instead of browser confirm
+  claimToDelete.value = claim;
+  showDeleteConfirmModal.value = true;
+};
+
+const confirmDeleteApprovedClaim = async () => {
+  const claim = claimToDelete.value;
+  if (!claim) return;
+
+  try {
+    const claimId = claim.claim_id || claim.id;
+    if (!claimId) {
+      alert("❌ Error: Claim ID not found.");
+      console.error("❌ Claim object has no ID:", claim);
+      showDeleteConfirmModal.value = false;
+      claimToDelete.value = null;
+      return;
+    }
+
+    console.log(`🗑️ Attempting to delete approved claim with ID: "${claimId}"`);
+    console.log(`🗑️ Claim status: ${claim.status}`);
+    console.log(`🗑️ Full claim object:`, claim);
+    
+    // ✅ Verify claim still exists and is in approved status before deletion
+    try {
+      // First, try to fetch all claims to check current status
+      const checkRes = await axios.get(`${API_BASE_URL}/api/claims/security/all`);
+      const allClaims = Array.isArray(checkRes.data) ? checkRes.data : [];
+      
+      console.log(`🔍 Searching for claim ${claimId} in ${allClaims.length} claims from database`);
+      
+      // The API returns claim_id (not id), so search by claim_id
+      const currentClaim = allClaims.find(c => String(c.claim_id) === String(claimId));
+      
+      if (!currentClaim) {
+        console.warn(`⚠️ Claim ${claimId} not found in current database. It may have been already deleted.`);
+        console.log(`📋 Available claim IDs in database:`, allClaims.map(c => c.claim_id));
+        alert("❌ Claim not found. It may have been already deleted.");
+        // Remove from local list anyway
+        const idx = claimNotifications.value.findIndex(n => (n.claim_id || n.id) === claimId);
+        if (idx !== -1) claimNotifications.value.splice(idx, 1);
+        showDeleteConfirmModal.value = false;
+        claimToDelete.value = null;
+        return;
+      }
+      
+      if (currentClaim.status !== 'approved') {
+        console.warn(`⚠️ Claim ${claimId} is no longer in approved status. Current status: ${currentClaim.status}`);
+        alert(`❌ Claim status has changed to "${currentClaim.status}". Only approved claims can be deleted from top corner.`);
+        showDeleteConfirmModal.value = false;
+        claimToDelete.value = null;
+        return;
+      }
+    } catch (checkErr) {
+      console.error("⚠️ Could not verify claim status before deletion:", checkErr);
+      // Continue anyway - backend will validate
+    }
+    
+    const res = await axios.delete(`${API_BASE_URL}/api/claims/${claimId}`);
+    
+    if (res.status === 200 || res.data) {
+      console.log(`✅ Approved claim deleted: ${claimId}`, res.data);
+      
+      // Remove from claimNotifications
+      const index = claimNotifications.value.findIndex((n) => (n.claim_id || n.id) === claimId);
+      if (index !== -1) {
+        claimNotifications.value.splice(index, 1);
+      }
+      
+      alert("✅ Approved claim has been deleted.");
+      
+      // 🔄 Refresh the claims from database
+      await fetchClaimsFromDatabase();
+      console.log("✅ Refreshed claims from database after deletion");
+    }
+    
+    showDeleteConfirmModal.value = false;
+    claimToDelete.value = null;
+  } catch (err) {
+    console.error("❌ Error deleting approved claim:", err);
+    console.error("Error details:", err.response?.data || err.message);
+    alert(`Failed to delete the approved claim: ${err.response?.data?.message || err.message}`);
+    showDeleteConfirmModal.value = false;
+    claimToDelete.value = null;
+  }
+};
+
+const cancelDeleteApprovedClaim = () => {
+  showDeleteConfirmModal.value = false;
+  claimToDelete.value = null;
+};
+
 const highlightNewItem = async (id) => {
   newItemIds.value.push(id);
   await nextTick();
@@ -2597,11 +2793,17 @@ socket.on("newClaimRequest", (claimData) => {
 const confirmReceived = async () => {
   if (!reviewItem.value) return;
   try {
+    console.log("🔄 Marking item as received. Current status:", reviewItem.value.status);
+    
     const res = await axios.put(`${API_BASE_URL}/api/items/${reviewItem.value.id}`, {
       status: "in_security_custody",
+      name: reviewItem.value.name,
+      description: reviewItem.value.description,
+      category: reviewItem.value.category,
     });
 
-    const updated = { ...(res.data || {}), imageError: false, reporterImageError: false };
+    const updated = { ...(res.data.item || res.data || {}), imageError: false, reporterImageError: false };
+    console.log("✅ Item updated successfully:", updated);
 
     // Try to find and replace the item in any of the lists so the UI updates immediately
     const lists = [foundItems.value, lostItems.value, returnedHistory.value];
@@ -2609,7 +2811,6 @@ const confirmReceived = async () => {
     for (const list of lists) {
       const idx = list.findIndex((i) => String(i.id) === String(updated.id));
       if (idx !== -1) {
-        // preserve some local flags if present
         const prev = list[idx] || {};
         list.splice(idx, 1, { ...prev, ...updated });
         replaced = true;
@@ -2617,7 +2818,6 @@ const confirmReceived = async () => {
       }
     }
 
-    // If not found, add to foundItems if status is non-returned
     if (!replaced) {
       if ((updated.status || "").toLowerCase() === "returned") {
         returnedHistory.value.unshift(updated);
@@ -2626,17 +2826,11 @@ const confirmReceived = async () => {
       }
     }
 
-    // Broadcast to other listeners via socket (server may rebroadcast as well)
     socket.emit("updateReport", updated);
 
     reviewItem.value = null;
-    // Refresh the page to ensure the dashboard reflects the latest server state
-    try {
-      window.location.reload();
-    } catch (e) {
-      // best-effort reload; ignore errors
-      console.warn('Could not reload page after confirming received', e);
-    }
+    console.log("✅ Item status updated successfully. No page reload needed - UI updated reactively.");
+    
   } catch (err) {
     console.error("Error marking received:", err);
     alert("Failed to update item status. Please try again.");

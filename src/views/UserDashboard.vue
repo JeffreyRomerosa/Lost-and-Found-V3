@@ -1,5 +1,23 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6 pb-24">
+  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6 pb-32">
+    <!-- Item Received Modal -->
+    <ItemReceivedModal
+      :isOpen="showItemReceivedModal"
+      :itemName="itemReceivedModalData.itemName"
+      :itemId="itemReceivedModalData.itemId"
+      @close="closeItemReceivedModal"
+    />
+
+    <!-- Claim Status Notifications -->
+    <div class="max-w-6xl mx-auto">
+      <ClaimStatusNotification
+        :notifications="notifications"
+        @dismiss="dismissClaimNotification"
+        @view-item="viewClaimItemDetails"
+        @resubmit-claim="resubmitClaimForItem"
+      />
+    </div>
+
     <!-- Top-Right Profile & Notification -->
     <div class="absolute top-6 right-6 flex items-center gap-4">
       <!-- Notification Icon -->
@@ -46,47 +64,127 @@
             <li
               v-for="notif in notifications"
               :key="notif.id"
-              class="text-gray-900 dark:text-white py-3 px-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+              :class="[
+                'text-gray-900 dark:text-white py-3 px-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition',
+                notif.type === 'item_received' ? 'bg-green-50 dark:bg-green-900/20' : '',
+                notif.type === 'claim_approved' ? 'bg-blue-50 dark:bg-blue-900/20' : '',
+                notif.type === 'claim_rejected' ? 'bg-red-50 dark:bg-red-900/20' : ''
+              ]"
             >
-              <p class="font-medium mb-1 text-sm">{{ notif.message }}</p>
-              <p
-                v-if="notif.display_description"
-                class="text-xs text-gray-600 dark:text-gray-400"
-              >
-                {{ notif.display_description }}
-              </p>
-              <p v-if="notif.created_at" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                {{ notif.created_at }}
-              </p>
-              <div class="flex items-start gap-2 mt-2">
-                <img
-                  v-if="notif.display_image"
-                  :src="notif.display_image"
-                  alt="Matched item"
-                  class="w-10 h-10 object-cover rounded border border-gray-300 dark:border-gray-600"
-                />
-                <div class="text-xs">
-                  <p class="font-semibold text-gray-900 dark:text-white">{{ notif.display_name }}</p>
-                  <p v-if="notif.display_student_id" class="text-gray-600 dark:text-gray-400">
-                    ID: {{ notif.display_student_id }}
+              <!-- Item Received Notification (Special Style) -->
+              <div v-if="notif.type === 'item_received'" class="flex items-start gap-3">
+                <div class="text-2xl">📦</div>
+                <div class="flex-1">
+                  <p class="font-semibold text-sm text-green-700 dark:text-green-300">Item Received!</p>
+                  <p class="font-medium mb-1 text-sm">{{ notif.message }}</p>
+                  <p v-if="notif.display_name" class="text-xs text-gray-600 dark:text-gray-400">
+                    <strong>Item:</strong> {{ notif.display_name }}
                   </p>
-                  <p class="text-gray-600 dark:text-gray-400">Location: {{ notif.matched_location || "N/A" }}</p>
+                  <p v-if="notif.display_student_id" class="text-xs text-gray-600 dark:text-gray-400">
+                    <strong>ID:</strong> {{ notif.display_student_id }}
+                  </p>
+                  <p v-if="notif.created_at" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    {{ notif.created_at }}
+                  </p>
+                  <div class="mt-2">
+                    <button
+                      @click.stop="clearNotification(notif)"
+                      class="px-3 py-1 text-xs rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600 transition"
+                    >
+                      Acknowledge
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div class="mt-3 flex items-center gap-2">
-                <button
-                  @click="goToNotificationForMatch(notif)"
-                  class="px-3 py-1 text-xs rounded-lg bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition"
+
+              <!-- Claim Approved Notification -->
+              <div v-else-if="notif.type === 'claim_approved'" class="flex items-start gap-3">
+                <div class="text-2xl">✅</div>
+                <div class="flex-1">
+                  <p class="font-semibold text-sm text-blue-700 dark:text-blue-300">Claim Approved!</p>
+                  <p class="font-medium mb-1 text-sm">{{ notif.message }}</p>
+                  <p v-if="notif.display_name" class="text-xs text-gray-600 dark:text-gray-400">
+                    <strong>Item:</strong> {{ notif.display_name }}
+                  </p>
+                  <p v-if="notif.created_at" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    {{ notif.created_at }}
+                  </p>
+                  <div class="mt-2">
+                    <button
+                      @click.stop="clearNotification(notif)"
+                      class="px-3 py-1 text-xs rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 transition"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Claim Rejected Notification -->
+              <div v-else-if="notif.type === 'claim_rejected'" class="flex items-start gap-3">
+                <div class="text-2xl">❌</div>
+                <div class="flex-1">
+                  <p class="font-semibold text-sm text-red-700 dark:text-red-300">Claim Rejected</p>
+                  <p class="font-medium mb-1 text-sm">{{ notif.message }}</p>
+                  <p v-if="notif.display_name" class="text-xs text-gray-600 dark:text-gray-400">
+                    <strong>Item:</strong> {{ notif.display_name }}
+                  </p>
+                  <p v-if="notif.created_at" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    {{ notif.created_at }}
+                  </p>
+                  <div class="mt-2">
+                    <button
+                      @click.stop="clearNotification(notif)"
+                      class="px-3 py-1 text-xs rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Match Notifications (Original Style) -->
+              <div v-else>
+                <p class="font-medium mb-1 text-sm">{{ notif.message }}</p>
+                <p
+                  v-if="notif.display_description"
+                  class="text-xs text-gray-600 dark:text-gray-400"
                 >
-                  View Found Item
-                </button>
-                <button
-                  @click.stop="clearNotification(notif)"
-                  class="px-2 py-1 text-xs rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-                  title="Remove notification"
-                >
-                  Clear
-                </button>
+                  {{ notif.display_description }}
+                </p>
+                <p v-if="notif.created_at" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  {{ notif.created_at }}
+                </p>
+                <div class="flex items-start gap-2 mt-2">
+                  <img
+                    v-if="notif.display_image"
+                    :src="notif.display_image"
+                    alt="Matched item"
+                    class="w-10 h-10 object-cover rounded border border-gray-300 dark:border-gray-600"
+                  />
+                  <div class="text-xs">
+                    <p class="font-semibold text-gray-900 dark:text-white">{{ notif.display_name }}</p>
+                    <p v-if="notif.display_student_id" class="text-gray-600 dark:text-gray-400">
+                      ID: {{ notif.display_student_id }}
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400">Location: {{ notif.matched_location || "N/A" }}</p>
+                  </div>
+                </div>
+                <div class="mt-3 flex items-center gap-2">
+                  <button
+                    @click="goToNotificationForMatch(notif)"
+                    class="px-3 py-1 text-xs rounded-lg bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition"
+                  >
+                    View Found Item
+                  </button>
+                  <button
+                    @click.stop="clearNotification(notif)"
+                    class="px-2 py-1 text-xs rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                    title="Remove notification"
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
             </li>
           </ul>
@@ -186,6 +284,15 @@
       class="mb-6 max-w-6xl mx-auto px-4 py-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 text-sm"
     >
       {{ claimResultMessage }}
+    </div>
+
+    <!-- Item Received Message -->
+    <div
+      v-if="itemReceivedMessage"
+      class="mb-6 max-w-6xl mx-auto px-4 py-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 text-sm flex items-start gap-3"
+    >
+      <span class="text-xl">📦</span>
+      <span>{{ itemReceivedMessage }}</span>
     </div>
 
     <!-- Dashboard Sections -->
@@ -431,8 +538,14 @@
 
 <script>
 import initSocket, { disconnectSocket } from "../socket";
+import ClaimStatusNotification from '../components/ClaimStatusNotification.vue';
+import ItemReceivedModal from '../components/ItemReceivedModal.vue';
 export default {
   name: "UserDashboard",
+  components: {
+    ClaimStatusNotification,
+    ItemReceivedModal
+  },
   data() {
     return {
       showNotifications: false,
@@ -447,6 +560,12 @@ export default {
       showClaimModal: false,
       claimMessage: "",
       claimResultMessage: "",
+      itemReceivedMessage: "",
+      showItemReceivedModal: false,
+      itemReceivedModalData: {
+        itemName: null,
+        itemId: null
+      },
       socket: null,
       apiBaseUrl: "http://localhost:5000",
       notificationPollTimer: null,
@@ -633,6 +752,95 @@ export default {
 
         // ✅ Make sure to include the correct item_id from backend
         const mapped = data.map((n) => {
+          // ✅ Special handling for item_received notifications
+          if (n.type === 'item_received') {
+            const createdAtRaw = n.created_at ? new Date(n.created_at) : new Date();
+            return {
+              id: n.id,
+              notification_id: n.id,
+              item_id: n.item_id,
+              type: 'item_received',
+              category: 'delivery',
+              message: "The item you delivered or turned over to the security office has been received successfully. Thank you for your cooperation.",
+              display_name: n.item_name || "Your Item",
+              display_student_id: n.item_student_id || null,
+              display_description: null,
+              display_image: n.item_image_url || null,
+              matched_location: "N/A",
+              matched_status: "in_security_custody",
+              is_read: Boolean(n.is_read),
+              created_at: createdAtRaw.toLocaleString(),
+              created_at_ts: createdAtRaw.getTime(),
+              match_id: null,
+              lost_item_id: null,
+              found_item_id: n.item_id,
+              matched_item_id: null,
+              base_item_type: "found",
+              claim_status: null,
+            };
+          }
+
+          // ✅ Special handling for claim approved notifications
+          if (n.type === 'claim_approved') {
+            const createdAtRaw = n.created_at ? new Date(n.created_at) : new Date();
+            return {
+              id: n.id,
+              notification_id: n.id,
+              item_id: n.item_id,
+              type: 'claim_approved',
+              category: n.category || 'general',
+              message: `Your claim request for "${n.item_name || 'this item'}" has been approved! Please visit the Security Office with your student ID to complete the item handover.`,
+              display_name: n.item_name || "Your Item",
+              display_student_id: n.item_student_id || null,
+              display_description: null,
+              display_image: n.item_image_url || null,
+              matched_location: "N/A",
+              matched_status: "approved",
+              is_read: Boolean(n.is_read),
+              created_at: createdAtRaw.toLocaleString(),
+              created_at_ts: createdAtRaw.getTime(),
+              match_id: null,
+              lost_item_id: null,
+              found_item_id: n.item_id,
+              matched_item_id: null,
+              base_item_type: "found",
+              claim_status: "approved",
+            };
+          }
+
+          // ✅ Special handling for claim rejected notifications
+          if (n.type === 'claim_rejected') {
+            const createdAtRaw = n.created_at ? new Date(n.created_at) : new Date();
+            const detailSegments = [];
+            if (n.color) detailSegments.push(`Color: ${n.color}`);
+            if (n.matched_location && n.matched_location !== "N/A") detailSegments.push(`Stored at: ${n.matched_location}`);
+            
+            return {
+              id: n.id,
+              notification_id: n.id,
+              item_id: n.item_id,
+              type: 'claim_rejected',
+              category: n.category || 'general',
+              message: `Your claim request for the item "${n.item_name || 'this item'}" has been rejected since we couldn't verify that you're the owner of the item. You can try again another time.`,
+              display_name: n.item_name || "Your Item",
+              display_student_id: n.item_student_id || null,
+              display_description: detailSegments.length > 0 ? detailSegments.join(" • ") : null,
+              display_image: n.item_image_url || null,
+              matched_location: "N/A",
+              matched_status: "rejected",
+              is_read: Boolean(n.is_read),
+              created_at: createdAtRaw.toLocaleString(),
+              created_at_ts: createdAtRaw.getTime(),
+              match_id: null,
+              lost_item_id: null,
+              found_item_id: n.item_id,
+              matched_item_id: null,
+              base_item_type: "found",
+              claim_status: "rejected",
+              color: n.color || null,
+            };
+          }
+
           const baseClaimStatus = this.normalizeClaimStatus(
             n.base_user_claim_status
           );
@@ -951,8 +1159,6 @@ export default {
 
         // Only react if this event is for the logged-in user
         if (String(evt.user_id) !== String(user.id)) return;
-
-        console.log("✅ Claim approved notification received:", evt);
         
         // Show a success message
         this.claimResultMessage = evt.message || "Your claim has been approved!";
@@ -987,8 +1193,6 @@ export default {
 
         // Only react if this event is for the logged-in user
         if (String(evt.user_id) !== String(user.id)) return;
-
-        console.log("❌ Claim rejected notification received:", evt);
         
         // Show an error message
         this.claimResultMessage = evt.message || "Your claim has been rejected.";
@@ -1016,6 +1220,30 @@ export default {
       }
     },
 
+    async handleItemReceivedEvent(evt) {
+      try {
+        // Show modal with item details
+        this.itemReceivedModalData = {
+          itemName: evt.item_name || "Your Item",
+          itemId: evt.item_student_id || null
+        };
+        this.showItemReceivedModal = true;
+
+        // Refresh notifications to show the new item received notification
+        await this.loadNotifications();
+
+        // Send desktop notification
+        if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+          new Notification("📦 Item Received!", {
+            body: evt.message || "Your item has been received by the security office.",
+            icon: "/logo.png",
+          });
+        }
+      } catch (e) {
+        console.error("Error handling item received event:", e);
+      }
+    },
+
     viewMatchDetails(match) {
       if (!match) {
         this.selectedMatch = null;
@@ -1037,6 +1265,11 @@ export default {
     closeClaimModal() {
       this.showClaimModal = false;
       this.claimMessage = "";
+    },
+
+    closeItemReceivedModal() {
+      this.showItemReceivedModal = false;
+      this.itemReceivedModalData = { itemName: null, itemId: null };
     },
 
     async submitClaim() {
@@ -1233,6 +1466,24 @@ export default {
       if (!report?.id) return;
       this.$router.push({ path: "/report", query: { edit_id: report.id } });
     },
+
+    // Handler for claim status notifications
+    dismissClaimNotification(notifId) {
+      // Mark notification as read (dismiss from view)
+      this.notifications = this.notifications.filter(n => n.id !== notifId);
+    },
+
+    viewClaimItemDetails(itemId) {
+      if (!itemId) return;
+      // Navigate to lost/found details page for the claimed item
+      this.$router.push({ path: "/lost-details", query: { item_id: itemId } });
+    },
+
+    resubmitClaimForItem(itemId) {
+      if (!itemId) return;
+      // Navigate to lost details where user can view and potentially resubmit claim
+      this.$router.push({ path: "/lost-details", query: { item_id: itemId } });
+    },
   },
   mounted() {
     // Hydrate immediately from localStorage for faster UI update (will be refreshed by fetch)
@@ -1262,7 +1513,7 @@ export default {
     // Periodically refresh so matches still appear if realtime events are missed.
     this.notificationPollTimer = setInterval(() => {
       this.loadNotifications({ autoPreview: true });
-    }, 20000);
+    }, 10000);
 
     // Setup Socket.io for realtime notifications (shared singleton)
     try {
@@ -1272,6 +1523,13 @@ export default {
       this.socket.on("newNotification", this.handleNewNotificationEvent);
       this.socket.on("claimApproved", this.handleClaimApprovedEvent);
       this.socket.on("claimRejected", this.handleClaimRejectedEvent);
+      this.socket.on("itemReceived", this.handleItemReceivedEvent);
+      
+      // ✅ When socket reconnects, refresh notifications to catch any missed events
+      this.socket.on("connect", () => {
+        console.log("✅ Socket reconnected, refreshing notifications...");
+        this.loadNotifications({ autoPreview: true });
+      });
     } catch (e) {
       console.error("Failed to initialize realtime socket:", e);
     }
@@ -1287,6 +1545,8 @@ export default {
         this.socket.off("newNotification", this.handleNewNotificationEvent);
         this.socket.off("claimApproved", this.handleClaimApprovedEvent);
         this.socket.off("claimRejected", this.handleClaimRejectedEvent);
+        this.socket.off("itemReceived", this.handleItemReceivedEvent);
+        this.socket.off("connect");
         // Do not call disconnect() on the shared socket here. Other components may still need it.
       } catch (e) {
         // Non-fatal: ignore socket cleanup errors during unmount

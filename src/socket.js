@@ -12,7 +12,6 @@ export function initSocket() {
   if (!socket) {
     socket = io(SOCKET_URL, {
       withCredentials: true,
-      // do not force transports here; allow the client to negotiate best transport
     });
 
     socket.on("connect_error", (err) => {
@@ -21,6 +20,19 @@ export function initSocket() {
 
     socket.on("connect_timeout", (err) => {
       console.warn("Socket connect_timeout:", err);
+    });
+
+    // ✅ On connection, join the user's room
+    socket.on("connect", () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user?.id) {
+          socket.emit("joinUserRoom", user.id);
+          console.log(`📍 Joined user room for user ${user.id}`);
+        }
+      } catch (e) {
+        console.warn("Could not join user room:", e);
+      }
     });
   }
 

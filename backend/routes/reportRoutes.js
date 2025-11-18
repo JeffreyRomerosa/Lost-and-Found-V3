@@ -51,6 +51,9 @@ router.post("/report", upload.single("photo"), async (req, res) => {
     // ✅ Handle image upload
     const image_url = req.file ? `/uploads/items/${req.file.filename}` : null;
 
+    // ✅ Use current timestamp if datetime is not provided or empty
+    const reportDateTime = datetime && datetime.trim() ? datetime : new Date().toISOString();
+
     // ✅ Insert item with reporter_id linked to users table
     const result = await pool.query(
       `INSERT INTO items 
@@ -64,7 +67,7 @@ router.post("/report", upload.single("photo"), async (req, res) => {
         course || null,
         brand || null,
         color || null,
-        datetime,
+        reportDateTime,
         location,
         description || null,
         type,
@@ -126,15 +129,13 @@ router.post("/report", upload.single("photo"), async (req, res) => {
       console.log(`🔍 ID Match Query: Looking for ${oppositeType} report with student_id=${student_id}`);
     } else {
       // ✅ For general items: Match by name, brand, and color
-      // IMPORTANT: Only match with found reports in security custody
-      // For general items: Match by name, brand, and color
-      // NOTE: Match regardless of item `status` so notifications are not
-      // missed due to the item not yet being marked 'in_security_custody'.
+      // IMPORTANT: Only match with found reports that are already in security custody
       matchQuery = await pool.query(
         `SELECT * FROM items
          WHERE type = $1
            AND category = $2
            AND id != $3
+           AND status = 'in_security_custody'
            AND LOWER(TRIM(name)) = LOWER(TRIM($4))
            AND LOWER(TRIM(COALESCE(brand, ''))) = LOWER(TRIM(COALESCE($5, '')))
            AND LOWER(TRIM(COALESCE(color, ''))) = LOWER(TRIM(COALESCE($6, '')))
@@ -142,7 +143,7 @@ router.post("/report", upload.single("photo"), async (req, res) => {
          LIMIT 1`,
         [oppositeType, category, newItem.id, name || '', brand || '', color || '']
       );
-      console.log(`🔍 Item Match Query: Looking for ${oppositeType} report with name="${name}", brand="${brand}", color="${color}"`);
+      console.log(`🔍 Item Match Query: Looking for ${oppositeType} report with name="${name}", brand="${brand}", color="${color}", status='in_security_custody'"`);
     }
 
     let matchedReport = null;
@@ -272,7 +273,16 @@ router.post("/report", upload.single("photo"), async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error inserting report:", err);
-    res.status(500).json({ error: "Failed to submit report" });
+    
+    // ✅ Provide more helpful error messages
+    let errorMessage = "Failed to submit report";
+    if (err.code === '22007') {
+      errorMessage = "Invalid date/time format. Please check the date and time you entered.";
+    } else if (err.code === '23502') {
+      errorMessage = "Missing required information. Please ensure all required fields are filled.";
+    }
+    
+    res.status(500).json({ error: errorMessage, details: err.message });
   }
 });
 

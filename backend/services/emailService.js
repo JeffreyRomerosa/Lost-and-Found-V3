@@ -123,3 +123,107 @@ const sendVerificationEmail = async (userEmail, verificationToken) => {
 };
 
 export default sendVerificationEmail;
+
+/**
+ * Send email notification when a claim is approved
+ */
+export const sendClaimApprovedEmail = async (userEmail, claimDetails) => {
+  const { claimantName, itemName, itemCategory } = claimDetails;
+  const frontendBase = process.env.FRONTEND_URL || 'http://localhost:8080';
+  const url = `${frontendBase}/notifications`;
+
+  const htmlContent = `
+    <h2>✅ Claim Approved!</h2>
+    <p>Good news! Your claim has been approved.</p>
+    
+    <div style="background-color: #f0f9ff; padding: 15px; border-radius: 5px; margin: 15px 0;">
+      <h3 style="margin-top: 0;">Claim Details:</h3>
+      <ul style="margin: 0;">
+        <li><strong>Item:</strong> ${itemName || 'N/A'}</li>
+        <li><strong>Category:</strong> ${itemCategory || 'General'}</li>
+        <li><strong>Status:</strong> Approved</li>
+      </ul>
+    </div>
+
+    <p><strong>Next Steps:</strong></p>
+    <p>Please visit the Security Office to complete the item handover process. Make sure to bring your student ID for verification.</p>
+
+    <p>
+      <a href="${url}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+        View in App
+      </a>
+    </p>
+
+    <p style="color: #666; font-size: 0.9em;">
+      Thank you for using the Lost & Found System. If you have any questions, please contact the Security Office.
+    </p>
+  `;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: userEmail,
+    subject: '✅ Your Claim Has Been Approved - Lost & Found System',
+    html: htmlContent,
+  };
+
+  try {
+    const transporter = await createTransporter();
+    await transporter.sendMail(mailOptions);
+    console.log('Claim approved email sent successfully to:', userEmail);
+  } catch (error) {
+    console.error('Error sending claim approved email:', error);
+    // Log error but don't throw - in-app notification is more important
+  }
+};
+
+/**
+ * Send email notification when a claim is rejected
+ */
+export const sendClaimRejectedEmail = async (userEmail, claimDetails) => {
+  const { claimantName, itemName, itemCategory } = claimDetails;
+  const frontendBase = process.env.FRONTEND_URL || 'http://localhost:8080';
+  const url = `${frontendBase}/notifications`;
+
+  const htmlContent = `
+    <h2>❌ Claim Rejected</h2>
+    <p>Unfortunately, your claim has been rejected by the Security Office.</p>
+    
+    <div style="background-color: #fff5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+      <h3 style="margin-top: 0;">Claim Details:</h3>
+      <ul style="margin: 0;">
+        <li><strong>Item:</strong> ${itemName || 'N/A'}</li>
+        <li><strong>Category:</strong> ${itemCategory || 'General'}</li>
+        <li><strong>Status:</strong> Rejected</li>
+      </ul>
+    </div>
+
+    <p><strong>What Happens Next?</strong></p>
+    <p>You may review the claim and resubmit if you believe this decision was incorrect. Please contact the Security Office for more information about why your claim was rejected.</p>
+
+    <p>
+      <a href="${url}" style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+        View Details in App
+      </a>
+    </p>
+
+    <p style="color: #666; font-size: 0.9em;">
+      If you have questions about this rejection, please contact the Security Office directly.
+    </p>
+  `;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: userEmail,
+    subject: '❌ Your Claim Has Been Rejected - Lost & Found System',
+    html: htmlContent,
+  };
+
+  try {
+    const transporter = await createTransporter();
+    await transporter.sendMail(mailOptions);
+    console.log('Claim rejected email sent successfully to:', userEmail);
+  } catch (error) {
+    console.error('Error sending claim rejected email:', error);
+    // Log error but don't throw - in-app notification is more important
+  }
+};

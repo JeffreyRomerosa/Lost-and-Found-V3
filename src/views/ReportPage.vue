@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6">
+  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6 pb-32">
     <!-- Header -->
     <div class="max-w-2xl mx-auto mb-8">
       <div class="flex items-center justify-between mb-6">
@@ -467,15 +467,20 @@
       v-if="submitted"
       class="max-w-2xl mx-auto"
     >
-      <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg text-center">
+      <!-- For Found Items: Show Office Hours + Delivery Instructions -->
+      <FoundItemDeliveryNotice
+        v-if="reportType === 'found'"
+        :itemType="itemCategory === 'id' ? 'Student ID' : 'General Item'"
+        @done="resetForm"
+      />
+
+      <!-- For Lost Items: Show standard success message -->
+      <div v-else class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg text-center">
         <div class="text-5xl mb-4">✅</div>
         <h2 class="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Report Submitted!</h2>
 
         <p class="text-gray-600 dark:text-gray-300 text-lg mb-8">
-          {{ reportType === "lost" 
-            ? "Your lost item report has been submitted. You'll be notified if a matching item is found."
-            : "Your found item report has been submitted. The owner will be notified if they match."
-          }}
+          Your lost item report has been submitted. You'll be notified if a matching item is found.
         </p>
 
         <button
@@ -486,7 +491,6 @@
         </button>
       </div>
     </div>
-  </div>
 
   <!-- 🔍 IMAGE MODAL (added from working template) -->
   <div
@@ -511,14 +515,29 @@
     </div>
   </div>
 
+  <!-- 📦 ITEM RECEIVED MODAL -->
+  <ItemReceivedModal
+    :isOpen="showItemReceivedModal"
+    :itemName="itemReceivedModalData.itemName"
+    :itemId="itemReceivedModalData.itemId"
+    @close="closeItemReceivedModal"
+  />
+  </div>
+
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted, watch } from "vue";
+import { reactive, ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import jsQR from 'jsqr';
+import FoundItemDeliveryNotice from '../components/FoundItemDeliveryNotice.vue';
+import { initSocket } from '../socket';
+import ItemReceivedModal from '../components/ItemReceivedModal.vue';
 
 const router = useRouter();
+
+// Socket instance
+let socket = null;
 
 // Core report state (will be auto-saved)
 const step = ref(1);
@@ -539,6 +558,10 @@ const objectDetected = ref(false);
 // Image Modal state
 const showImageModal = ref(false);
 const enlargedImageSrc = ref(null);
+
+// Item Received Modal state
+const showItemReceivedModal = ref(false);
+const itemReceivedModalData = ref({ itemName: null, itemId: null });
 
 const yoloApiUrl = "http://localhost:8080";
 const backendUrl = "http://localhost:5000/api";
@@ -635,7 +658,47 @@ onMounted(() => {
     reviewing.value = savedProgress.reviewing || false;
     submitted.value = savedProgress.submitted || false;
   }
+
+  // ✅ Socket listeners for item received notifications
+  socket = initSocket();
+  if (socket) {
+    socket.on("itemReceived", handleItemReceivedEvent);
+  }
 });
+
+onUnmounted(() => {
+  if (socket) {
+    socket.off("itemReceived", handleItemReceivedEvent);
+  }
+});
+
+const handleItemReceivedEvent = (evt) => {
+  try {
+    console.log("📦 Item received notification on ReportPage:", evt);
+    
+    // Show modal with item details
+    itemReceivedModalData.value = {
+      itemName: evt.item_name || "Your Item",
+      itemId: evt.item_student_id || null
+    };
+    showItemReceivedModal.value = true;
+
+    // Send desktop notification
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      new Notification("📦 Item Received!", {
+        body: evt.message || "Your item has been received by the security office.",
+        icon: "/logo.png",
+      });
+    }
+  } catch (e) {
+    console.error("Error handling item received event on ReportPage:", e);
+  }
+};
+
+const closeItemReceivedModal = () => {
+  showItemReceivedModal.value = false;
+  itemReceivedModalData.value = { itemName: null, itemId: null };
+};
 
 // 🧼 Optional: clear saved progress when done
 const clearProgress = () => {
@@ -869,6 +932,17 @@ const confirmSubmit = async () => {
     const formData = new FormData();
     const data = itemCategory.value === "id" ? idForm : generalForm;
 
+    // ✅ Validate required fields
+    if (!data.location || !data.location.trim()) {
+      alert("Please enter the location where the item was found/lost.");
+      return;
+    }
+
+    if (!data.dateTime || !data.dateTime.trim()) {
+      alert("Please enter the date and time when the item was found/lost.");
+      return;
+    }
+
     formData.append("type", reportType.value);
     formData.append("category", itemCategory.value);
     formData.append("name", data.name || "");
@@ -876,8 +950,8 @@ const confirmSubmit = async () => {
     formData.append("course", data.course || "");
     formData.append("brand", data.brand || "");
     formData.append("color", data.color || "");
-    formData.append("datetime", data.dateTime || "");
-    formData.append("location", data.location || "");
+    formData.append("datetime", data.dateTime);
+    formData.append("location", data.location);
     formData.append("description", data.description || "");
     formData.append("cover", data.cover || "");
     formData.append("reporter_id", reporterId.value);
@@ -888,14 +962,17 @@ const confirmSubmit = async () => {
       body: formData,
     });
 
-    if (!response.ok) throw new Error("Failed to submit report");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Failed to submit report");
+    }
 
     submitted.value = true;
     reviewing.value = false;
     clearProgress(); // ✅ Clear after successful submit
   } catch (err) {
     console.error("❌ Error submitting report:", err);
-    alert("Failed to submit report. Please try again.");
+    alert("Failed to submit report: " + err.message);
   }
 };
 

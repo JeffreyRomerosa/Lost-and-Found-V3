@@ -648,6 +648,11 @@
               </div>
             </div>
           </div>
+
+          <!-- OFFICE HOURS MANAGEMENT SECTION -->
+          <div v-if="activePage === 'office-hours'">
+            <EditableOfficeHours />
+          </div>
         </main>
       </div>
     </div>
@@ -670,6 +675,7 @@ import initSocket from "../socket";
 import AdminSidebar from '../components/AdminSidebar.vue';
 import AdminNavbar from '../components/AdminNavbar.vue';
 import DashboardCard from '../components/DashboardCard.vue';
+import EditableOfficeHours from '../components/EditableOfficeHours.vue';
 
 const API_BASE_URL = "http://localhost:5000";
 const router = useRouter();

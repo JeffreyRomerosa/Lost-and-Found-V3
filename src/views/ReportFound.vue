@@ -1,5 +1,8 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-950 px-4 transition-colors duration-200">
+  <div class="min-h-screen flex flex-col items-center justify-center p-6 pb-32 bg-white dark:bg-gray-950 px-4 transition-colors duration-200">
+    <!-- Office Hours Information -->
+    <OfficeHoursPublicInfo />
+    
     <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-lg p-6 border border-gray-200 dark:border-gray-800">
       <h1 class="text-2xl font-bold text-yellow-500 dark:text-yellow-400 mb-6 text-center">Report Found Item</h1>
       <form @submit.prevent="submitFoundReport">
@@ -63,16 +66,12 @@
             <p class="mb-2 text-gray-600 dark:text-gray-300">Review your information before submitting.</p>
             <button type="submit" class="w-full py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700">Submit Report</button>
           </div>
-          <!-- Step 9 -->
+          <!-- Step 9: Success with Office Hours -->
           <div v-else-if="step === 9" class="mb-4">
-            <label class="block font-semibold mb-2 text-white">Step 9: Delivery and Claiming</label>
-            <p class="text-gray-300">
-              Please deliver the found item to
-              <span v-if="foundItem.type === 'Student ID'">OSAS</span>
-              <span v-else>the Security Office</span>
-              for secure storage and claiming.
-            </p>
-            <button @click="resetForm" class="mt-4 w-full py-2 rounded bg-gray-700 text-white font-semibold hover:bg-gray-800">Done</button>
+            <FoundItemDeliveryNotice
+              :itemType="foundItem.type"
+              @done="resetForm"
+            />
           </div>
           <!-- Navigation Buttons -->
           <div class="flex justify-between mt-4" v-if="step > 2 && step < 8">
@@ -91,8 +90,15 @@
 </template>
 
 <script>
+import OfficeHoursPublicInfo from '../components/OfficeHoursPublicInfo.vue';
+import FoundItemDeliveryNotice from '../components/FoundItemDeliveryNotice.vue';
+
 export default {
   name: 'ReportFound',
+  components: {
+    OfficeHoursPublicInfo,
+    FoundItemDeliveryNotice
+  },
   data() {
     return {
       step: 1,
@@ -124,7 +130,7 @@ export default {
       this.foundItem.image = file;
     },
     nextStep() {
-      if (this.canProceed && this.step < 😎 {
+      if (this.canProceed && this.step < 8) {
         this.step++;
       }
     },

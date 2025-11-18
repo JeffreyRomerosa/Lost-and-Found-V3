@@ -1,28 +1,34 @@
 <template>
   <!-- Navbar will NOT show on login or register pages -->
   <nav v-if="showNavbar"
-       class="fixed bottom-4 left-1/2 -translate-x-1/2 
+       class="fixed bottom-6 left-1/2 -translate-x-1/2 
          bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
          flex justify-around w-[90%] max-w-md 
-         rounded-2xl py-3 shadow-lg z-50 transition-colors duration-200 backdrop-blur-sm bg-white/90 dark:bg-gray-900/90">
+         rounded-2xl py-3 shadow-lg z-40 transition-colors duration-200 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95">
     <RouterLink v-for="item in nav" :key="item.to" 
       :to="item.to"
       class="flex flex-col items-center text-sm transition-all text-gray-700 dark:text-gray-400
-             hover:text-yellow-600 dark:hover:text-yellow-400"
+             hover:text-yellow-600 dark:hover:text-yellow-400 relative"
       :class="{ 'text-yellow-600 dark:text-yellow-400': $route.path === item.to }">
       <component :is="item.icon" class="w-6 h-6 mb-1" />
+      <!-- Notification badge for Alerts -->
+      <span v-if="item.to === '/notifications' && unreadNotificationCount > 0" 
+            class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold">
+        {{ unreadNotificationCount }}
+      </span>
       {{ item.label }}
     </RouterLink>
   </nav>
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { Home, Search, Bell, User, PlusSquare } from "lucide-vue-next";
 
 const route = useRoute();
 const userRole = ref('');
+const unreadNotificationCount = ref(0);
 
 onMounted(() => {
   // Get user role from localStorage on component mount
@@ -32,7 +38,33 @@ onMounted(() => {
   } catch (err) {
     console.error('Error getting user role:', err);
   }
+  
+  // Load initial notification count
+  loadNotificationCount();
 });
+
+// Watch for route changes to refresh notification count
+watch(() => route.path, () => {
+  loadNotificationCount();
+});
+
+const loadNotificationCount = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!user?.id) return;
+    
+    const res = await fetch(`http://localhost:5000/api/notifications/${user.id}`);
+    if (!res.ok) throw new Error('Failed to fetch notifications');
+    
+    const data = await res.json();
+    // Count unread notifications of all types
+    unreadNotificationCount.value = Array.isArray(data) 
+      ? data.filter(n => !n.is_read).length 
+      : 0;
+  } catch (err) {
+    console.error('Failed to load notification count:', err);
+  }
+};
 
 const nav = [
   { to: "/userdashboard", label: "Home", icon: Home },

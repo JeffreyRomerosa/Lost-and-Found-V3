@@ -1,5 +1,6 @@
 import express from "express";
 import pool from "../db.js";
+import { sendClaimApprovedEmail, sendClaimRejectedEmail } from "../services/emailService.js";
 
 const router = express.Router();
 
@@ -124,25 +125,12 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "Missing required fields: user_id or item_id" });
     }
 
-    // If the client did not provide a notification_id (e.g. search page flow),
-    // create an in-app notification here and use its id for the claim record.
+    // 🔔 NOTIFICATION LOGIC:
+    // - If notification_id is provided (from match notifications), use it
+    // - If notification_id is NOT provided (from search page claim flow), do NOT create one
+    // Rationale: Users should only see notifications for MATCHED items found in reports,
+    // not for their own claim requests from the search page (they already know they claimed it)
     let usedNotificationId = notification_id || null;
-    if (!usedNotificationId) {
-      try {
-        const notifInsert = await pool.query(
-          `INSERT INTO notifications (user_id, item_id, category, type)
-           VALUES ($1, $2, $3, $4) RETURNING id`,
-          [user_id, item_id, 'claim', 'claim_request']
-        );
-        usedNotificationId = notifInsert.rows[0]?.id || null;
-      } catch (notifCreateErr) {
-        console.warn('⚠️ Failed to create internal notification for claim:', notifCreateErr);
-        // Proceed with null notification id — downstream code expects a notification_id
-        // but many branches assume a notification exists. We'll keep usedNotificationId null
-        // and let later logic handle any missing joins gracefully.
-        usedNotificationId = null;
-      }
-    }
 
     // 🔒 STRICT: Check if this exact user has ANY existing claim (pending, approved, rejected) for this item
     // This prevents ALL duplicate claims regardless of item match relationships
@@ -359,7 +347,7 @@ router.get("/security/all", async (req, res) => {
       FROM claims c
       JOIN users u ON c.user_id = u.id
       JOIN items i ON c.item_id = i.id
-      JOIN notifications n ON c.notification_id = n.id
+      LEFT JOIN notifications n ON c.notification_id = n.id
       ORDER BY c.created_at DESC
     `);
 
@@ -677,40 +665,255 @@ router.put("/:claim_id/approve", async (req, res) => {
     await ensureClaimMessageColumn();
     const { claim_id } = req.params;
 
-    const result = await pool.query(
-      `UPDATE claims SET status = 'approved', updated_at = NOW() WHERE id = $1 RETURNING *`,
+    // First, fetch the claim to ensure it exists and has user_id (including notification_id to check if from match)
+    const fetchResult = await pool.query(
+      `SELECT id, user_id, item_id, status, created_at, claimant_message, notification_id FROM claims WHERE id = $1`,
       [claim_id]
     );
 
-    if (result.rows.length === 0) {
+    if (fetchResult.rows.length === 0) {
       return res.status(404).json({ message: "Claim not found" });
     }
 
-    const claim = result.rows[0];
+    const claim = fetchResult.rows[0];
 
-    // Sync item's user_claim_status
-    await pool.query(
-      `UPDATE items SET user_claim_status = 'confirmed_claim', updated_at = NOW() WHERE id = $1`,
+    // Update the claim status (wrapped with diagnostic logging to capture DB error details)
+    let updateResult;
+    try {
+      const sql = `UPDATE claims SET status = 'approved', updated_at = NOW() WHERE id = $1 RETURNING *`;
+      const params = [claim_id];
+      updateResult = await pool.query(sql, params);
+      // Merge the fetched claim data with the update result
+      const updatedClaim = { ...claim, ...updateResult.rows[0] };
+      // replace claim reference for downstream code
+      // (we keep `claim` variable as-is for emitting earlier data; updatedClaim not used further in this function)
+    } catch (dbErr) {
+      console.error('❌ Failed executing UPDATE for claim approval', {
+        query: `UPDATE claims SET status = 'approved', updated_at = NOW() WHERE id = $1 RETURNING *`,
+        params: [claim_id],
+        code: dbErr.code,
+        position: dbErr.position,
+        detail: dbErr.detail,
+        message: dbErr.message,
+        full: dbErr,
+      });
+      // Re-throw so outer catch handles the error path as before
+      throw dbErr;
+    }
+
+    // Fetch item details to get the reporter (reporter_id of the item)
+    const itemResult = await pool.query(
+      `SELECT id, name, reporter_id as item_reporter_id FROM items WHERE id = $1`,
       [claim.item_id]
     );
 
-    // 🔔 Emit real-time notification to claimant
+    const item = itemResult.rows[0];
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    // Sync item's user_claim_status and set claimant_id
     try {
-      const io = req.app.get("io");
-      if (io) {
-        io.emit("claimApproved", {
+      await pool.query(
+        `UPDATE items SET user_claim_status = 'confirmed_claim', claimant_id = $1, updated_at = NOW() WHERE id = $2`,
+        [claim.user_id, claim.item_id]
+      );
+      console.log(`✅ Updated item ${claim.item_id} status to confirmed_claim, set claimant_id=${claim.user_id}`);
+    } catch (updateErr) {
+      console.error(`⚠️ Failed to update item status on approval:`, updateErr);
+    }
+
+    // 🗑️ Handle item deletion based on claim source
+    try {
+      if (claim.notification_id) {
+        // ✅ CASE 1: Claim came from a MATCH (notification_id exists)
+        // Delete BOTH the matched lost item and the found item IF BOTH are in "In Security Custody" status
+        console.log(`🔍 Claim came from match (notification_id: ${claim.notification_id}). Checking both matched items...`);
+        
+        // Get the match relationship to find both items
+        const matchResult = await pool.query(
+          `SELECT lost_item_id, found_item_id FROM matches 
+           WHERE lost_item_id = $1 OR found_item_id = $1`,
+          [claim.item_id]
+        );
+
+        if (matchResult.rows.length > 0) {
+          const match = matchResult.rows[0];
+          const lostItemId = match.lost_item_id;
+          const foundItemId = match.found_item_id;
+
+          // Get the status of both items
+          const lostItemStatusResult = await pool.query(
+            `SELECT status FROM items WHERE id = $1`,
+            [lostItemId]
+          );
+          const foundItemStatusResult = await pool.query(
+            `SELECT status FROM items WHERE id = $1`,
+            [foundItemId]
+          );
+
+          const lostItemStatus = lostItemStatusResult.rows.length > 0 ? lostItemStatusResult.rows[0].status : null;
+          const foundItemStatus = foundItemStatusResult.rows.length > 0 ? foundItemStatusResult.rows[0].status : null;
+
+          console.log(`📋 Lost item status: ${lostItemStatus}, Found item status: ${foundItemStatus}`);
+
+          // Only delete if BOTH items are in "In Security Custody" status
+          if (lostItemStatus === 'In Security Custody' && foundItemStatus === 'In Security Custody') {
+            // Delete both items
+            await pool.query(`DELETE FROM items WHERE id = $1`, [lostItemId]);
+            console.log(`✅ Deleted lost item: ${lostItemId}`);
+
+            await pool.query(`DELETE FROM items WHERE id = $1`, [foundItemId]);
+            console.log(`✅ Deleted found item (security custody): ${foundItemId}`);
+
+            // Also delete the match relationship
+            await pool.query(`DELETE FROM matches WHERE lost_item_id = $1 OR found_item_id = $1`, [lostItemId]);
+            console.log(`✅ Deleted match relationship`);
+          } else {
+            console.log(`⚠️ Not deleting matched items: lost item status is ${lostItemStatus}, found item status is ${foundItemStatus}. Both must be "In Security Custody".`);
+          }
+        }
+      } else {
+        // ✅ CASE 2: Claim came from SEARCH PAGE (no notification_id)
+        // Delete ONLY the found item with "In Security Custody" status
+        console.log(`🔍 Claim came from search page (no notification_id). Deleting only the found item if in security custody...`);
+        
+        // Check if this item is in "In Security Custody" status
+        const itemStatusResult = await pool.query(
+          `SELECT status FROM items WHERE id = $1`,
+          [claim.item_id]
+        );
+
+        if (itemStatusResult.rows.length > 0 && itemStatusResult.rows[0].status === 'In Security Custody') {
+          await pool.query(`DELETE FROM items WHERE id = $1`, [claim.item_id]);
+          console.log(`✅ Deleted found item in security custody: ${claim.item_id}`);
+        } else {
+          console.log(`⚠️ Item ${claim.item_id} is not in "In Security Custody" status, skipping deletion`);
+        }
+      }
+    } catch (deleteErr) {
+      console.error(`⚠️ Failed to delete items on claim approval:`, deleteErr);
+      // Continue anyway - this is not critical for claim approval
+    }
+
+    // 🔔 Create database notifications for both claimant and reporter
+    const claimantMessage = "You've successfully claimed the item.";
+    const reporterMessage = "The item you turned over has been claimed by the rightful owner.";
+
+    try {
+      // Notification for claimant
+      // Note: Don't insert is_read as a column - let DB default it if it has a DEFAULT constraint
+      console.log(`[DEBUG] About to insert claimant notification with params:`, {
+        user_id: claim.user_id,
+        item_id: claim.item_id,
+        category: "general",
+        type: "claim_approved",
+        is_read: false,
+      });
+      
+      const claimantNotifSql = `INSERT INTO notifications (user_id, item_id, category, type, is_read)
+         VALUES ($1, $2, $3, $4, $5)`;
+      const claimantNotifParams = [claim.user_id, claim.item_id, "general", "claim_approved", false];
+      
+      console.log(`[DEBUG] Claimant notif SQL:`, claimantNotifSql);
+      console.log(`[DEBUG] Claimant notif params:`, claimantNotifParams);
+      
+      await pool.query(claimantNotifSql, claimantNotifParams);
+      console.log(`✅ Created claim approval notification for claimant ${claim.user_id}`);
+
+      // Notification for item reporter (only if different from claimant)
+      if (item.item_reporter_id && item.item_reporter_id !== claim.user_id) {
+        console.log(`[DEBUG] About to insert reporter notification with params:`, {
+          user_id: item.item_reporter_id,
+          item_id: claim.item_id,
+          category: "general",
+          type: "item_claimed",
+          is_read: false,
+        });
+        
+        const reporterNotifSql = `INSERT INTO notifications (user_id, item_id, category, type, is_read)
+           VALUES ($1, $2, $3, $4, $5)`;
+        const reporterNotifParams = [item.item_reporter_id, claim.item_id, "general", "item_claimed", false];
+        
+        console.log(`[DEBUG] Reporter notif SQL:`, reporterNotifSql);
+        console.log(`[DEBUG] Reporter notif params:`, reporterNotifParams);
+        
+        await pool.query(reporterNotifSql, reporterNotifParams);
+        console.log(`✅ Created item claimed notification for reporter ${item.item_reporter_id}`);
+      }
+    } catch (notifErr) {
+      console.error("⚠️ Failed to insert notifications:", {
+        message: notifErr.message,
+        code: notifErr.code,
+        position: notifErr.position,
+        detail: notifErr.detail,
+        hint: notifErr.hint,
+        sqlState: notifErr.sqlState,
+        routine: notifErr.routine,
+        file: notifErr.file,
+        line: notifErr.line,
+        full: notifErr,
+      });
+      // Continue anyway - socket emit is more important for real-time
+    }
+
+    // 🔔 Emit real-time notifications to both claimant and reporter
+    const io = req.app.get("io");
+    if (io) {
+      try {
+        // Emit to claimant's room
+        io.to(`user_${claim.user_id}`).emit("claimApproved", {
           claim_id: claim.id,
           user_id: claim.user_id,
           item_id: claim.item_id,
+          item_name: item.name,
           status: "approved",
-          message: "Your claim has been approved! Please visit the Security Office to claim your item.",
+          message: claimantMessage,
+          notification_type: "claim_approved",
           timestamp: new Date().toISOString(),
         });
-        console.log(`✅ Emitted claimApproved event for user ${claim.user_id}, claim ${claim.id}`);
+        console.log(`✅ Emitted claimApproved event to claimant ${claim.user_id}`);
+      } catch (socketErr) {
+        console.error("⚠️ Failed to emit claimApproved socket event to claimant:", socketErr);
       }
-    } catch (socketErr) {
-      console.error("⚠️ Failed to emit claimApproved socket event:", socketErr);
-      // Continue anyway - don't fail the response if socket emit fails
+
+      // Emit to item reporter's room (only if different from claimant)
+      if (item.item_reporter_id && item.item_reporter_id !== claim.user_id) {
+        try {
+          io.to(`user_${item.item_reporter_id}`).emit("itemClaimed", {
+            claim_id: claim.id,
+            item_id: claim.item_id,
+            item_name: item.name,
+            claimant_id: claim.user_id,
+            status: "approved",
+            message: reporterMessage,
+            notification_type: "item_claimed",
+            timestamp: new Date().toISOString(),
+          });
+          console.log(`✅ Emitted itemClaimed event to reporter ${item.item_reporter_id}`);
+        } catch (socketErr) {
+          console.error("⚠️ Failed to emit itemClaimed socket event to reporter:", socketErr);
+        }
+      }
+    }
+
+    // 📧 Send email notification to claimant about approval
+    try {
+      const userResult = await pool.query(
+        `SELECT email, full_name FROM users WHERE id = $1`,
+        [claim.user_id]
+      );
+      if (userResult.rows.length > 0) {
+        const user = userResult.rows[0];
+        await sendClaimApprovedEmail(user.email, {
+          claimantName: user.full_name,
+          itemName: item.name,
+          itemCategory: claim.item_category || 'General',
+        });
+      }
+    } catch (emailErr) {
+      console.error("⚠️ Failed to send claim approved email:", emailErr.message);
+      // Continue anyway - in-app notification is more important
     }
 
     res.status(200).json({ message: "Claim approved", claim });
@@ -744,11 +947,35 @@ router.put("/:claim_id/reject", async (req, res) => {
 
     const claim = result.rows[0];
 
-    // Sync item's user_claim_status
-    await pool.query(
-      `UPDATE items SET user_claim_status = 'rejected_claim', updated_at = NOW() WHERE id = $1`,
-      [claim.item_id]
-    );
+    // Sync item's user_claim_status on rejection
+    try {
+      await pool.query(
+        `UPDATE items SET user_claim_status = 'rejected_claim', updated_at = NOW() WHERE id = $1`,
+        [claim.item_id]
+      );
+      console.log(`✅ Updated item ${claim.item_id} status to rejected_claim`);
+    } catch (updateErr) {
+      console.error(`⚠️ Failed to update item status on rejection:`, updateErr);
+    }
+
+    // 🔔 Create database notification for claimant
+    const rejectionMessage = "Your claim has been rejected. You may review and resubmit if you believe this was incorrect.";
+    try {
+      console.log(`[DEBUG] Inserting rejection notification for user ${claim.user_id} on item ${claim.item_id}`);
+      await pool.query(
+        `INSERT INTO notifications (user_id, item_id, category, type, is_read)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [claim.user_id, claim.item_id, "general", "claim_rejected", false]
+      );
+      console.log(`✅ Created claim rejection notification for user ${claim.user_id}`);
+    } catch (notifErr) {
+      console.error("⚠️ Failed to insert claim rejection notification:", {
+        message: notifErr.message,
+        code: notifErr.code,
+        position: notifErr.position,
+      });
+      // Continue anyway - socket emit is more important for real-time
+    }
 
     // 🔔 Emit real-time notification to claimant
     try {
@@ -759,7 +986,7 @@ router.put("/:claim_id/reject", async (req, res) => {
           user_id: claim.user_id,
           item_id: claim.item_id,
           status: "rejected",
-          message: "Your claim has been rejected. You may review and resubmit if you believe this was incorrect.",
+          message: rejectionMessage,
           timestamp: new Date().toISOString(),
         });
         console.log(`❌ Emitted claimRejected event for user ${claim.user_id}, claim ${claim.id}`);
@@ -767,6 +994,31 @@ router.put("/:claim_id/reject", async (req, res) => {
     } catch (socketErr) {
       console.error("⚠️ Failed to emit claimRejected socket event:", socketErr);
       // Continue anyway - don't fail the response if socket emit fails
+    }
+
+    // 📧 Send email notification to claimant about rejection
+    try {
+      const userResult = await pool.query(
+        `SELECT email, full_name FROM users WHERE id = $1`,
+        [claim.user_id]
+      );
+      if (userResult.rows.length > 0) {
+        const user = userResult.rows[0];
+        // Fetch item details for email
+        const itemResult = await pool.query(
+          `SELECT name, category FROM items WHERE id = $1`,
+          [claim.item_id]
+        );
+        const item = itemResult.rows[0];
+        await sendClaimRejectedEmail(user.email, {
+          claimantName: user.full_name,
+          itemName: item?.name || 'Item',
+          itemCategory: item?.category || 'General',
+        });
+      }
+    } catch (emailErr) {
+      console.error("⚠️ Failed to send claim rejected email:", emailErr.message);
+      // Continue anyway - in-app notification is more important
     }
 
     res.status(200).json({ message: "Claim rejected", claim });
@@ -797,7 +1049,7 @@ router.get("/pending/count", async (req, res) => {
 
 /**
  * @route DELETE /api/claims/:claim_id
- * @desc Delete a rejected claim (security staff only)
+ * @desc Delete a rejected or approved claim (security staff only)
  */
 router.delete("/:claim_id([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})", async (req, res) => {
   try {
@@ -824,10 +1076,10 @@ router.delete("/:claim_id([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-
 
     const claim = claimRes.rows[0];
 
-    // Only allow deletion of rejected claims (prevent accidental deletion of pending/approved claims)
-    if (claim.status !== "rejected") {
+    // Only allow deletion of rejected and approved claims (prevent accidental deletion of pending claims)
+    if (claim.status !== "rejected" && claim.status !== "approved") {
       return res.status(403).json({ 
-        message: `Cannot delete ${claim.status} claims. Only rejected claims can be deleted.` 
+        message: `Cannot delete ${claim.status} claims. Only rejected or approved claims can be deleted.` 
       });
     }
 
@@ -837,10 +1089,10 @@ router.delete("/:claim_id([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-
       [claim_id]
     );
 
-    console.log(`✅ Rejected claim deleted: ${claim_id} (user: ${claim.user_id})`);
+    console.log(`✅ ${claim.status} claim deleted: ${claim_id} (user: ${claim.user_id})`);
 
     res.status(200).json({ 
-      message: "Rejected claim deleted successfully", 
+      message: `${claim.status} claim deleted successfully`, 
       deleted_claim_id: claim_id 
     });
   } catch (error) {

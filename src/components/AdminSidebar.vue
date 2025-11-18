@@ -47,6 +47,16 @@
         <span v-if="activePage === 'users'" class="ml-auto w-1 h-6 bg-emerald-600 rounded-r"></span>
       </button>
 
+      <!-- Office Hours Management -->
+      <button
+        @click="selectPage('office-hours')"
+        :class="getNavButtonClass('office-hours')"
+      >
+        <span class="text-lg">⏰</span>
+        <span class="font-medium">Office Hours</span>
+        <span v-if="activePage === 'office-hours'" class="ml-auto w-1 h-6 bg-emerald-600 rounded-r"></span>
+      </button>
+
       <!-- Profile -->
       <button
         @click="() => emit('select-page', 'profile')"

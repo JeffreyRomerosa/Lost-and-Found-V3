@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4 sm:p-6 ">
+  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4 sm:p-6 pb-32">
     <!-- Header -->
     <div class="max-w-6xl mx-auto mb-6 sm:mb-8">
       <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-yellow-400 mb-2">Alerts</h1>
@@ -164,6 +164,9 @@
             <p v-if="selectedNotification.location">
               <span class="font-semibold text-gray-900 dark:text-white">Location:</span> {{ selectedNotification.location }}
             </p>
+            <p v-if="selectedNotification.color">
+              <span class="font-semibold text-gray-900 dark:text-white">Color:</span> {{ selectedNotification.color }}
+            </p>
             <p v-if="selectedNotification.status">
               <span class="font-semibold text-gray-900 dark:text-white">Status:</span> {{ selectedNotification.status }}
             </p>
@@ -237,24 +240,84 @@
     </div>
 
     <!-- Claim Submitted Confirmation -->
-    <div v-if="showClaimConfirmation" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div v-if="showClaimConfirmation" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <!-- Added responsive modal sizing -->
-      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-6 sm:p-8 max-w-sm w-full text-center border border-gray-200 dark:border-gray-800">
-        <div class="mb-4 sm:mb-6">
-          <svg class="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-sm my-6 border border-gray-200 dark:border-gray-800">
+        <!-- Success Message -->
+        <div class="text-center p-6 mb-4 border-b border-gray-200 dark:border-gray-800">
+          <div class="mb-4">
+            <svg class="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-yellow-400 mb-3 sm:mb-4">Claim Request Submitted!</h2>
+          <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+            Your claim request has been submitted. Please visit the security office for verification and claiming of the item.
+          </p>
         </div>
-        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-yellow-400 mb-3 sm:mb-4">Claim Request Submitted!</h2>
-        <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 sm:mb-8 leading-relaxed">
-          Your claim request has been submitted. Please visit the security office for verification and claiming of the item.
-        </p>
-        <button
-          @click="closeClaimConfirmation"
-          class="w-full py-2.5 sm:py-3 px-4 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition text-sm sm:text-base"
-        >
-          OK
-        </button>
+
+        <!-- Office Hours Section -->
+        <div v-if="getOfficeHours()" class="px-6 pb-6 space-y-4">
+          <!-- Today's Hours -->
+          <div :class="[
+            'p-4 rounded border-l-4',
+            getOfficeHours().isOpen
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-500 dark:border-green-400'
+              : 'bg-amber-50 dark:bg-amber-900/20 border-amber-500 dark:border-amber-400'
+          ]">
+            <h3 class="font-semibold mb-3 flex items-center gap-2" :class="[
+              getOfficeHours().isOpen
+                ? 'text-green-900 dark:text-green-100'
+                : 'text-amber-900 dark:text-amber-100'
+            ]">
+              <svg v-if="getOfficeHours().isOpen" class="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 3.002v6a3 3 0 01-.709 1.938l-5.854 7.381a3 3 0 01-4.474 0L3.172 10.938A3 3 0 012.5 9V3.457a3.066 3.066 0 012.767-3.002z" clip-rule="evenodd" />
+              </svg>
+              <svg v-else class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+              {{ getOfficeHours().isOpen ? '✓ Office is Open Today!' : '⚠ Office is Closed Today' }}
+            </h3>
+            
+            <!-- Today's Hours Display -->
+            <div class="p-3 bg-white dark:bg-gray-800 rounded border" :class="[
+              getOfficeHours().isOpen
+                ? 'border-green-200 dark:border-green-700'
+                : 'border-amber-200 dark:border-amber-700'
+            ]">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Today ({{ getOfficeHours().todayName }}):</p>
+              <div v-if="getOfficeHours().isOpen" class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                <p class="text-sm font-bold text-green-700 dark:text-green-300">
+                  {{ getOfficeHours().today.open }} - {{ getOfficeHours().today.close }}
+                </p>
+                <span class="text-xs bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded font-semibold">OPEN</span>
+              </div>
+              <div v-else class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                <p class="text-sm font-semibold text-red-700 dark:text-red-300">Closed Today</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Close Button -->
+          <button
+            @click="closeClaimConfirmation"
+            class="w-full py-2.5 sm:py-3 px-4 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition text-sm sm:text-base"
+          >
+            OK
+          </button>
+        </div>
+
+        <!-- Fallback if office hours not loaded -->
+        <div v-else class="px-6 pb-6">
+          <button
+            @click="closeClaimConfirmation"
+            class="w-full py-2.5 sm:py-3 px-4 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition text-sm sm:text-base"
+          >
+            OK
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -277,6 +340,7 @@ const claiming = ref(false);
 const claimResultMessage = ref("");
 const showClaimConfirmation = ref(false);
 const confirmationMessage = ref("");
+const weekSchedule = ref([]);
 
 const API_BASE = "http://localhost:5000";
 
@@ -293,12 +357,95 @@ const formatDate = (dateStr) => {
   });
 };
 
+// Format time from 24-hour to 12-hour AM/PM format
+const formatTime = (timeStr) => {
+  if (!timeStr) return "N/A";
+  try {
+    const [hours, minutes] = timeStr.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  } catch {
+    return timeStr;
+  }
+};
+
+// Load office hours from API
+const loadOfficeHours = async () => {
+  try {
+    const response = await fetch(`${API_BASE}/api/office-hours/week`);
+    if (!response.ok) throw new Error("Failed to fetch office hours");
+    weekSchedule.value = await response.json();
+  } catch (err) {
+    console.error("Failed to load office hours:", err);
+    weekSchedule.value = [];
+  }
+};
+
+// Get today's office hours
+const getOfficeHours = () => {
+  if (weekSchedule.value.length === 0) return null;
+  const today = new Date();
+  const todayIndex = today.getDay();
+  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const todaySchedule = weekSchedule.value[todayIndex] || {};
+  const isOpen = todaySchedule.is_open;
+  return {
+    today: {
+      open: isOpen ? formatTime(todaySchedule.opening_time) : "Closed",
+      close: isOpen ? formatTime(todaySchedule.closing_time) : "-",
+    },
+    todayName: dayNames[todayIndex],
+    isOpen: isOpen || false
+  };
+};
+
 // Map backend data to notification format
 const mapNotification = (row) => {
+  // Handle claim rejection notifications
+  if (row.type === 'claim_rejected') {
+    const detailSegments = [];
+    if (row.display_description) detailSegments.push(row.display_description);
+    if (row.color) detailSegments.push(`Color: ${row.color}`);
+    if (row.matched_location) detailSegments.push(`Stored at: ${row.matched_location}`);
+    
+    return {
+      id: row.id || `rejection-${Date.now()}`,
+      notification_id: row.id || null,
+      title: "❌ Claim Request Rejected",
+      message: `Your claim request for the item "${row.display_name || row.item_name || 'this item'}" has been rejected since we couldn't verify that you're the owner of the item. You can try again another time.`,
+      details: detailSegments.join(" • ") || `Item: ${row.display_name || row.item_name || 'Unknown'}`,
+      image: row.display_image ? `${API_BASE}${row.display_image}` : (row.item_image_url ? `${API_BASE}${row.item_image_url}` : null),
+      location: row.matched_location || null,
+      color: row.color || null,
+      status: "Rejected",
+      created_at: row.created_at || null,
+      is_rejection: true,
+    };
+  }
+
+  // Handle claim approved notifications
+  if (row.type === 'claim_approved') {
+    return {
+      id: row.id || `approval-${Date.now()}`,
+      notification_id: row.id || null,
+      title: "✅ Claim Request Approved",
+      message: `Your claim request for "${row.display_name || row.item_name || 'this item'}" has been approved! Please visit the Security Office with your student ID to complete the item handover.`,
+      details: `Item: ${row.display_name || row.item_name || 'Unknown'} • Status: Approved`,
+      image: row.display_image ? `${API_BASE}${row.display_image}` : null,
+      location: row.matched_location || null,
+      status: "Approved",
+      created_at: row.created_at || null,
+      is_approval: true,
+    };
+  }
+
+  // Handle match found notifications (original logic)
   const title =
     row.category?.toLowerCase() === "id"
-      ? "Student ID match found"
-      : "Item match found";
+      ? "⭐ Student ID match found"
+      : "⭐ Item match found";
 
   const message =
     row.category?.toLowerCase() === "id"
@@ -446,6 +593,8 @@ const submitClaim = async () => {
         "Your claim request has been submitted to the security office.";
       confirmationMessage.value = msg;
 
+      // Load office hours before showing confirmation
+      await loadOfficeHours();
       await loadNotifications();
       closeClaimModal();
       showClaimConfirmation.value = true;

@@ -1,5 +1,8 @@
 <template>
   <div class="p-6 animate-fade-in">
+    <!-- Office Hours Information -->
+    <OfficeHoursPublicInfo />
+
     <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Lost Item Details</h2>
     <div class="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-lg border border-gray-200 dark:border-gray-800">
       <div class="w-full h-40 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
@@ -12,3 +15,13 @@
     </div>
   </div>
 </template>
+
+<script>
+import OfficeHoursPublicInfo from '../components/OfficeHoursPublicInfo.vue';
+
+export default {
+  components: {
+    OfficeHoursPublicInfo
+  }
+};
+</script>
