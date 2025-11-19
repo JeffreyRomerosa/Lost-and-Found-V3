@@ -11,11 +11,11 @@
 
     <!-- Navbar -->
     <nav
-      class="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-md z-40 flex justify-between items-center px-6 h-20 transition-colors duration-200"
+      class="fixed top-0 left-0 right-0 bg-white dark:bg-gray-950 shadow-md z-40 flex justify-between items-center px-6 h-20 transition-colors duration-200"
     >
       <div class="pl-1 flex items-center gap-3 group cursor-pointer">
         <!-- Logo Badge -->
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0">
           <span class="text-white text-lg">🔍</span>
         </div>
         <!-- Brand Text -->
@@ -147,7 +147,7 @@
         </div>
         <button
           @click.stop="toggleProfileMenu"
-          class="w-10 h-10 rounded-full bg-yellow-500 text-gray-900 flex items-center justify-center font-semibold border-2 border-yellow-400 overflow-hidden"
+          class="w-10 h-10 rounded-full bg-emerald-500 text-gray-900 flex items-center justify-center font-semibold border-2 border-emerald400 overflow-hidden"
         >
           <img
             v-if="securityAvatar"
@@ -169,7 +169,7 @@
             class="w-full px-4 py-2 flex items-center gap-2 text-left text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <svg
-              class="w-5 h-5"
+              class="w-5 h-5 text-emerald-600 dark:text-emerald-400"
               fill="none"
               stroke="currentColor"
               stroke-width="2"
@@ -190,7 +190,7 @@
 <div class="w-full px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center justify-between transition text-gray-900 dark:text-white">
                 <div class="flex items-center gap-2">
                   <svg class="w-5 h-5 text-amber-500 dark:text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M12 7a5 5 0 100 10 5 5 0 000-10z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span class="text-sm">Theme</span>
+                  <span>Theme</span>
                 </div>
 
                 <div>
@@ -227,7 +227,7 @@
     <div class="pt-24 pl-64 px-6">
       <!-- DASHBOARD -->
       <div v-if="currentPage === 'dashboard'">
-        <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Dashboard Overview</h2>
+        <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Security Dashboard</h2>
         
         <!-- Office Hours Widget -->
         <OfficeHoursWidget />
@@ -235,11 +235,11 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-colors">
             <p class="text-gray-600 dark:text-gray-400 text-sm">Lost Reports</p>
-            <p class="text-3xl font-bold text-yellow-500 dark:text-yellow-400">{{ lostItems.length }}</p>
+            <p class="text-3xl font-bold text-emerald-500 dark:text-emerald-400">{{ lostItems.length }}</p>
           </div>
           <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-colors">
             <p class="text-gray-600 dark:text-gray-400 text-sm">Found Reports</p>
-            <p class="text-3xl font-bold text-yellow-500 dark:text-yellow-400">{{ foundItems.length }}</p>
+            <p class="text-3xl font-bold text-emerald-500 dark:text-emerald-400">{{ foundItems.length }}</p>
           </div>
           <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-colors">
             <p class="text-gray-600 dark:text-gray-400 text-sm">Pending Claims</p>
@@ -326,7 +326,15 @@
                 <span v-else>N/A</span>
               </td>
               <td class="px-4 py-2">{{ formatDate(item.datetime) }}</td>
-              <td class="px-4 py-2">{{ formatStatus(item.status) }}</td>
+              <td class="px-4 py-2">
+                <span :class="{
+                  'text-green-600 dark:text-green-400': item.status === 'returned',
+                  'px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs text-center font-semibold': item.status === 'in_security_custody' || item.status === 'In Security Custody',
+                  'px-3 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full text-xs font-semibold': item.status === 'pending'
+                }">
+                  {{ formatStatus(item.status) }}
+                </span>
+              </td>
               <td class="px-4 py-2">
                 <div class="flex items-center space-x-2">
                   <img
@@ -347,7 +355,7 @@
               <td class="px-4 py-2 flex space-x-2">
                 <button
                   @click="viewItem(item)"
-                  class="px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600"
+                  class="px-4 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
                 >
                   View
                 </button>
@@ -457,7 +465,15 @@
                 <span v-else>N/A</span>
               </td>
               <td class="px-4 py-2">{{ formatDate(item.datetime) }}</td>
-              <td class="px-4 py-2">{{ formatStatus(item.status) }}</td>
+              <td class="px-4 py-2">
+                <span :class="{
+                  'text-green-600 dark:text-green-400': item.status === 'returned',
+                  'px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs text-center font-semibold': item.status === 'in_security_custody' || item.status === 'In Security Custody',
+                  'px-3 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full text-xs font-semibold': item.status === 'pending'
+                }">
+                  {{ formatStatus(item.status) }}
+                </span>
+              </td>
               <td class="px-4 py-2">
                 <div class="flex items-center space-x-2">
                   <img
@@ -478,16 +494,16 @@
               <td class="px-4 py-2 flex space-x-2">
                 <button
                   @click="viewItem(item)"
-                  class="px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600"
+                  class="px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition text-s font-medium"
                 >
                   View
                 </button>
                 <button
                   v-if="item.status === 'pending'"
                   @click="openReviewModal(item)"
-                  class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                  class="px-4 py-2 bg-green-500 text-white  rounded hover:bg-green-600"
                 >
-                  Mark Received
+                  Accept
                 </button>
                 <!-- For items already in security custody we intentionally hide the additional action buttons here. Use the item's View button to open details or the Claims modal from within the item detail view. -->
               </td>
@@ -734,7 +750,16 @@
                     class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
                     title="Download PDF"
                   >
-                    Download PDF
+                   <svg xmlns="http://www.w3.org/2000/svg" 
+       fill="none" 
+       viewBox="0 0 24 24" 
+       stroke-width="1.5" 
+       stroke="currentColor" 
+       class="w-3 h-3">
+    <path stroke-linecap="round" stroke-linejoin="round"
+      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M7.5 10.5L12 15m0 0l4.5-4.5M12 15V3" />
+  </svg>
+  <span>Download</span>
                   </button>
                   <button
                     @click="printReturnReport(item)"
@@ -789,7 +814,8 @@
                     <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Status:</span> 
                       <span :class="{
                         'text-green-600 dark:text-green-400': selectedItem.status === 'returned',
-                        'text-amber-600 dark:text-amber-400': selectedItem.status === 'in_security_custody' || selectedItem.status === 'In Security Custody' || selectedItem.status === 'pending'
+                        'px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs text-center font-semibold': selectedItem.status === 'in_security_custody' || selectedItem.status === 'In Security Custody',
+                        'px-3 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full text-xs font-semibold': selectedItem.status === 'pending'
                       }">
                         {{ formatStatus(selectedItem.status) }}
                       </span>

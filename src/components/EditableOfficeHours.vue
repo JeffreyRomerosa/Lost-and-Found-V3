@@ -1,5 +1,5 @@
 <template>
-  <div class="editable-office-hours p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg">
+  <div class="editable-office-hours p-6 bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -32,7 +32,7 @@
       <!-- Display Mode -->
     <div v-if="!isEditing" class="space-y-4">
       <!-- Current Status with Date/Time -->
-      <div class="p-4 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+      <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-50 dark:from-gray-800 to-white dark:to-gray-700 rounded-lg">
         <div class="flex items-center justify-between">
           <div class="flex-1">
             <p class="text-sm text-gray-600 dark:text-gray-400 uppercase font-semibold">Current Status</p>
@@ -60,7 +60,7 @@
             :class="[
               'p-4 rounded-lg border-2 text-center transition-all',
               isToday(day.day_of_week)
-                ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20'
+                ? 'border-emerald-400 bg-emeral-50 dark:bg-emerald-900/20'
                 : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50'
             ]"
           >

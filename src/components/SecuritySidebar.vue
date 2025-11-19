@@ -147,7 +147,7 @@ watch(activePage, (newPage) => {
 const navButtonClass = (page) => {
   const isActive = activePage.value === page;
   return [
-    "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 text-sm relative group",
+    "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 text-sm relative group hover:bg-emerald-300 hover:scale-[1.05]",
     isActive
       ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400"
       : "text-foreground hover:bg-muted dark:hover:bg-slate-800"
@@ -157,9 +157,12 @@ const navButtonClass = (page) => {
 // Logout removed from sidebar; other components/pages still provide logout if needed.
 
 const goToProfile = () => {
-  activePage.value = 'profile';
-  localStorage.setItem('security-current-page', 'profile');
-  router.push("/profile");
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  if (user && user.id) {
+    router.push(`/profile/${user.id}`);
+  } else {
+    router.push('/profile');
+  }
 };
 </script>
 

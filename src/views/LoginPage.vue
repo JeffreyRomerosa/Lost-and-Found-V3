@@ -1,12 +1,12 @@
 <template>
   <div
-    class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-gray-100 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 animate-fade-in"
+    class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-r from-emerald-50 dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 animate-fade-in"
   >
     <div
   class="w-full max-w-2xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg p-8 space-y-6 transition-colors duration-200"
     >
       <header class="text-center space-y-2">
-        <h1 class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">Campus Lost &amp; Found Access</h1>
+        <h1 class="text-3xl font-bold text-emerald-600 dark:text-green-400">Campus Lost &amp; Found Access</h1>
         <p class="text-sm text-gray-600 dark:text-gray-400">
           Use your @carsu.edu.ph email to sign in or register.
         </p>
@@ -70,23 +70,23 @@
 
           <button
             @click="handleManualLogin"
-            class="w-full py-3 bg-yellow-500 text-black font-semibold rounded-xl hover:bg-yellow-400 transition duration-300"
+            class="w-full py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-800 transition duration-300"
           >
             Sign In Manually
           </button>
         </div>
 
         <div
-          class="flex flex-col justify-between bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 rounded-xl p-5 space-y-4 transition-colors duration-200"
+          class="flex flex-col justify-between bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 space-y-5 transition-colors duration-200"
         >
           <div>
-            <p class="font-semibold text-gray-900 dark:text-gray-100">Sign in with Google</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p class="font-semibold text-gray-900 dark:text-gray-100 text-lg">Sign in with Google</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
               Use your CarSU email. Choose your role first so we can send you to the right dashboard.
             </p>
           </div>
 
-          <div class="relative">
+          <div class="relative py-2">
             <div id="googleButton" class="w-full flex justify-center"></div>
             <div
               v-if="!role"
@@ -95,7 +95,7 @@
             ></div>
           </div>
 
-          <ul class="text-xs text-gray-600 dark:text-gray-500 space-y-1">
+          <ul class="text-xs text-gray-600 dark:text-gray-500 space-y-2 pt-2">
             <li>• University members are redirected to their dashboard.</li>
             <li>• Security staff will see the security dashboard.</li>
           </ul>
@@ -105,38 +105,38 @@
       <section v-else class="grid md:grid-cols-2 gap-6">
         <div class="space-y-4">
           <div
-            class="bg-gray-800/60 border border-gray-700 rounded-xl p-4 text-sm text-gray-300 space-y-2"
+            class="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl p-4 text-sm text-gray-800 dark:text-gray-300 space-y-2"
           >
-            <p class="font-semibold text-yellow-300">University Member Registration</p>
+            <p class="font-semibold text-yellow-600 dark:text-yellow-300">University Member Registration</p>
             <p>
               Manual registration automatically sets your role to
-              <span class="text-yellow-400">University Member</span>. Security
+              <span class="text-yellow-600 dark:text-yellow-400">University Member</span>. Security
               staff accounts are created by administrators.
             </p>
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-2 text-sm font-medium">Email</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Email</label>
             <input
               v-model="registerEmail"
               type="email"
               autocomplete="email"
               placeholder="your.name@carsu.edu.ph"
-              class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
+              class="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300"
             />
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-2 text-sm font-medium">Password</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Password</label>
             <div class="relative">
               <input
                 v-model="registerPassword"
                 :type="showRegisterPassword ? 'text' : 'password'"
                 autocomplete="new-password"
                 placeholder="Create a password"
-                class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
+                class="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
               />
-              <button type="button" @click="showRegisterPassword = !showRegisterPassword" class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-yellow-400">
+              <button type="button" @click="showRegisterPassword = !showRegisterPassword" class="absolute inset-y-0 right-2 flex items-center text-gray-600 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400">
                 <svg v-if="showRegisterPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
@@ -150,16 +150,16 @@
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-2 text-sm font-medium">Confirm Password</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Confirm Password</label>
             <div class="relative">
               <input
                 v-model="registerConfirmPassword"
                 :type="showRegisterConfirm ? 'text' : 'password'"
                 autocomplete="new-password"
                 placeholder="Re-enter your password"
-                class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
+                class="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-yellow-400 outline-none transition duration-300 pr-12"
               />
-              <button type="button" @click="showRegisterConfirm = !showRegisterConfirm" class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-yellow-400">
+              <button type="button" @click="showRegisterConfirm = !showRegisterConfirm" class="absolute inset-y-0 right-2 flex items-center text-gray-600 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400">
                 <svg v-if="showRegisterConfirm" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.99 9.99 0 012.192-5.877" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.6 6.6L17.4 17.4" />
@@ -179,7 +179,7 @@
               v-model="acceptedTerms"
               class="mt-1 w-4 h-4 accent-yellow-400"
             />
-            <label for="terms" class="text-sm text-gray-300 leading-tight">
+            <label for="terms" class="text-sm text-gray-700 dark:text-gray-300 leading-tight">
               I agree to the platform’s Terms, Privacy Policy, and confirm this
               email is mine.
             </label>
@@ -195,17 +195,17 @@
         </div>
 
         <div
-          class="flex flex-col justify-between bg-gray-900/70 border border-gray-800 rounded-xl p-5 space-y-4"
+          class="flex flex-col justify-between bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 space-y-5 transition-colors duration-200"
         >
           <div>
-            <p class="font-semibold text-gray-100">Register with Google</p>
-            <p class="text-sm text-gray-400 mt-1">
+            <p class="font-semibold text-gray-900 dark:text-gray-100 text-lg">Register with Google</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
               Google registration also creates a University Member account.
               Please accept the terms first.
             </p>
           </div>
 
-          <div class="relative">
+          <div class="relative py-2">
             <div id="googleButtonRegister" class="w-full flex justify-center"></div>
             <div
               v-if="!acceptedTerms"
@@ -214,7 +214,7 @@
             ></div>
           </div>
 
-          <p class="text-xs text-gray-500">
+          <p class="text-xs text-gray-600 dark:text-gray-500 pt-2">
             Need a security staff account? Request one from an administrator so
             they can register it for you.
           </p>
@@ -222,16 +222,16 @@
       </section>
 
       <div class="space-y-2">
-        <p v-if="errorMessage" class="text-sm text-red-400 text-center">
+        <p v-if="errorMessage" class="text-sm text-red-600 dark:text-red-400 text-center">
           {{ errorMessage }}
         </p>
-        <p v-if="successMessage" class="text-sm text-green-400 text-center">
+        <p v-if="successMessage" class="text-sm text-green-600 dark:text-green-400 text-center">
           {{ successMessage }}
         </p>
       </div>
 
-      <div class="flex flex-col items-center space-y-2 text-sm text-gray-400">
-        <router-link to="/admin-login" class="text-yellow-400 hover:underline">
+      <div class="flex flex-col items-center space-y-2 text-sm text-gray-600 dark:text-gray-400">
+        <router-link to="/admin-login" class="text-gray-800 dark:text-yellow-400 hover:underline">
           Administrator? Sign in here.
         </router-link>
       </div>
@@ -383,9 +383,9 @@ const switchTab = (tab) => {
 const tabClass = (tab) => {
   const base = "flex-1 text-sm md:text-base font-semibold py-3 rounded-xl transition";
   if (activeTab.value === tab) {
-    return `${base} bg-yellow-500 text-black`;
+    return `${base} bg-emerald-400 text-black`;
   }
-  return `${base} text-gray-300 hover:text-yellow-400`;
+  return `${base} text-gray-500 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400`;
 };
 
 // === Error Helpers ===

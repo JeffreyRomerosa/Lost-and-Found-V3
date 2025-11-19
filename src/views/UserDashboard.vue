@@ -220,7 +220,7 @@
       <div class="relative">
         <button
           @click="showProfileMenu = !showProfileMenu"
-          class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg hover:bg-emerald-600 transition overflow-hidden border-2 border-amber-400"
+          class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg hover:bg-emerald-600 transition overflow-hidden border-2 border-emerald-400"
           title="Profile"
         >
           <template v-if="user && user.profile_picture">
@@ -260,7 +260,7 @@
                     d="M5.121 17.804A13.937 13.937 0 0112 15c2.485 0 4.797.657 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>Go to Profile</span>
+                <span>My Profile</span>
               </button>
             </li>
 
@@ -270,7 +270,7 @@
 <div class="w-full px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center justify-between transition text-gray-900 dark:text-white">
                 <div class="flex items-center gap-2">
                   <svg class="w-5 h-5 text-amber-500 dark:text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M12 7a5 5 0 100 10 5 5 0 000-10z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span class="text-sm">Theme</span>
+                  <span>Theme</span>
                 </div>
 
                 <div>
@@ -433,14 +433,14 @@
     <div class="flex flex-col sm:flex-row gap-4 w-full max-w-2xl mx-auto mb-10 px-6">
       <button
         @click="$router.push('/report')"
-        class="w-full py-3 px-6 rounded-lg bg-emerald-500 text-white font-bold text-lg hover:bg-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+        class="w-full py-3 px-6 rounded-lg bg-emerald-500 text-white font-bold text-lg hover:bg-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
       >
         File a Report
       </button>
 
       <button
         @click="$router.push('/search')"  
-        class="w-full py-3 px-6 rounded-lg bg-amber-500 text-white font-bold text-lg hover:bg-amber-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+        class="w-full py-3 px-6 rounded-lg bg-emerald-500 text-white font-bold text-lg hover:bg-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
       >
         Search by Image
       </button>

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative min-h-screen bg-white dark:bg-gray-950 flex flex-col items-center pb-32 pt-20 transition-colors duration-200"
+    class="relative min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex flex-col items-center pb-32 pt-20 transition-colors duration-200"
   >
     <!-- Back button (top-right) - visible for steps 2, 3 -->
     <button

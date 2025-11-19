@@ -338,11 +338,11 @@
         <!-- Navbar -->
         <AdminNavbar />
         
-        <main class="p-8 overflow-y-auto flex-1 bg-white dark:bg-gray-900">
+        <main class="p-8 overflow-y-auto flex-1 bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
           <!-- Dashboard Overview -->
           <div v-if="activePage === 'dashboard'">
             <div class="mb-8">
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Admin Dashboard</h1>
               <p class="text-gray-600 dark:text-gray-400">Overview of lost and found items and system statistics</p>
             </div>
 
@@ -509,7 +509,7 @@
                     <td class="px-6 py-4 space-x-2">
                       <button
                         @click="viewItem(item)"
-                        class="px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition text-xs font-medium"
+                        class="px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition text-s font-medium"
                       >
                         View
                       </button>
@@ -580,19 +580,29 @@
                       </td>
                       <td class="px-4 py-2">
                         <div class="flex items-center gap-1">
-                          <button
-                            @click="downloadReturnReport(item)"
-                            class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium transition whitespace-nowrap"
-                            title="Download PDF"
-                          >
-                            PDF
-                          </button>
+                        <button
+  @click="downloadReturnReport(item)"
+  class="flex items-center gap-1 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-700 text-sm font-medium transition whitespace-nowrap"
+  title="Download PDF"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" 
+       fill="none" 
+       viewBox="0 0 24 24" 
+       stroke-width="1.5" 
+       stroke="currentColor" 
+       class="w-3 h-3">
+    <path stroke-linecap="round" stroke-linejoin="round"
+      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M7.5 10.5L12 15m0 0l4.5-4.5M12 15V3" />
+  </svg>
+  <span>Download</span>
+</button>
+
                           <button
                             @click="printReturnReport(item)"
-                            class="px-2 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600 text-xs font-medium transition whitespace-nowrap"
+                            class="px-2 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600 text-sm font-medium transition whitespace-nowrap"
                             title="Open printable view"
                           >
-                            Print
+                            View PDF
                           </button>
                           <button
                             @click="confirmDelete(item)"
@@ -687,21 +697,21 @@
                         <div class="flex gap-2">
                           <button
                             @click="viewUser(user)"
-                            class="px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition text-xs font-medium"
+                            class="px-3 py-1 bg-emerald-400 text-white rounded hover:bg-emerald-700 transition text-s font-medium"
                           >
                             View
                           </button>
                           <button
                             v-if="user.role === 'university_member'"
                             @click="changeUserRole(user, 'security')"
-                            class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-xs font-medium whitespace-nowrap"
+                            class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-s font-medium whitespace-nowrap"
                           >
                             Assign Security
                           </button>
                           <button
                             v-else-if="user.role === 'security'"
                             @click="changeUserRole(user, 'university_member')"
-                            class="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition text-xs font-medium whitespace-nowrap"
+                            class="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition text-s font-medium whitespace-nowrap"
                           >
                             Revert Role
                           </button>
@@ -1368,10 +1378,10 @@ const formatDate = (dateString) => {
 const formatStatus = (status) => {
   if (!status) return { text: 'N/A', class: 'text-gray-600 dark:text-gray-400' };
   const statusMap = {
-    'in_security_custody': { text: 'In Custody of the Security Office', class: 'text-amber-600 dark:text-amber-400' },
-    'In Security Custody': { text: 'In Custody of the Security Office', class: 'text-amber-600 dark:text-amber-400' },
+    'in_security_custody': { text: 'In Custody of the Security Office', class: 'px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs text-center font-semibold' },
+    'In Security Custody': { text: 'In Custody of the Security Office', class: 'px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs text-center font-semibold' },
     'returned': { text: 'Returned', class: 'text-green-600 dark:text-green-400' },
-    'pending': { text: 'Pending', class: 'text-amber-600 dark:text-amber-400' },
+    'pending': { text: 'Pending', class: 'px-3 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full text-xs font-semibold' },
     'lost': { text: 'Lost', class: 'text-red-600 dark:text-red-400' }
   };
   const mapped = statusMap[status];

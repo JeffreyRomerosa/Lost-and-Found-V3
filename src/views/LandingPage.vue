@@ -9,7 +9,7 @@
         <!-- Logo -->
         <div class="flex items-center space-x-2 sm:space-x-3 group cursor-pointer">
         <div
-          class="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0"
+          class="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0"
         >
           <span class="text-emerald-900 text-lg sm:text-2xl">🔍</span>
         </div>
@@ -25,8 +25,8 @@
   >
     <span class="relative z-10 group-hover:text-white transition duration-300">Login</span>
     <span
-      class="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600
-             opacity-0 group-hover:opacity-100 group-hover:animate-yellow-slide transition-all duration-500"
+      class="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600
+             opacity-0 group-hover:opacity-100 group-hover:animate-emerald-slide transition-all duration-500"
     ></span>
   </router-link>
 
@@ -37,8 +37,8 @@
   >
     <span class="relative z-10 group-hover:text-white transition duration-300">Register</span>
     <span
-      class="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600
-             opacity-0 group-hover:opacity-100 group-hover:animate-yellow-slide transition-all duration-500"
+      class="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600
+             opacity-0 group-hover:opacity-100 group-hover:animate-emerald-slide transition-all duration-500"
     ></span>
   </router-link>
 
@@ -49,8 +49,8 @@
   >
     <span class="relative z-10 group-hover:text-white transition duration-300">How It Works</span>
     <span
-      class="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600
-             opacity-0 group-hover:opacity-100 group-hover:animate-yellow-slide transition-all duration-500"
+      class="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600
+             opacity-0 group-hover:opacity-100 group-hover:animate-emerald-slide transition-all duration-500"
     ></span>
   </router-link>
 
@@ -61,8 +61,8 @@
   >
     <span class="relative z-10 group-hover:text-white transition duration-300">About Us</span>
     <span
-      class="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600
-             opacity-0 group-hover:opacity-100 group-hover:animate-yellow-slide transition-all duration-500"
+      class="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600
+             opacity-0 group-hover:opacity-100 group-hover:animate-emerald-slide transition-all duration-500"
     ></span>
   </router-link>
 </div>
@@ -141,7 +141,7 @@
     <main class="relative flex flex-col items-center justify-center text-center px-4 sm:px-6 py-8 sm:py-16 lg:py-20">
       <!-- Icon with Animation -->
       <div
-        class="w-16 h-16 sm:w-20 sm:h-20 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center mb-4 sm:mb-5 lg:mb-6 shadow-lg animate-bounce-slow flex-shrink-0"
+        class="w-16 h-16 sm:w-20 sm:h-20 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 flex items-center justify-center mb-4 sm:mb-5 lg:mb-6 shadow-lg animate-bounce-slow flex-shrink-0"
       >
         <span class="text-2xl sm:text-3xl lg:text-6xl">🔍</span>
       </div>

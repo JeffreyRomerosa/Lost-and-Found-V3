@@ -1,5 +1,5 @@
 <template>
-  <div class="office-hours-widget bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-gray-800 dark:to-gray-900 border border-yellow-200 dark:border-yellow-900/30 rounded-lg p-4 mb-6 shadow-md">
+  <div class="office-hours-widget bg-gradient-to-r from-emerald-50 dark:from-gray-800 dark:to-gray-900 border border-emerald-200 dark:border-emerald-900/30 rounded-lg p-4 mb-6 shadow-md">
     <!-- Main Status Section -->
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-3">
@@ -35,7 +35,7 @@
     </div>
 
     <!-- Current Status Details -->
-    <div v-if="officeStatus" class="mb-4 pb-4 border-b border-yellow-200 dark:border-gray-700">
+    <div v-if="officeStatus" class="mb-4 pb-4 border-b border-emerald-200 dark:border-gray-700">
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
         <div>
           <p class="text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Day</p>
@@ -86,7 +86,7 @@
             :class="[
               'p-2 rounded-lg text-xs text-center border',
               isToday(day.day_of_week)
-                ? 'bg-yellow-200 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-600'
+                ? 'bg-emerald-200 dark:bg-emerald-900/30 border-emerald-400 dark:border-emerald-600'
                 : 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
             ]"
           >

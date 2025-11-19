@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-64 bg-background dark:bg-slate-950 border-r border-border dark:border-slate-800 flex flex-col h-screen transition-colors duration-200 sticky top-0">
+  <aside class="w-64 bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 border-r border-border dark:border-slate-800 flex flex-col h-screen transition-colors duration-200 sticky top-0">
     <!-- Header Section -->
     <div class="p-6 border-b border-border dark:border-slate-800">
       <div class="flex items-center gap-3 group cursor-pointer">
@@ -20,7 +20,7 @@
       <!-- Dashboard -->
       <button
         @click="selectPage('dashboard')"
-        :class="getNavButtonClass('dashboard')"
+        :class="[getNavButtonClass('dashboard'), 'transition duration-150 hover:bg-emerald-300 hover:scale-[1.05]' ]"
       >
         <span class="text-lg">📊</span>
         <span class="font-medium">Dashboard</span>
@@ -30,7 +30,7 @@
       <!-- Reported Items -->
       <button
         @click="selectPage('reported-items')"
-        :class="getNavButtonClass('reported-items')"
+        :class="[getNavButtonClass('reported-items'), 'transition duration-150 hover:bg-emerald-300 hover:scale-[1.05]' ]"
       >
         <span class="text-lg">📋</span>
         <span class="font-medium">Reported Items</span>
@@ -40,7 +40,7 @@
       <!-- Users -->
       <button
         @click="selectPage('users')"
-        :class="getNavButtonClass('users')"
+        :class="[getNavButtonClass('users'), 'transition duration-150 hover:bg-emerald-300 hover:scale-[1.05]' ]"
       >
         <span class="text-lg">👥</span>
         <span class="font-medium">Users</span>
@@ -50,7 +50,7 @@
       <!-- Office Hours Management -->
       <button
         @click="selectPage('office-hours')"
-        :class="getNavButtonClass('office-hours')"
+        :class="[getNavButtonClass('office-hours'), 'transition duration-150 hover:bg-emerald-300 hover:scale-[1.05]' ]"
       >
         <span class="text-lg">⏰</span>
         <span class="font-medium">Office Hours</span>
@@ -60,7 +60,7 @@
       <!-- Profile -->
       <button
         @click="() => emit('select-page', 'profile')"
-        :class="[getNavButtonClass('profile'), isProfileIncomplete ? 'ring-1 ring-amber-500/50' : '']"
+        :class="[getNavButtonClass('profile'), 'transition duration-150 hover:bg-emerald-300 hover:scale-[1.05]' ]"
       >
         <span class="text-lg">👤</span>
         <span class="font-medium">My Profile</span>
@@ -70,12 +70,12 @@
 
     <!-- Profile Alert Section -->
     <div v-if="isProfileIncomplete" class="px-4 py-4 border-t border-border dark:border-slate-800">
-      <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+      <div class="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg">
         <div class="flex gap-2">
           <span class="text-amber-600 dark:text-amber-500 text-lg flex-shrink-0">⚠️</span>
           <div>
-            <p class="text-xs font-semibold text-amber-900 dark:text-amber-100">Complete Your Profile</p>
-            <p class="text-xs text-amber-800 dark:text-amber-200 mt-0.5">Update your details for a better experience.</p>
+            <p class="text-xs font-semibold text-emerald-900 dark:text-emerald-100">Complete Your Profile</p>
+            <p class="text-xs text-emerald-800 dark:text-emerald-200 mt-0.5">Update your details for a better experience.</p>
           </div>
         </div>
       </div>

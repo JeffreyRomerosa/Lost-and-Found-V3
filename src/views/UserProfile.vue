@@ -16,7 +16,7 @@
     <!-- Main Container -->
     <div class="max-w-4xl mx-auto pb-20">
       <!-- Updated card styling with responsive padding and borders -->
-      <div class="bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl shadow-lg dark:shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden ">
+      <div class="bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 rounded-xl sm:rounded-2xl shadow-lg dark:shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden ">
         
         <!-- Profile Header with Image -->
         <div class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-50 dark:from-emerald-900/20 to-white dark:to-gray-700">
@@ -26,11 +26,11 @@
               <img
                 :src="profilePhoto"
                 alt="Profile Photo"
-                class="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-yellow-400 dark:border-yellow-400 object-cover shadow-lg"
+                class="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-emerald-400 dark:border-emerald-400 object-cover shadow-lg"
               />
               <div v-if="editMode" class="absolute inset-0 flex items-end justify-end p-1">
                 <label
-                  class="bg-yellow-500 text-gray-900 px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full cursor-pointer hover:bg-yellow-400 transition duration-300 font-semibold"
+                  class="bg-emerald-500 text-gray-900 px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full cursor-pointer hover:bg-emerald-400 transition duration-300 font-semibold"
                 >
                   Change
                   <input type="file" accept="image/*" @change="onReplaceImage" class="hidden" />
@@ -208,7 +208,7 @@
           </div>
         </div>
 
-      
+    
 
     
         <!-- Action Buttons -->
@@ -216,7 +216,7 @@
           <button
             v-if="!editMode"
             @click="toggleEdit"
-            class="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg bg-yellow-500 text-gray-900 font-semibold hover:bg-yellow-400 transition duration-300 shadow-md text-sm sm:text-base"
+            class="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg bg-emerald-500 text-gray-900 font-semibold hover:bg-emerald-400 transition duration-300 shadow-md text-sm sm:text-base"
           >
             Edit Profile
           </button>
@@ -241,15 +241,15 @@
 
         <!-- Back to Dashboard -->
         <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-t border-gray-200 dark:border-gray-800 flex justify-center">
-          <router-link
-            to="/userdashboard"
+          <button
+            @click="goBack"
             class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition duration-300 font-semibold text-sm sm:text-base"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7m-9 2v8m0-8H5m4 0h10" />
             </svg>
             Back to Dashboard
-          </router-link>
+          </button>
         </div>
       </div>
     </div>
@@ -272,6 +272,21 @@ const redirectToLogin = () => {
   disconnectSocket();
   localStorage.clear();
   router.push("/login");
+};
+
+// Navigate back to appropriate dashboard based on user role
+const goBack = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (user?.role === "security") {
+      router.push("/security-dashboard");
+    } else {
+      router.push("/userdashboard");
+    }
+  } catch (err) {
+    console.error("Failed to determine user role:", err);
+    router.push("/userdashboard");
+  }
 };
 
 // Profile state

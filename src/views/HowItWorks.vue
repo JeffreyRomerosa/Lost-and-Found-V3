@@ -6,7 +6,7 @@
     <header class="relative flex justify-between items-center p-4 sm:p-6 sticky top-0 backdrop-blur-sm bg-white/80 dark:bg-slate-900/80 border-b border-emerald-200 dark:border-emerald-900 z-50 animate-slide-down">
       <router-link to="/" class="flex items-center space-x-2 sm:space-x-3 group cursor-pointer">
         <div
-          class="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0"
+          class="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0"
         >
           <span class="text-emerald-900 text-lg sm:text-2xl">🔍</span>
         </div>

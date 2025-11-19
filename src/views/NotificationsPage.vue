@@ -22,7 +22,7 @@
         <div
           v-for="notif in notifications"
           :key="notif.id"
-          class="bg-white dark:bg-gradient-to-b dark:from-gray-900 dark:to-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-md dark:shadow-lg group cursor-pointer transform transition duration-200 ease-out hover:scale-105 hover:shadow-xl dark:hover:shadow-2xl filter dark:hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:focus-visible:ring-yellow-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 relative"
+          class="bg-white dark:bg-gradient-to-b dark:from-gray-900 dark:to-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-md dark:shadow-lg group cursor-pointer transform transition duration-200 ease-out hover:scale-105 hover:shadow-xl dark:hover:shadow-2xl filter dark:hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 relative"
           role="button"
           tabindex="0"
           @keydown.enter="openNotification(notif)"
@@ -87,7 +87,7 @@
                 <div class="mt-3 sm:mt-4 flex items-center gap-2 flex-wrap">
                   <span
                     v-if="notif.status"
-                    class="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold bg-yellow-500 dark:bg-yellow-500 text-black dark:text-black"
+                    class="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold bg-emerald-500 dark:bg-emerald-500 text-black dark:text-black"
                   >
                     {{ (notif.status || '').toUpperCase() }}
                   </span>
@@ -100,7 +100,7 @@
             <div class="col-span-1 lg:col-span-3 flex flex-col gap-2 items-stretch">
               <button
                 @click.stop="openNotification(notif)"
-                class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg bg-yellow-500 dark:bg-yellow-500 text-black font-semibold hover:bg-yellow-600 dark:hover:bg-yellow-600 transition-all shadow-md hover:shadow-lg text-sm sm:text-base"
+                class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg bg-emerald-500 dark:bg-emerald-500 text-black font-semibold hover:bg-emerald-600 dark:hover:bg-emerald-600 transition-all shadow-md hover:shadow-lg text-sm sm:text-base"
               >
                 View Details
               </button>
@@ -206,7 +206,7 @@
       <!-- Added responsive modal sizing -->
       <div class="bg-white dark:bg-gray-900 rounded-xl max-w-sm w-full overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800">
         <div class="p-4 sm:p-6 lg:p-8">
-          <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-yellow-400 mb-3 sm:mb-4">Confirm Claim Request</h3>
+          <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-emerald-400 mb-3 sm:mb-4">Confirm Claim Request</h3>
           <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">You're about to submit a claim request for this found item. Add a short message for security (optional):</p>
 
           <textarea
@@ -250,7 +250,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-yellow-400 mb-3 sm:mb-4">Claim Request Submitted!</h2>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-emerald-400 mb-3 sm:mb-4">Claim Request Submitted!</h2>
           <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
             Your claim request has been submitted. Please visit the security office for verification and claiming of the item.
           </p>

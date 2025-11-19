@@ -3,7 +3,7 @@
     <h3 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Office Hours Management</h3>
 
     <!-- Edit Regular Hours -->
-    <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+    <div class="mb-8 bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950  rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <h4 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">📅 Weekly Schedule</h4>
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">

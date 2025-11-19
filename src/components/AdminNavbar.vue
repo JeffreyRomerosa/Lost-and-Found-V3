@@ -1,6 +1,6 @@
 <template>
-  <nav class="bg-white dark:bg-gray-900 shadow-md h-16 flex items-center justify-between px-6 pt-6 transition-colors duration-200">
-    <h1 class="text-lg font-semibold text-gray-900 dark:text-yellow-300">Admin Dashboard</h1>
+  <nav class="bg-white dark:bg-gray-950 shadow-md h-16 flex items-center justify-between px-6 pt-6 transition-colors duration-200">
+    <h1 class="pl-3 text-lg font-semibold text-gray-900 dark:text-yellow-300"></h1>
     <div class="flex items-center gap-4">
       <div class="hidden sm:block text-right">
         <p class="font-semibold text-gray-900 dark:text-white">{{ displayName }}</p>
@@ -12,7 +12,7 @@
       <div class="relative" ref="menuRef">
         <button
           @click="toggleMenu"
-          class="w-10 h-10 rounded-full bg-yellow-500 text-gray-900 flex items-center justify-center font-semibold border-2 border-yellow-400 overflow-hidden"
+          class="w-10 h-10 rounded-full bg-emerald-500 text-gray-900 flex items-center justify-center font-semibold border-2 border-emerald-400 overflow-hidden"
         >
           <img
             v-if="avatarUrl"
@@ -32,7 +32,7 @@
             class="w-full px-4 py-2 flex items-center gap-2 text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             <svg
-              class="w-5 h-5"
+              class="w-5 h-5 text-emerald-600 dark:text-emerald-400"
               fill="none"
               stroke="currentColor"
               stroke-width="2"
@@ -52,7 +52,7 @@
 <div class="w-full px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center justify-between transition text-gray-900 dark:text-white">
                 <div class="flex items-center gap-2">
                   <svg class="w-5 h-5 text-amber-500 dark:text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M12 7a5 5 0 100 10 5 5 0 000-10z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span class="text-sm">Theme</span>
+                  <span>Theme</span>
                 </div>
 
                 <div>

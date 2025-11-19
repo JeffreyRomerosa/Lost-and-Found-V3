@@ -20,39 +20,44 @@ import AboutUs from "@/views/AboutUs.vue";
 import HowItWorks from "@/views/HowItWorks.vue";
 
 const routes = [
-  { path: "/", component: Landing },
-  { path: "/login", component: Login },
-  { path: "/admin-login", component: AdminLogin },
+  { path: "/", component: Landing, meta: { showThemeToggle: true } },
+  { path: "/login", component: Login, meta: { showThemeToggle: true } },
+  { path: "/admin-login", component: AdminLogin, meta: { showThemeToggle: false } },
   {
     path: "/register",
     redirect: { path: "/login", query: { tab: "register" } },
+    meta: { showThemeToggle: true },
   },
-  { path: "/report", component: Report },
-  { path: "/lost/:id", component: LostDetails },
-  { path: "/search", component: Search },
-  { path: "/profile/:id?", component: Profile },
-  { path: "/notifications", component: Notifications },
-  { path: "/match/:id", component: MatchItem },
+  { path: "/report", component: Report, meta: { showThemeToggle: false } },
+  { path: "/lost/:id", component: LostDetails, meta: { showThemeToggle: false } },
+  { path: "/search", component: Search, meta: { showThemeToggle: false } },
+  { path: "/profile/:id?", component: Profile, meta: { showThemeToggle: false } },
+  { path: "/notifications", component: Notifications, meta: { showThemeToggle: false } },
+  { path: "/match/:id", component: MatchItem, meta: { showThemeToggle: false } },
   {
     path: "/aboutus", 
     name: "AboutUs",
-    component: AboutUs, },
+    component: AboutUs,
+    meta: { showThemeToggle: true },
+  },
   {
     path: "/how-it-works", 
     name: "HowItWorks",
-    component: HowItWorks, },
-    {
+    component: HowItWorks,
+    meta: { showThemeToggle: true },
+  },
+  {
     path: "/userdashboard",
     name: "UserDashboard",
     component: UserDashboard,
-    meta: { requiresAuth: true, allowedRoles: ["university_member"] },
+    meta: { requiresAuth: true, allowedRoles: ["university_member"], showThemeToggle: false },
   },
-  { path: "/match-details", name: "MatchDetails", component: MatchDetails },
+  { path: "/match-details", name: "MatchDetails", component: MatchDetails, meta: { showThemeToggle: false } },
   {
     path: "/security-dashboard",
     name: "SecurityDashboard",
     component: SecurityDashboard,
-    meta: { requiresAuth: true, allowedRoles: ["security"] },
+    meta: { requiresAuth: true, allowedRoles: ["security"], showThemeToggle: false },
   },
   {
     path: "/admin-dashboard",
@@ -62,15 +67,16 @@ const routes = [
       requiresAuth: true,
       allowedRoles: ["admin"],
       redirectIfUnauthenticated: "/admin-login",
+      showThemeToggle: false,
     },
   }, // ✅ Admin route
-  { path: "/auth/callback", name: "AuthCallback", component: AuthCallback }, // ✅ OAuth redirect
-  { path: "/verify-email", name: "VerifyEmail", component: VerifyEmail },
+  { path: "/auth/callback", name: "AuthCallback", component: AuthCallback, meta: { showThemeToggle: false } }, // ✅ OAuth redirect
+  { path: "/verify-email", name: "VerifyEmail", component: VerifyEmail, meta: { showThemeToggle: false } },
   {
     path: "/view-profile/:id?",
     name: "ViewProfile",
     component: ViewProfile,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, showThemeToggle: false },
   },
 ];
 
