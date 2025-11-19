@@ -53,6 +53,7 @@ router.get("/:user_id", async (req, res) => {
   i.image_url AS item_image_url,
   i.student_id AS item_student_id,
   i.reporter_id AS item_user_id, -- align with schema
+  i.claimant_id AS claimant_id,
 
         matched_i.name AS matched_item_name,
         matched_i.type AS matched_type,
@@ -69,10 +70,13 @@ router.get("/:user_id", async (req, res) => {
   CASE WHEN LOWER(n.category) = 'id' THEN matched_i.student_id ELSE NULL END AS display_student_id,
   matched_i.description AS display_description,
   i.user_claim_status AS base_user_claim_status,
-  matched_i.user_claim_status AS matched_user_claim_status
+  matched_i.user_claim_status AS matched_user_claim_status,
+  u_claimant.full_name AS claimant_full_name,
+  u_claimant.profile_picture AS claimant_profile_picture
 
       FROM notifications n
       LEFT JOIN items i ON n.item_id = i.id
+      LEFT JOIN users u_claimant ON i.claimant_id = u_claimant.id
       LEFT JOIN matches m ON n.match_id = m.id
       LEFT JOIN items matched_i ON (
         CASE WHEN i.type = 'lost' THEN m.found_item_id ELSE m.lost_item_id END = matched_i.id
@@ -100,6 +104,7 @@ router.get("/:user_id", async (req, res) => {
         ui.image_url AS item_image_url,
         ui.student_id AS item_student_id,
         ui.user_id AS item_user_id,
+        NULL::uuid AS claimant_id,
 
         matched_i.name AS matched_item_name,
         matched_i.type AS matched_type,
@@ -116,7 +121,9 @@ router.get("/:user_id", async (req, res) => {
   CASE WHEN COALESCE(matched_i.student_id, '') <> '' THEN matched_i.student_id ELSE NULL END AS display_student_id,
   matched_i.description AS display_description,
   ui.user_claim_status AS base_user_claim_status,
-  matched_i.user_claim_status AS matched_user_claim_status
+  matched_i.user_claim_status AS matched_user_claim_status,
+  NULL::text AS claimant_full_name,
+  NULL::text AS claimant_profile_picture
 
       FROM matches m
       -- Only synthesize notifications for matches where the current user is the reporter

@@ -68,7 +68,8 @@
                 'text-gray-900 dark:text-white py-3 px-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition',
                 notif.type === 'item_received' ? 'bg-green-50 dark:bg-green-900/20' : '',
                 notif.type === 'claim_approved' ? 'bg-blue-50 dark:bg-blue-900/20' : '',
-                notif.type === 'claim_rejected' ? 'bg-red-50 dark:bg-red-900/20' : ''
+                notif.type === 'claim_rejected' ? 'bg-red-50 dark:bg-red-900/20' : '',
+                notif.type === 'item_claimed' ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''
               ]"
             >
               <!-- Item Received Notification (Special Style) -->
@@ -138,6 +139,26 @@
                       class="px-3 py-1 text-xs rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition"
                     >
                       Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item Claimed Notification -->
+              <div v-else-if="notif.type === 'item_claimed'" class="flex items-start gap-3">
+                <div class="text-2xl">🎉</div>
+                <div class="flex-1">
+                  <p class="font-semibold text-sm text-emerald-700 dark:text-emerald-300">Item Claimed!</p>
+                  <p class="text-sm text-gray-700 dark:text-gray-300">{{ notif.message }}</p>
+                  <p v-if="notif.created_at" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    {{ notif.created_at }}
+                  </p>
+                  <div class="mt-3">
+                    <button
+                      @click.stop="clearNotification(notif)"
+                      class="px-3 py-1 text-xs rounded-lg bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition"
+                    >
+                      Acknowledge
                     </button>
                   </div>
                 </div>
@@ -859,6 +880,41 @@ export default {
               base_item_type: "found",
               claim_status: "rejected",
               color: n.color || null,
+            };
+          }
+
+          // ✅ Special handling for item claimed notifications (sent to item reporter)
+          if (n.type === 'item_claimed') {
+            const createdAtRaw = n.created_at ? new Date(n.created_at) : new Date();
+            const category = n.category?.toLowerCase();
+            const itemDisplay = category === 'id' && n.item_student_id 
+              ? `Student ID (${n.item_student_id})` 
+              : n.item_name || 'this item';
+            
+            return {
+              id: n.id,
+              notification_id: n.id,
+              item_id: n.item_id,
+              type: 'item_claimed',
+              category: n.category || 'general',
+              message: `The ID you reported has been successfully claimed by ${n.claimant_full_name || 'the rightful owner'}. Thank you for your cooperation!`,
+              display_name: itemDisplay,
+              display_student_id: category === 'id' ? n.item_student_id : null,
+              display_description: `Claimed by ${n.claimant_full_name || 'Unknown'}`,
+              display_image: n.item_image_url || null,
+              matched_location: "N/A",
+              matched_status: "claimed",
+              claimant_name: n.claimant_full_name || 'Unknown',
+              claimant_profile_picture: n.claimant_profile_picture || null,
+              is_read: Boolean(n.is_read),
+              created_at: createdAtRaw.toLocaleString(),
+              created_at_ts: createdAtRaw.getTime(),
+              match_id: null,
+              lost_item_id: null,
+              found_item_id: n.item_id,
+              matched_item_id: null,
+              base_item_type: "found",
+              claim_status: "claimed",
             };
           }
 

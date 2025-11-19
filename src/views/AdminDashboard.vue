@@ -93,7 +93,7 @@
 
     <!-- Item Details Modal -->
     <transition name="fade">
-      <div v-if="selectedItem" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
+      <div v-if="selectedItem && !deleteConfirmation" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-start mb-6">
             <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Item Details</h2>
@@ -124,11 +124,8 @@
                   <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Name:</span> {{ selectedItem.name }}</p>
                   <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Category:</span> {{ selectedItem.category }}</p>
                   <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Status:</span> 
-                    <span :class="{
-                      'text-green-600 dark:text-green-400': selectedItem.status === 'returned',
-                      'text-amber-600 dark:text-amber-400': selectedItem.status === 'pending'
-                    }">
-                      {{ selectedItem.status.charAt(0).toUpperCase() + selectedItem.status.slice(1) }}
+                    <span :class="formatStatus(selectedItem.status).class">
+                      {{ formatStatus(selectedItem.status).text }}
                     </span>
                   </p>
                   <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Location:</span> {{ selectedItem.location || 'N/A' }}</p>
@@ -155,16 +152,115 @@
                       </div>
                     </div>
                   </div>
-                  <div>
+                  <div class="flex-1">
                     <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Name:</span> {{ selectedItem.reporter?.full_name || 'Anonymous' }}</p>
                     <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Email:</span> {{ selectedItem.reporter?.email || 'N/A' }}</p>
                     <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Contact:</span> {{ selectedItem.reporter?.contact_number || 'N/A' }}</p>
+                    <button
+                      v-if="selectedItem.reporter?.id"
+                      @click="router.push(`/view-profile/${selectedItem.reporter.id}`)"
+                      class="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition text-sm font-medium"
+                    >
+                      View Profile Info
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-8 flex justify-end gap-3">
+            <button @click="closeModal"
+                    class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-semibold">
+              Close
+            </button>
+            <button v-if="activeReportTab === 'Returned History' && selectedItem"
+                    @click="confirmDelete(selectedItem)"
+                    class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Delete
+            </button>
+          </div>
         </div>
+      </div>
+    </transition>
+
+    <!-- Delete Confirmation Modal (within Item Details) -->
+    <transition name="fade">
+      <div v-if="deleteConfirmation && selectedItem" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 max-w-md w-full transition-colors duration-200 relative">
+          <!-- Logo at top-left corner -->
+          <div class="absolute top-3 left-3">
+            <img src="/lostfound.jpg" alt="Logo" class="h-10 w-10 object-cover rounded">
+          </div>
+
+          <div class="flex flex-col items-center space-y-4">
+            <!-- Item Image - Enlarged -->
+            <div class="mt-4">
+              <div v-if="selectedItem.image_url && !selectedItem.imageError" class="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 mx-auto">
+                <img :src="`${API_BASE_URL}${selectedItem.image_url}`"
+                     @error="selectedItem.imageError = true"
+                     :alt="selectedItem.name"
+                     class="w-full h-full object-cover">
+              </div>
+              <div v-else class="w-32 h-32 rounded-lg bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-500 flex-shrink-0 mx-auto">
+                <span class="text-xs">No Image</span>
+              </div>
+            </div>
+
+            <!-- Item Name -->
+            <div class="text-center">
+              <p class="font-semibold text-lg text-gray-900 dark:text-white">{{ selectedItem.name }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedItem.category || 'Unknown Category' }}</p>
+            </div>
+
+            <!-- Claimant Information -->
+            <div class="flex items-center space-x-4 mb-4 w-full border-t pt-4">
+              <div v-if="selectedItem.claimant_profile_picture && !selectedItem.claimantImageError" class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
+                <img :src="`${API_BASE_URL}${selectedItem.claimant_profile_picture}`"
+                     @error="selectedItem.claimantImageError = true"
+                     :alt="selectedItem.claimant_name"
+                     class="w-full h-full object-cover">
+              </div>
+              <div v-else class="w-16 h-16 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
+                <span class="text-xl text-white font-bold">
+                  {{ selectedItem.claimant_name ? selectedItem.claimant_name[0].toUpperCase() : '?' }}
+                </span>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Claimant</p>
+                <p class="font-semibold text-gray-900 dark:text-white">{{ selectedItem.claimant_name || 'Unknown' }}</p>
+                <p v-if="selectedItem.claimant_email" class="text-xs text-gray-600 dark:text-gray-400">{{ selectedItem.claimant_email }}</p>
+              </div>
+            </div>
+
+            <!-- Warning Message -->
+            <p class="text-gray-600 dark:text-gray-300 text-center mb-2">Are you sure you want to delete this claimed report from the returned history?</p>
+            <p class="text-gray-400 text-sm text-center mb-4">This action cannot be undone.</p>
+
+            <!-- Action Buttons -->
+            <div class="flex space-x-4 w-full">
+              <button @click="deleteReportConfirmed" 
+                      class="flex-1 px-6 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-300">
+                Delete
+              </button>
+              <button @click="cancelDelete" 
+                      class="flex-1 px-6 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition duration-300">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Delete Success Message -->
+    <transition name="fade">
+      <div v-if="deleteSuccessMessage" class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+        Report deleted from the returned history.
       </div>
     </transition>
 
@@ -303,17 +399,39 @@
               </button>
             </div>
 
-            <!-- improved filter/search layout -->
+            <!-- improved filter/search layout - conditional based on active tab -->
             <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <!-- Lost/Found Reports search -->
               <input
+                v-if="activeReportTab !== 'Returned History'"
                 v-model="reportSearch"
                 type="text"
                 placeholder="Search by name, item, or student ID..."
                 class="px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
+              <!-- Returned History search -->
+              <input
+                v-else
+                v-model="returnedSearch"
+                type="text"
+                placeholder="Search by Item Name, Student ID, or Claimant Name"
+                class="px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
               <div class="flex gap-2">
+                <!-- Lost/Found Reports category filter -->
                 <select
+                  v-if="activeReportTab !== 'Returned History'"
                   v-model="categoryFilter"
+                  class="px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="">All Categories</option>
+                  <option value="id">ID Items</option>
+                  <option value="general">General Items</option>
+                </select>
+                <!-- Returned History category filter -->
+                <select
+                  v-else
+                  v-model="returnedCategoryFilter"
                   class="px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="">All Categories</option>
@@ -333,7 +451,7 @@
             </div>
 
             <!-- improved table styling with better contrast -->
-            <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+            <div v-if="activeReportTab !== 'Returned History'" class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
               <table class="w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                   <tr>
@@ -395,20 +513,102 @@
                       >
                         View
                       </button>
-                      <button
-                        v-if="activeReportTab === 'Returned History'"
-                        @click="confirmDelete(item)"
-                        class="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                        title="Delete item"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                      </button>
                     </td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- RETURNED HISTORY SECTION (enhanced with search, filter, and PDF/Print) -->
+            <div v-if="activeReportTab === 'Returned History'">
+              <div
+                v-if="filteredReturnedHistory.length === 0"
+                class="border border-gray-200 dark:border-gray-700 rounded-lg h-32 flex items-center justify-center text-gray-600 dark:text-gray-400 italic bg-white dark:bg-gray-900 mb-6 transition-colors"
+              >
+                No returned items yet.
+              </div>
+
+              <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="min-w-full bg-white dark:bg-gray-900 text-left text-sm text-gray-900 dark:text-gray-300 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors">
+                  <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 transition-colors">
+                      <th class="px-4 py-2">Image</th>
+                      <th class="px-4 py-2">Name</th>
+                      <th class="px-4 py-2">Category</th>
+                      <th class="px-4 py-2">Return Date</th>
+                      <th class="px-4 py-2">Status</th>
+                      <th class="px-4 py-2">Claimed By</th>
+                      <th class="px-4 py-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="item in filteredReturnedHistory"
+                      :key="item.id"
+                      class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <td class="px-4 py-2">
+                        <img
+                          v-if="item.image_url && item.image_url !== 'null' && item.image_url.trim() !== '' && !item.imageError"
+                          :src="`${API_BASE_URL}${item.image_url}`"
+                          @error="item.imageError = true"
+                          class="w-12 h-12 object-cover rounded"
+                        />
+                        <span v-else class="text-gray-500">N/A</span>
+                      </td>
+                      <td class="px-4 py-2">{{ item.name }}</td>
+                      <td class="px-4 py-2">{{ item.category || "General" }}</td>
+                      <td class="px-4 py-2">{{ formatDate(item.return_date) }}</td>
+                      <td class="px-4 py-2">{{ formatStatus(item.status).text }}</td>
+                      <td class="px-4 py-2">
+                        <div class="flex items-center space-x-2">
+                          <img
+                            v-if="item.claimant_profile_picture && !item.claimantImageError"
+                            :src="`${API_BASE_URL}${item.claimant_profile_picture}`"
+                            @error="item.claimantImageError = true"
+                            class="w-8 h-8 rounded-full object-cover border border-gray-600"
+                            :alt="item.claimant_name || 'Claimant'"
+                          />
+                          <div
+                            v-else
+                            class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold"
+                          >
+                            {{ item.claimant_name ? item.claimant_name[0].toUpperCase() : '?' }}
+                          </div>
+                          <span class="text-gray-900 dark:text-white text-sm">{{ item.claimant_name || 'Anonymous' }}</span>
+                        </div>
+                      </td>
+                      <td class="px-4 py-2">
+                        <div class="flex items-center gap-1">
+                          <button
+                            @click="downloadReturnReport(item)"
+                            class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium transition whitespace-nowrap"
+                            title="Download PDF"
+                          >
+                            PDF
+                          </button>
+                          <button
+                            @click="printReturnReport(item)"
+                            class="px-2 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600 text-xs font-medium transition whitespace-nowrap"
+                            title="Open printable view"
+                          >
+                            Print
+                          </button>
+                          <button
+                            @click="confirmDelete(item)"
+                            class="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                            title="Delete item"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -750,6 +950,12 @@ const categoryFilter = ref("");
 const statusFilter = ref("");
 
 // ====================
+// Returned History Search & Filter
+// ====================
+const returnedSearch = ref("");
+const returnedCategoryFilter = ref("");
+
+// ====================
 // Users
 // ====================
 const users = ref([]);
@@ -785,6 +991,7 @@ const roleChangeMessage = ref('');
 const userDeleteConfirmation = ref(false);
 const selectedUserToDelete = ref(null);
 const deleteConfirmation = ref(false);
+const deleteSuccessMessage = ref(false);
 
 // ====================
 // Socket
@@ -803,16 +1010,30 @@ const fetchItems = async () => {
     const nextFound = [];
     const nextReturned = [];
     for (const record of rawData) {
-      const item = { ...record, imageError: false, reporterImageError: false };
+      const item = { ...record, imageError: false, reporterImageError: false, claimantImageError: false };
       const removed = await maybeAutoDeleteReturnedLost(item);
       if (removed) continue;
       if (item.type === "lost") nextLost.push(item);
       if (item.type === "found" && item.status !== "returned") nextFound.push(item);
-      if (item.status === "returned") nextReturned.push(item);
+      if (item.status === "returned") {
+        // Normalize return_date for returned items so UI shows a timestamp instead of N/A
+        if (!item.return_date) {
+          item.return_date = item.return_date || item.returnDate || item.updated_at || item.datetime || item.created_at || null;
+          if (!item.return_date) {
+            item.return_date = new Date().toISOString();
+          }
+        }
+        nextReturned.push(item);
+      }
     }
     lostItems.value = nextLost;
     foundItems.value = nextFound;
     returnedHistory.value = nextReturned;
+    
+    // Fetch claimant profile data for returned items
+    for (const item of returnedHistory.value) {
+      await ensureClaimantForItem(item);
+    }
   } catch (err) {
     console.error("Error fetching items:", err);
   }
@@ -830,6 +1051,39 @@ const fetchUsers = async () => {
   } catch (err) {
     console.error("Error fetching users:", err);
     alert("Failed to fetch users. Please refresh the page.");
+  }
+};
+
+const ensureClaimantForItem = async (item) => {
+  if (!item) return;
+  try {
+    // Prefer explicit claimant fields already present
+    if (item.claimant_name) return;
+
+    const claimantId = item.claimant_id || null;
+    if (!claimantId) return;
+
+    const profile = await fetchProfileById(claimantId);
+    if (profile) {
+      // Attach claimant fields expected by templates
+      item.claimant_name = profile.full_name || profile.name || profile.display_name || item.claimant_name;
+      item.claimant_profile_picture = profile.profile_picture || profile.avatar || item.claimant_profile_picture;
+      item.claimant_email = profile.email || item.claimant_email;
+      item.claimant_contact = profile.contact || profile.phone || item.claimant_contact;
+    }
+  } catch (e) {
+    // swallow errors - non-critical UI enhancement
+    console.warn('ensureClaimantForItem error', e);
+  }
+};
+
+const fetchProfileById = async (userId) => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/api/user/${userId}`);
+    return res.data || null;
+  } catch (err) {
+    console.warn(`Error fetching profile for user ${userId}:`, err);
+    return null;
   }
 };
 
@@ -1082,10 +1336,262 @@ const filteredReportItems = computed(() => {
   return items;
 });
 
-const viewItem = (item) => {
-  selectedItem.value = item;
+// ====================
+// Returned History Filtering
+// ====================
+const filteredReturnedHistory = computed(() => {
+  let items = returnedHistory.value;
+  if (returnedSearch.value)
+    items = items.filter(
+      (i) =>
+        i.name?.toLowerCase().includes(returnedSearch.value.toLowerCase()) ||
+        (i.student_id && i.student_id.includes(returnedSearch.value)) ||
+        (i.claimant_name && i.claimant_name.toLowerCase().includes(returnedSearch.value.toLowerCase())) ||
+        (i.transaction_claimant_name && i.transaction_claimant_name.toLowerCase().includes(returnedSearch.value.toLowerCase())) ||
+        (i.reporter_name && i.reporter_name.toLowerCase().includes(returnedSearch.value.toLowerCase()))
+    );
+  if (returnedCategoryFilter.value)
+    items = items.filter((i) => i.category === returnedCategoryFilter.value);
+  return items;
+});
+
+// ====================
+// Report Generation Functions
+// ====================
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'N/A';
+  return date.toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+};
+
+const formatStatus = (status) => {
+  if (!status) return { text: 'N/A', class: 'text-gray-600 dark:text-gray-400' };
+  const statusMap = {
+    'in_security_custody': { text: 'In Custody of the Security Office', class: 'text-amber-600 dark:text-amber-400' },
+    'In Security Custody': { text: 'In Custody of the Security Office', class: 'text-amber-600 dark:text-amber-400' },
+    'returned': { text: 'Returned', class: 'text-green-600 dark:text-green-400' },
+    'pending': { text: 'Pending', class: 'text-amber-600 dark:text-amber-400' },
+    'lost': { text: 'Lost', class: 'text-red-600 dark:text-red-400' }
+  };
+  const mapped = statusMap[status];
+  if (mapped) return mapped;
+  return {
+    text: status.charAt(0).toUpperCase() + status.slice(1),
+    class: 'text-gray-600 dark:text-gray-400'
+  };
+};
+
+const generateReturnReport = async (item, { download = true } = {}) => {
+  if (!item) return;
+
+  const universityName = 'Caraga State University';
+  const officeName = 'Security Office';
+  const reportDate = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+
+  const itemDescParts = [];
+  if (item.category) itemDescParts.push(item.category);
+  if (item.brand) itemDescParts.push(item.brand);
+  if (item.color) itemDescParts.push(item.color);
+  if (item.condition) itemDescParts.push(item.condition);
+  const itemDescription = itemDescParts.length ? itemDescParts.join(', ') : (item.name || 'N/A');
+
+  const foundLocation = item.location || item.found_location || 'N/A';
+  const serial = item.serial_number || item.student_id || item.item_serial || 'N/A';
+  const returnDate = item.return_date || new Date().toISOString();
+
+  const claimantName = item.claimant_name || item.transaction_claimant_name || item.reporter_name || 'N/A';
+  const claimantEmail = item.claimant_email || item.transaction_claimant_email || 'N/A';
+  const claimantPhone = item.claimant_contact || item.transaction_claimant_contact || 'N/A';
+
+  const verificationDate = returnDate;
+  const verificationOfficer = currentUser.value?.full_name || 'Administrator';
+  const returnMethod = item.return_method || 'In-person pickup';
+  const itemConditionOnReturn = item.condition || 'N/A';
+
+  try {
+    const jsPDFModule = await import('jspdf');
+    const { jsPDF } = jsPDFModule;
+    try { await import('jspdf-autotable'); } catch (e) { console.warn('jspdf-autotable not available'); }
+
+    const doc = new jsPDF();
+    let y = 14;
+    doc.setFontSize(16);
+    doc.text(`${universityName} - ${officeName}`, 14, y);
+    y += 8;
+    doc.setFontSize(14);
+    doc.text('CSU Lost and Found Item Return Report', 14, y);
+    y += 10;
+    doc.setFontSize(10);
+    doc.text(`Date of Report: ${reportDate}`, 14, y);
+
+    y += 8;
+
+    const rows = [
+      ['Item Description', itemDescription],
+      ['Found Location', foundLocation],
+      ['Serial / Student ID', serial],
+      ['Return Date', formatDate(returnDate)],
+      ['Claimant Name', claimantName],
+      ['Claimant Email', claimantEmail],
+      ['Claimant Phone', claimantPhone],
+      ['Claim Verification Date', formatDate(verificationDate)],
+      ['Verification Officer', verificationOfficer],
+      ['Return Method', returnMethod],
+      ['Condition on Return', itemConditionOnReturn]
+    ];
+
+    if (typeof doc.autoTable === 'function') {
+      doc.autoTable({
+        startY: y,
+        head: [['Field', 'Value']],
+        body: rows,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255 }
+      });
+      y = doc.lastAutoTable ? doc.lastAutoTable.finalY + 8 : y + (rows.length * 6) + 8;
+    } else {
+      doc.setFontSize(12);
+      doc.text('Item Return Details', 14, y);
+      y += 8;
+      doc.setFontSize(10);
+      rows.forEach(([k, v]) => {
+        doc.text(`${k}: ${v}`, 14, y);
+        y += 6;
+        if (y > 270) { doc.addPage(); y = 14; }
+      });
+    }
+    y += 10;
+
+    doc.setFontSize(12);
+    doc.text('Claimant Information', 14, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.text(`Claimant Name: ${claimantName}`, 14, y);
+    y += 6;
+    doc.text(`Claimant Email: ${claimantEmail}`, 14, y);
+    y += 6;
+    doc.text(`Claimant Phone Number: ${claimantPhone}`, 14, y);
+    y += 10;
+
+    doc.setFontSize(12);
+    doc.text('Verification and Return Process', 14, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.text(`Claim Verification Date: ${formatDate(verificationDate)}`, 14, y);
+    y += 6;
+    doc.text(`Verification Officer: ${verificationOfficer}`, 14, y);
+    y += 6;
+    doc.text(`Return Method: ${returnMethod}`, 14, y);
+    y += 6;
+    doc.text(`Item Condition on Return: ${itemConditionOnReturn}`, 14, y);
+    y += 10;
+
+    doc.text('Report Prepared By:', 14, y);
+    y += 6;
+    doc.text(`${verificationOfficer}`, 14, y);
+    y += 6;
+    doc.text(`${currentUser.value?.email || 'admin@carsu.edu.ph'}`, 14, y);
+
+    const filename = `CSU_Return_Report_${(item.name || item.id || 'item').toString().replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+    if (download) {
+      doc.save(filename);
+      return;
+    } else {
+      try {
+        const blob = doc.output('blob');
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        return;
+      } catch (e) {
+        doc.save(filename);
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('jsPDF not available or error generating PDF, falling back to printable HTML', err);
+  }
+
+  try {
+    const printScript = download ? '' : 'window.print()';
+    const html = `
+      <html><head><title>Return Report</title>
+      <style>body{font-family:Arial,Helvetica,sans-serif;padding:20px;color:#111} h1,h2{color:#222}</style>
+      </head><body>
+      <h1>${universityName} - ${officeName}</h1>
+      <h2>CSU Lost and Found Item Return Report</h2>
+      <p><strong>Date of Report:</strong> ${reportDate}</p>
+      <h3>Item Return Details</h3>
+      <p><strong>Item Description:</strong> ${itemDescription}</p>
+      <p><strong>Item Found Location:</strong> ${foundLocation}</p>
+      <p><strong>Item Serial Number (if applicable):</strong> ${serial}</p>
+      <p><strong>Return Date:</strong> ${formatDate(returnDate)}</p>
+      <h3>Claimant Information</h3>
+      <p><strong>Claimant Name:</strong> ${claimantName}</p>
+      <p><strong>Claimant Email:</strong> ${claimantEmail}</p>
+      <p><strong>Claimant Phone Number:</strong> ${claimantPhone}</p>
+      <h3>Verification and Return Process</h3>
+      <p><strong>Claim Verification Date:</strong> ${formatDate(verificationDate)}</p>
+      <p><strong>Verification Officer:</strong> ${verificationOfficer}</p>
+      <p><strong>Return Method:</strong> ${returnMethod}</p>
+      <p><strong>Item Condition on Return:</strong> ${itemConditionOnReturn}</p>
+      <h3>Report Prepared By:</h3>
+      <p>${verificationOfficer}<br/>${currentUser.value?.email || 'admin@carsu.edu.ph'}</p>
+      <script>${printScript}</" + "script>
+      </body></html>`;
+
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    } else {
+      alert('Unable to open report window. Please allow popups or try again.');
+    }
+  } catch (e) {
+    console.error('Fallback print failed', e);
+    alert('Failed to generate report.');
+  }
+};
+
+const downloadReturnReport = async (item) => {
+  if (!item) return;
+  await generateReturnReport(item, { download: true });
+};
+
+const printReturnReport = async (item) => {
+  if (!item) return;
+  await generateReturnReport(item, { download: false });
+};
+
+const viewItem = async (item) => {
   imageError.value = false;
   reporterImageError.value = false;
+  
+  // Always fetch fresh item data from backend to ensure we have all reporter information
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/items/${encodeURIComponent(item.id)}`);
+    selectedItem.value = response.data;
+    
+    // Map reporter data from backend response fields to reporter object
+    if (selectedItem.value.reporter_name) {
+      selectedItem.value.reporter = {
+        id: selectedItem.value.reporter_user_id || selectedItem.value.reporter_id,
+        full_name: selectedItem.value.reporter_name || 'Unknown',
+        email: selectedItem.value.reporter_email || 'N/A',
+        contact_number: selectedItem.value.reporter_contact || 'N/A',
+        profile_picture: selectedItem.value.reporter_profile_picture || null
+      };
+    }
+  } catch (err) {
+    console.error('❌ Error fetching item details:', err);
+    selectedItem.value = item;
+    selectedItem.value.reporter = {
+      full_name: 'Unknown',
+      email: 'N/A',
+      contact_number: 'N/A'
+    };
+  }
 };
 
 const closeModal = () => {
@@ -1113,6 +1619,12 @@ const deleteReportConfirmed = async () => {
     });
     deleteConfirmation.value = false;
     selectedItem.value = null;
+    
+    // Show success message for 2 seconds
+    deleteSuccessMessage.value = true;
+    setTimeout(() => {
+      deleteSuccessMessage.value = false;
+    }, 2000);
   } catch (err) {
     console.error("Error deleting item:", err);
   }
@@ -1143,38 +1655,6 @@ async function maybeAutoDeleteReturnedLost(item) {
     return false;
   }
 }
-
-const formatDate = (datetime) =>
-  new Date(datetime).toLocaleString("en-PH", {
-    timeZone: "Asia/Manila",
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-
-const formatStatus = (status) => {
-  if (!status) return { text: 'Unknown', class: 'text-gray-500' };
-  const statusText = status
-    .split("_")
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-  
-  switch (status.toLowerCase()) {
-    case 'found':
-      return { text: statusText, class: 'text-green-500' };
-    case 'lost':
-      return { text: statusText, class: 'text-red-500' };
-    case 'claimed':
-      return { text: statusText, class: 'text-blue-500' };
-    case 'pending':
-      return { text: statusText, class: 'text-yellow-500' };
-    default:
-      return { text: statusText, class: 'text-gray-500' };
-  }
-};
 
 const totalReports = computed(() =>
   lostItems.value.length + foundItems.value.length + returnedHistory.value.length

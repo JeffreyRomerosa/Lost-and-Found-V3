@@ -41,6 +41,34 @@ router.get("/", async (req, res) => {
 });
 
 // ========================
+// 🔹 Get User by ID (For Reporter/Claimant Info)
+// ========================
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(`
+      SELECT 
+        id,
+        full_name,
+        email,
+        contact_number,
+        profile_picture
+      FROM users
+      WHERE id = $1
+    `, [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("❌ Error fetching user:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ========================
 // 🔹 Register Security Staff (Admin Only)
 // ========================
 router.post("/staff", authenticateJWT, async (req, res) => {

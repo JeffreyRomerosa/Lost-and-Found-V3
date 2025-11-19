@@ -14,8 +14,13 @@ router.get("/", async (req, res) => {
   try {
     // Return items with reporter/claimant display fields to simplify UI rendering
     let query = `SELECT i.*, 
-      u_reporter.full_name AS reporter_name, u_reporter.profile_picture AS reporter_profile_picture,
-      u_claimant.full_name AS claimant_name, u_claimant.profile_picture AS claimant_profile_picture
+      u_reporter.full_name AS reporter_name, 
+      u_reporter.email AS reporter_email,
+      u_reporter.contact_number AS reporter_contact,
+      u_reporter.profile_picture AS reporter_profile_picture,
+      u_reporter.id AS reporter_user_id,
+      u_claimant.full_name AS claimant_name, 
+      u_claimant.profile_picture AS claimant_profile_picture
       FROM items i
       LEFT JOIN users u_reporter ON i.reporter_id = u_reporter.id
       LEFT JOIN users u_claimant ON i.claimant_id = u_claimant.id
@@ -64,10 +69,16 @@ router.get("/search", async (req, res) => {
 
   try {
     let sql = `
-      SELECT *
-      FROM items
-      WHERE type = 'found'
-      AND status = 'in_security_custody'
+      SELECT i.*, 
+        u_reporter.full_name AS reporter_name, 
+        u_reporter.email AS reporter_email,
+        u_reporter.contact_number AS reporter_contact,
+        u_reporter.profile_picture AS reporter_profile_picture,
+        u_reporter.id AS reporter_user_id
+      FROM items i
+      LEFT JOIN users u_reporter ON i.reporter_id = u_reporter.id
+      WHERE i.type = 'found'
+      AND i.status = 'in_security_custody'
     `;
     const params = [];
 
@@ -75,25 +86,25 @@ router.get("/search", async (req, res) => {
     if (studentId) {
       // Exact match for student ID
       params.push(studentId);
-      sql += ` AND student_id = $${params.length}`;
+      sql += ` AND i.student_id = $${params.length}`;
     } else if (itemName) {
       // Exact name match, case-insensitive
       params.push(itemName);
-      sql += ` AND LOWER(name) = LOWER($${params.length})`;
+      sql += ` AND LOWER(i.name) = LOWER($${params.length})`;
     } else if (query) {
       // Legacy behavior: detect student ID format or do partial name match
       const isStudentId = /^\d{3}-\d{5}$/.test(query);
 
       if (isStudentId) {
         params.push(query);
-        sql += ` AND student_id = $${params.length}`;
+        sql += ` AND i.student_id = $${params.length}`;
       } else {
         params.push(`%${query}%`);
-        sql += ` AND LOWER(name) LIKE LOWER($${params.length})`;
+        sql += ` AND LOWER(i.name) LIKE LOWER($${params.length})`;
       }
     }
 
-    sql += ` ORDER BY created_at DESC`;
+    sql += ` ORDER BY i.created_at DESC`;
 
     const result = await pool.query(sql, params);
 
@@ -346,13 +357,35 @@ router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query("SELECT * FROM items WHERE id = $1", [id]);
+    const result = await pool.query(`
+      SELECT i.*, 
+        u_reporter.full_name AS reporter_name, 
+        u_reporter.email AS reporter_email,
+        u_reporter.contact_number AS reporter_contact,
+        u_reporter.profile_picture AS reporter_profile_picture,
+        u_reporter.id AS reporter_user_id,
+        u_claimant.full_name AS claimant_name, 
+        u_claimant.profile_picture AS claimant_profile_picture
+      FROM items i
+      LEFT JOIN users u_reporter ON i.reporter_id = u_reporter.id
+      LEFT JOIN users u_claimant ON i.claimant_id = u_claimant.id
+      WHERE i.id = $1
+    `, [id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Item not found" });
     }
 
-    res.json(result.rows[0]);
+    const item = result.rows[0];
+    console.log('📦 Item fetched with reporter data:', {
+      item_id: item.id,
+      reporter_name: item.reporter_name,
+      reporter_email: item.reporter_email,
+      reporter_contact: item.reporter_contact,
+      reporter_id: item.reporter_id
+    });
+
+    res.json(item);
   } catch (err) {
     console.error("❌ Error fetching item:", err);
     res.status(500).json({ error: "Failed to fetch item" });

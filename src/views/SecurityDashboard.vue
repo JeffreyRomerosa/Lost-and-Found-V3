@@ -755,75 +755,88 @@
       <!-- ... (keep all modals exactly as they were) ... -->
 
       <!-- VIEW MODAL -->
-      <div
-        v-if="selectedItem"
-        class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
-      >
-        <div
-          class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl p-6 w-96 max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 shadow-lg transition-colors"
-        >
-          <h3 class="text-xl font-semibold mb-4">Item Details</h3>
-          <img
-            v-if="selectedItem.image_url && !imageError"
-            :src="`${API_BASE_URL}${selectedItem.image_url}`"
-            @error="imageError = true"
-            class="w-full h-48 object-cover rounded mb-4"
-          />
-          <div
-            v-else
-            class="w-full h-48 bg-gray-100 dark:bg-gray-800 flex items-center justify-center rounded mb-4 text-gray-500 dark:text-gray-400"
-          >
-            N/A
-          </div>
-          <div class="space-y-1">
-            <div
-              v-for="(value, key) in filteredDetails"
-              :key="key"
-              class="flex justify-between border-b border-gray-200 dark:border-gray-800 py-1"
-            >
-              <span class="capitalize text-gray-600 dark:text-gray-400">{{ key }}</span>
-              <span>{{ value }}</span>
+      <transition name="fade">
+        <div v-if="selectedItem" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
+          <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-6">
+              <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Item Details</h2>
+              <button @click="closeModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          </div>
 
-          <div v-if="selectedItem.reporter_name" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-800">
-            <h4 class="text-lg font-medium text-yellow-500 mb-2">Reported By</h4>
-            <div class="flex items-center space-x-3 mb-3">
-              <img
-                v-if="selectedItem.reporter_profile_picture && !reporterImageError"
-                :src="`${API_BASE_URL}${selectedItem.reporter_profile_picture}`"
-                @error="reporterImageError = true"
-                class="w-10 h-10 rounded-full object-cover border border-gray-300 dark:border-gray-600"
-              />
-              <div
-                v-else
-                class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold"
-              >
-                {{ selectedItem.reporter_name[0].toUpperCase() }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="space-y-4">
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800">
+                  <img v-if="selectedItem.image_url && !imageError" 
+                       :src="`${API_BASE_URL}${selectedItem.image_url}`"
+                       :alt="selectedItem.name"
+                       class="w-full h-64 object-contain">
+                  <div v-else class="w-full h-64 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <span class="text-gray-500 dark:text-gray-400">No image available</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white">{{ selectedItem.reporter_name }}</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedItem.reporter_email }}</p>
+
+              <div class="space-y-6">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Item Information</h3>
+                  <div class="space-y-3">
+                    <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Name:</span> {{ selectedItem.name }}</p>
+                    <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Category:</span> {{ selectedItem.category }}</p>
+                    <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Status:</span> 
+                      <span :class="{
+                        'text-green-600 dark:text-green-400': selectedItem.status === 'returned',
+                        'text-amber-600 dark:text-amber-400': selectedItem.status === 'in_security_custody' || selectedItem.status === 'In Security Custody' || selectedItem.status === 'pending'
+                      }">
+                        {{ formatStatus(selectedItem.status) }}
+                      </span>
+                    </p>
+                    <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Location:</span> {{ selectedItem.location || 'N/A' }}</p>
+                    <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Date & Time:</span> {{ formatDate(selectedItem.datetime) }}</p>
+                    <div>
+                      <p class="font-semibold text-gray-900 dark:text-white mb-1">Description</p>
+                      <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ selectedItem.description }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Reporter Information</h3>
+                  <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0">
+                      <div class="w-12 h-12 rounded-full overflow-hidden">
+                        <img v-if="selectedItem.reporter?.profile_picture && !reporterImageError" 
+                             :src="`${API_BASE_URL}${selectedItem.reporter.profile_picture}`"
+                             @error="reporterImageError = true"
+                             class="w-full h-full object-cover"
+                             :alt="selectedItem.reporter.full_name">
+                        <div v-else class="w-full h-full bg-emerald-600 flex items-center justify-center text-white font-semibold">
+                          {{ selectedItem.reporter?.full_name?.[0]?.toUpperCase() || '?' }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Name:</span> {{ selectedItem.reporter?.full_name || 'Anonymous' }}</p>
+                      <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Email:</span> {{ selectedItem.reporter?.email || 'N/A' }}</p>
+                      <p class="text-gray-700 dark:text-gray-300"><span class="font-semibold text-gray-900 dark:text-white">Contact:</span> {{ selectedItem.reporter?.contact_number || 'N/A' }}</p>
+                      <button
+                        v-if="selectedItem.reporter?.id"
+                        @click="router.push(`/view-profile/${selectedItem.reporter.id}`)"
+                        class="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition text-sm font-medium"
+                      >
+                        View Profile Info
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <button
-              @click="viewReporterProfile(selectedItem.reporter_id)"
-              class="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm font-medium"
-            >
-              View Reporter Profile
-            </button>
-          </div>
-
-          <div class="mt-6 flex justify-end">
-            <button
-              @click="closeModal"
-              class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              Close
-            </button>
           </div>
         </div>
-      </div>
+      </transition>
 
       <!-- CLAIMS MODAL -->
       <div
@@ -1328,6 +1341,50 @@
         </div>
       </div>
 
+      <!-- Claim Approval Success Modal with Reporter Gratitude Message -->
+      <transition name="fade">
+        <div v-if="showApprovalSuccessModal && approvalSuccessData" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+          <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl p-8 max-w-2xl w-full m-4 animate-pulse-glow">
+            <div class="text-center mb-6">
+              <div class="flex justify-center mb-4">
+                <svg class="w-16 h-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Claim Approved Successfully</h2>
+              <p class="text-gray-600 dark:text-gray-400">A gratitude notification has been sent to the reporter</p>
+            </div>
+
+            <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-6 mb-6">
+              <p class="text-emerald-900 dark:text-emerald-200 text-center text-lg font-semibold mb-4">Reporter Notification</p>
+              <div class="bg-white dark:bg-gray-800 rounded p-4 border border-emerald-200 dark:border-emerald-800">
+                <p class="text-gray-700 dark:text-gray-300 mb-3">
+                  "The <strong>{{ approvalSuccessData.item_name }}</strong> you reported has been successfully claimed by the rightful owner (<strong>{{ approvalSuccessData.claimant_name }}</strong>)."
+                </p>
+                <p class="text-gray-700 dark:text-gray-300">
+                  "Thank you for your cooperation and for making our university a better place. Your efforts in reporting found items help reunite people with their belongings."
+                </p>
+              </div>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+              <p class="text-blue-900 dark:text-blue-200 text-sm">
+                <strong>ℹ️ Note:</strong> This notification has been automatically sent to the reporter's notification center in the system.
+              </p>
+            </div>
+
+            <div class="flex justify-center">
+              <button
+                @click="showApprovalSuccessModal = false"
+                class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium"
+              >
+                Close & Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+
       <!-- OFFICE HOURS MANAGEMENT PAGE -->
       <div v-if="currentPage === 'office-hours'">
         <EditableOfficeHours />
@@ -1420,6 +1477,9 @@ const claimReviewItemImageError = ref(false);
 const showDeleteConfirmModal = ref(false);
 const claimToDelete = ref(null);
 
+// Approval success modal for reporter notification
+const showApprovalSuccessModal = ref(false);
+const approvalSuccessData = ref(null); // Will hold { claimant_name, item_name }
 
 // Unread counters
 const unreadLostCount = ref(0);
@@ -1531,8 +1591,17 @@ const formatDate = (datetime) => {
   });
 };
 
-const formatStatus = (status) =>
-  (status || "").split("_").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+const formatStatus = (status) => {
+  if (!status) return "N/A";
+  const statusMap = {
+    'in_security_custody': 'In Custody of the Security Office',
+    'In Security Custody': 'In Custody of the Security Office',
+    'returned': 'Returned',
+    'pending': 'Pending',
+    'lost': 'Lost'
+  };
+  return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+};
 
 const formatClaimStatus = (status) => {
   const safe = (status ? String(status) : "pending")
@@ -2485,7 +2554,13 @@ const confirmClaimApproval = async (claim) => {
       console.error('Error while marking items returned after claim approval:', approvalSideErr);
     }
 
-    alert("✅ Claim approved.");
+    // Show approval success modal with gratitude message
+    approvalSuccessData.value = {
+      claimant_name: claim.claimant_name || claim.user_name || 'Unknown',
+      item_name: claim.item?.name || claim.item_name || 'Unknown Item'
+    };
+    showApprovalSuccessModal.value = true;
+    
     closeClaimReviewModal();
   } catch (err) {
     console.error("Error approving claim:", err);
@@ -3329,35 +3404,44 @@ const filteredClaimRequests = computed(() => {
   return claims;
 });
 
-const filteredDetails = computed(() => {
-  if (!selectedItem.value) return {};
-  const filtered = {};
-  for (const [key, value] of Object.entries(selectedItem.value)) {
-    if (
-      value &&
-      value !== "N/A" &&
-      ![
-        "id",
-        "image_url",
-        "created_at",
-        "imageError",
-        "reporter_id",
-        "reporter_name",
-        "reporter_email",
-        "reporter_profile_picture",
-        "reporterImageError",
-      ].includes(key)
-    ) {
-      filtered[key] = value;
-    }
-  }
-  return filtered;
-});
-
-const viewItem = (item) => {
-  selectedItem.value = item;
+const viewItem = async (item) => {
   imageError.value = false;
   reporterImageError.value = false;
+  
+  // Always fetch fresh item data from backend to ensure we have all reporter information
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/items/${encodeURIComponent(item.id)}`);
+    selectedItem.value = response.data;
+    
+    console.log('📋 Fresh item data from backend:', {
+      reporter_name: selectedItem.value.reporter_name,
+      reporter_email: selectedItem.value.reporter_email,
+      reporter_contact: selectedItem.value.reporter_contact,
+      reporter_profile_picture: selectedItem.value.reporter_profile_picture,
+      reporter_user_id: selectedItem.value.reporter_user_id,
+      reporter_id: selectedItem.value.reporter_id
+    });
+    
+    // Map reporter data from backend response fields to reporter object
+    if (selectedItem.value.reporter_name) {
+      selectedItem.value.reporter = {
+        id: selectedItem.value.reporter_user_id || selectedItem.value.reporter_id,
+        full_name: selectedItem.value.reporter_name || 'Unknown',
+        email: selectedItem.value.reporter_email || 'N/A',
+        contact_number: selectedItem.value.reporter_contact || 'N/A',
+        profile_picture: selectedItem.value.reporter_profile_picture || null
+      };
+      console.log('✅ Reporter data mapped from backend:', selectedItem.value.reporter);
+    }
+  } catch (err) {
+    console.error('❌ Error fetching item details:', err);
+    selectedItem.value = item;
+    selectedItem.value.reporter = {
+      full_name: 'Unknown',
+      email: 'N/A',
+      contact_number: 'N/A'
+    };
+  }
 };
 
 const closeModal = () => {
