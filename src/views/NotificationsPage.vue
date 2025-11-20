@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4 sm:p-6 pb-32">
     <!-- Header -->
-    <div class="max-w-6xl mx-auto mb-6 sm:mb-8">
-      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-yellow-400 mb-2">Alerts</h1>
+    <div class="max-w-6xl mx-auto mb-6 sm:mb-8 mt-3">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-emerald-400 mb-2">Alerts</h1>
       <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">Manage your lost and found notifications</p>
     </div>
 
@@ -60,7 +60,7 @@
             <div class="col-span-1 lg:col-span-7">
               <div class="flex flex-col h-full justify-between">
                 <div>
-                  <h3 class="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 dark:text-yellow-400 mb-2 break-words">{{ notif.title }}</h3>
+                  <h3 class="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 dark:text-emerald-400 mb-2 break-words">{{ notif.title }}</h3>
                   <p class="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-3 sm:mb-4 leading-relaxed break-words">{{ notif.message }}</p>
                   
                   <!-- Added responsive spacing and icon sizing for details -->
@@ -140,7 +140,7 @@
         </button>
 
         <div class="p-4 sm:p-6 lg:p-8 pt-12 sm:pt-8">
-          <h2 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-gray-900 dark:text-yellow-400 break-words">{{ selectedNotification.title }}</h2>
+          <h2 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-gray-900 dark:text-emerald-400 break-words">{{ selectedNotification.title }}</h2>
 
           <!-- Added responsive image sizing -->
           <!-- Image -->
@@ -153,7 +153,7 @@
             />
 
             <!-- Student badge overlay -->
-            <div v-if="selectedNotification.studentId" class="absolute bottom-3 left-3 bg-yellow-500 text-black text-xs sm:text-sm font-semibold px-2 sm:px-4 py-1 sm:py-2 rounded shadow-lg">
+            <div v-if="selectedNotification.studentId" class="absolute bottom-3 left-3 bg-emerald-500 text-black text-xs sm:text-sm font-semibold px-2 sm:px-4 py-1 sm:py-2 rounded shadow-lg">
               Student: {{ selectedNotification.studentId }}
             </div>
           </div>

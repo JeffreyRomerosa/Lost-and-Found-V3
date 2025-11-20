@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6 pb-32">
     <!-- Header -->
-    <div class="max-w-2xl mx-auto mb-8">
+    <div class="max-w-2xl mx-auto mb-8 mt-5">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Report an Item</h1>
         <button
@@ -182,15 +182,67 @@
           </div>
 
           <div>
-            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-3 uppercase">
               {{ reportType === "lost" ? "Date & Time Lost" : "Date & Time Found" }} *
             </label>
-            <input
-              v-model="idForm.dateTime"
-              type="datetime-local"
-              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-              required
-            />
+            <!-- Date & Time Display -->
+            <div class="bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg p-4 mb-4">
+              <p class="text-base font-bold text-emerald-700 dark:text-emerald-300">{{ formatIdDateTime() }}</p>
+            </div>
+            <!-- Date Picker Row -->
+            <div class="mb-4">
+              <label class="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">📅 SELECT DATE</label>
+              <div class="grid grid-cols-3 gap-3">
+                <!-- Month Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Month</label>
+                  <button @click="openIdPicker('month')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ getMonthName(idDatePicker.month) }}
+                  </button>
+                </div>
+                <!-- Day Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Day</label>
+                  <button @click="openIdPicker('day')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ String(idDatePicker.day).padStart(2, '0') }}
+                  </button>
+                </div>
+                <!-- Year Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Year</label>
+                  <button @click="openIdPicker('year')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ idDatePicker.year }}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Time Picker Row -->
+            <div>
+              <label class="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">⏰ SELECT TIME</label>
+              <div class="grid grid-cols-3 gap-3">
+                <!-- Hour Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Hour</label>
+                  <button @click="openIdPicker('hour')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ idDatePicker.hour }}
+                  </button>
+                </div>
+                <!-- Minute Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Minute</label>
+                  <button @click="openIdPicker('minute')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ String(idDatePicker.minute).padStart(2, '0') }}
+                  </button>
+                </div>
+                <!-- Period Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">AM/PM</label>
+                  <button @click="openIdPicker('period')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ idDatePicker.period }}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -337,15 +389,67 @@
           </div>
 
           <div>
-            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-3 uppercase">
               {{ reportType === "lost" ? "Date & Time Lost" : "Date & Time Found" }} *
             </label>
-            <input
-              v-model="generalForm.dateTime"
-              type="datetime-local"
-              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-              required
-            />
+            <!-- Date & Time Display -->
+            <div class="bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg p-4 mb-4">
+              <p class="text-base font-bold text-emerald-700 dark:text-emerald-300">{{ formatGeneralDateTime() }}</p>
+            </div>
+            <!-- Date Picker Row -->
+            <div class="mb-4">
+              <label class="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">📅 SELECT DATE</label>
+              <div class="grid grid-cols-3 gap-3">
+                <!-- Month Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Month</label>
+                  <button @click="openGeneralPicker('month')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ getMonthName(generalDatePicker.month) }}
+                  </button>
+                </div>
+                <!-- Day Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Day</label>
+                  <button @click="openGeneralPicker('day')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ String(generalDatePicker.day).padStart(2, '0') }}
+                  </button>
+                </div>
+                <!-- Year Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Year</label>
+                  <button @click="openGeneralPicker('year')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ generalDatePicker.year }}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Time Picker Row -->
+            <div>
+              <label class="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">⏰ SELECT TIME</label>
+              <div class="grid grid-cols-3 gap-3">
+                <!-- Hour Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Hour</label>
+                  <button @click="openGeneralPicker('hour')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ generalDatePicker.hour }}
+                  </button>
+                </div>
+                <!-- Minute Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Minute</label>
+                  <button @click="openGeneralPicker('minute')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ String(generalDatePicker.minute).padStart(2, '0') }}
+                  </button>
+                </div>
+                <!-- Period Picker -->
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">AM/PM</label>
+                  <button @click="openGeneralPicker('period')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                    {{ generalDatePicker.period }}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -522,6 +626,36 @@
     :itemId="itemReceivedModalData.itemId"
     @close="closeItemReceivedModal"
   />
+
+  <!-- 📱 PICKER MODAL OVERLAY -->
+  <div v-if="activePickerModal" @click="closePicker" class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4">
+    <div @click.stop class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-xs max-h-96">
+      <!-- Modal Header -->
+      <div class="sticky top-0 bg-emerald-500 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
+        <span class="font-bold text-lg">{{ activePickerModal.split('-')[1].toUpperCase() }}</span>
+        <button @click="closePicker" class="text-white hover:text-gray-200 transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Scrollable Options -->
+      <div class="overflow-y-auto max-h-64 py-2">
+        <button 
+          v-for="option in getPickerOptions(activePickerModal.split('-')[1])" 
+          :key="option"
+          @click="selectPickerValue(activePickerModal.split('-')[1] === 'month' ? (['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(option) + 1) : (activePickerModal.split('-')[1] === 'period' ? option : parseInt(option)))"
+          :class="[
+            'w-full px-4 py-3 text-left font-semibold text-gray-900 dark:text-white hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors',
+            getPickerCurrentValue(activePickerModal.split('-')[1]) === option ? 'bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100' : ''
+          ]"
+        >
+          {{ option }}
+        </button>
+      </div>
+    </div>
+  </div>
   </div>
 
 </template>
@@ -563,6 +697,10 @@ const enlargedImageSrc = ref(null);
 const showItemReceivedModal = ref(false);
 const itemReceivedModalData = ref({ itemName: null, itemId: null });
 
+// Picker Modal state
+const activePickerModal = ref(null); // 'id-month', 'id-day', etc. or null
+const pickerFormType = ref(null); // 'id' or 'general'
+
 const yoloApiUrl = "http://localhost:8080";
 const backendUrl = "http://localhost:5000/api";
 
@@ -589,6 +727,43 @@ const generalForm = reactive({
   preview: null,
 });
 
+// Date picker state for ID form
+const initializeIdDatePicker = () => {
+  const now = new Date();
+  const hour24 = now.getHours();
+  let hour12 = hour24 % 12 || 12;
+  let period = hour24 >= 12 ? 'PM' : 'AM';
+  
+  return {
+    month: now.getMonth() + 1,
+    day: now.getDate(),
+    year: now.getFullYear(),
+    hour: hour12,
+    minute: now.getMinutes(),
+    period: period
+  };
+};
+
+const idDatePicker = reactive(initializeIdDatePicker());
+
+// Date picker state for General form
+const initializeGeneralDatePicker = () => {
+  const now = new Date();
+  const hour24 = now.getHours();
+  let hour12 = hour24 % 12 || 12;
+  let period = hour24 >= 12 ? 'PM' : 'AM';
+  
+  return {
+    month: now.getMonth() + 1,
+    day: now.getDate(),
+    year: now.getFullYear(),
+    hour: hour12,
+    minute: now.getMinutes(),
+    period: period
+  };
+};
+
+const generalDatePicker = reactive(initializeGeneralDatePicker());
 
 //nov13
 
@@ -658,6 +833,10 @@ onMounted(() => {
     reviewing.value = savedProgress.reviewing || false;
     submitted.value = savedProgress.submitted || false;
   }
+
+  // Initialize date/time pickers with current date/time
+  updateIdDateTime();
+  updateGeneralDateTime();
 
   // ✅ Socket listeners for item received notifications
   socket = initSocket();
@@ -1013,6 +1192,76 @@ const filterSuggestions = () => {
   filteredSuggestions.value = suggestions.filter((s) => s.toLowerCase().includes(term));
 };
 
+// Format and update date/time for ID form
+const updateIdDateTime = () => {
+  let hour24 = idDatePicker.hour;
+  if (idDatePicker.period === 'PM' && hour24 !== 12) {
+    hour24 += 12;
+  } else if (idDatePicker.period === 'AM' && hour24 === 12) {
+    hour24 = 0;
+  }
+  
+  idForm.dateTime = `${idDatePicker.year}-${String(idDatePicker.month).padStart(2, '0')}-${String(idDatePicker.day).padStart(2, '0')}T${String(hour24).padStart(2, '0')}:${String(idDatePicker.minute).padStart(2, '0')}`;
+};
+
+// Format and update date/time for General form
+const updateGeneralDateTime = () => {
+  let hour24 = generalDatePicker.hour;
+  if (generalDatePicker.period === 'PM' && hour24 !== 12) {
+    hour24 += 12;
+  } else if (generalDatePicker.period === 'AM' && hour24 === 12) {
+    hour24 = 0;
+  }
+  
+  generalForm.dateTime = `${generalDatePicker.year}-${String(generalDatePicker.month).padStart(2, '0')}-${String(generalDatePicker.day).padStart(2, '0')}T${String(hour24).padStart(2, '0')}:${String(generalDatePicker.minute).padStart(2, '0')}`;
+};
+
+// Format display for ID form date/time
+const formatIdDateTime = () => {
+  if (idForm.dateTime) {
+    const dateObj = new Date(idForm.dateTime);
+    const options = { 
+      weekday: 'short', 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    };
+    return dateObj.toLocaleDateString('en-US', options);
+  }
+  return 'Select date and time';
+};
+
+// Format display for General form date/time
+const formatGeneralDateTime = () => {
+  if (generalForm.dateTime) {
+    const dateObj = new Date(generalForm.dateTime);
+    const options = { 
+      weekday: 'short', 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    };
+    return dateObj.toLocaleDateString('en-US', options);
+  }
+  return 'Select date and time';
+};
+
+// Watch for changes in ID date picker
+watch([() => idDatePicker.month, () => idDatePicker.day, () => idDatePicker.year, () => idDatePicker.hour, () => idDatePicker.minute, () => idDatePicker.period], () => {
+  updateIdDateTime();
+});
+
+// Watch for changes in General date picker
+watch([() => generalDatePicker.month, () => generalDatePicker.day, () => generalDatePicker.year, () => generalDatePicker.hour, () => generalDatePicker.minute, () => generalDatePicker.period], () => {
+  updateGeneralDateTime();
+});
+
 const formatDateTime = (dt) => {
   return new Date(dt).toLocaleString();
 };
@@ -1029,5 +1278,62 @@ const openImageModal = (imageSrc) => {
 const closeImageModal = () => {
   showImageModal.value = false;
   enlargedImageSrc.value = null;
+};
+
+// Picker Modal Methods
+const getMonthName = (month) => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return months[month - 1] || 'Jan';
+};
+
+const openIdPicker = (pickerType) => {
+  activePickerModal.value = `id-${pickerType}`;
+  pickerFormType.value = 'id';
+};
+
+const openGeneralPicker = (pickerType) => {
+  activePickerModal.value = `general-${pickerType}`;
+  pickerFormType.value = 'general';
+};
+
+const closePicker = () => {
+  activePickerModal.value = null;
+  pickerFormType.value = null;
+};
+
+const selectPickerValue = (value) => {
+  if (!activePickerModal.value) return;
+  
+  const [formType, pickerType] = activePickerModal.value.split('-');
+  const picker = formType === 'id' ? idDatePicker : generalDatePicker;
+  
+  picker[pickerType] = value;
+  closePicker();
+};
+
+const getPickerOptions = (pickerType) => {
+  if (pickerType === 'month') {
+    return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  } else if (pickerType === 'day') {
+    return Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+  } else if (pickerType === 'year') {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: 5 }, (_, i) => (currentYear - 2 + i).toString());
+  } else if (pickerType === 'hour') {
+    return Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+  } else if (pickerType === 'minute') {
+    return Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+  } else if (pickerType === 'period') {
+    return ['AM', 'PM'];
+  }
+  return [];
+};
+
+const getPickerCurrentValue = (pickerType) => {
+  const picker = pickerFormType.value === 'id' ? idDatePicker : generalDatePicker;
+  if (pickerType === 'month') {
+    return getMonthName(picker.month);
+  }
+  return String(picker[pickerType]);
 };
 </script>

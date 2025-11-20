@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6 pb-32">
+  <div class="min-h-screen bg-white dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-6 pb-32" @click="closeMenusOnClickOutside">
     <!-- Item Received Modal -->
     <ItemReceivedModal
       :isOpen="showItemReceivedModal"
@@ -21,7 +21,7 @@
     <!-- Top-Right Profile & Notification -->
     <div class="absolute top-6 right-6 flex items-center gap-4">
       <!-- Notification Icon -->
-      <div class="relative">
+      <div class="relative" @click.stop>
         <button
           @click="toggleNotifications"
           class="relative w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center shadow-lg transition-all duration-200 text-white"
@@ -52,7 +52,7 @@
         <!-- Notifications Dropdown -->
         <div
           v-if="showNotifications"
-          class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 border border-gray-200 dark:border-gray-700 overflow-hidden"
+          class="fixed left-1/2 top-20 transform -translate-x-1/2 w-80 max-w-xs sm:max-w-sm bg-white dark:bg-gray-800 rounded-xl shadow-2xl z-50 border border-gray-200 dark:border-gray-700 overflow-hidden"
         >
           <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-emerald-50 dark:bg-emerald-900/20">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -217,9 +217,9 @@
       </div>
 
       <!-- Profile Button -->
-      <div class="relative">
+      <div class="relative" @click.stop>
         <button
-          @click="showProfileMenu = !showProfileMenu"
+          @click="toggleProfileMenu"
           class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg hover:bg-emerald-600 transition overflow-hidden border-2 border-emerald-400"
           title="Profile"
         >
@@ -274,7 +274,7 @@
                 </div>
 
                 <div>
-                  <ThemeToggle @change="showProfileMenu = false" />
+                  <ThemeToggle @change="handleThemeToggle" />
                 </div>
               </div>
 
@@ -311,9 +311,9 @@
     </div>
 
     <!-- Dashboard Header -->
-    <div class="max-w-6xl mx-auto mb-12 mt-8">
+    <div class="max-w-6xl mx-auto mb-12 mt-12">
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">User Dashboard</h1>
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white  mb-2">User Dashboard</h1>
         <p class="text-gray-600 dark:text-gray-400">Manage your lost and found items</p>
       </div>
     </div>
@@ -767,6 +767,9 @@ export default {
     async toggleNotifications() {
       this.showNotifications = !this.showNotifications;
       if (this.showNotifications) {
+        // Close profile menu when opening notifications
+        this.showProfileMenu = false;
+        
         // Load latest notifications first (populate list from server)
         await this.loadNotifications();
 
@@ -777,6 +780,20 @@ export default {
           console.warn("Failed to mark notifications read locally:", e);
         }
       }
+    },
+
+    toggleProfileMenu() {
+      this.showProfileMenu = !this.showProfileMenu;
+      if (this.showProfileMenu) {
+        // Close notifications menu when opening profile
+        this.showNotifications = false;
+      }
+    },
+
+    closeMenusOnClickOutside() {
+      // Close both notifications and profile menus when clicking outside
+      this.showNotifications = false;
+      this.showProfileMenu = false;
     },
 
     async loadNotifications(options = {}) {

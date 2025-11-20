@@ -42,12 +42,12 @@
           <!-- Minimal Claim Detail Modal - Show only latest claim -->
           <div
             v-if="showNotificationsDropdown && claimNotifications.length > 0"
-            class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg shadow-lg border border-yellow-400 dark:border-yellow-600 z-50 p-2.5 transition-colors"
+            class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg shadow-lg border border-emerald-400 dark:border-emerald-600 z-50 p-2.5 transition-colors"
           >
             <!-- Header with close and delete buttons -->
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-2">
-                <div class="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></div>
+                <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
                 <h3 class="font-semibold text-xs">New Claim Request</h3>
               </div>
               <div class="flex gap-1">
@@ -79,7 +79,7 @@
                   v-if="claimNotifications[0] && (claimNotifications[0].item_image || claimNotifications[0].display_image) && !claimNotifications[0]._modalImageError"
                   :src="getFullUrl(claimNotifications[0].item_image || claimNotifications[0].display_image)"
                   @error="claimNotifications[0]._modalImageError = true"
-                  class="h-16 w-16 object-cover rounded border-2 border-yellow-500"
+                  class="h-16 w-16 object-cover rounded border-2 border-emerald-500"
                 />
                 <div v-else class="h-16 w-16 rounded bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
                   <span class="text-[9px]">No Image</span>
@@ -97,7 +97,7 @@
                   v-if="claimNotifications[0] && claimNotifications[0].claimant_profile_picture && !claimNotifications[0]._claimantImageError"
                   :src="getFullUrl(claimNotifications[0].claimant_profile_picture)"
                   @error="claimNotifications[0]._claimantImageError = true"
-                  class="w-4 h-4 rounded-full object-cover border border-yellow-500"
+                  class="w-4 h-4 rounded-full object-cover border border-emerald-500"
                 />
                 <div v-else class="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-white text-[9px] font-bold">
                   {{ (claimNotifications[0] && claimNotifications[0].claimant_name || 'U')[0].toUpperCase() }}
@@ -117,7 +117,7 @@
             <!-- Action Button -->
             <button 
               @click.stop="viewClaimDetails(claimNotifications[0]); showNotificationsDropdown = false"
-              class="w-full px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-medium rounded text-xs transition-colors"
+              class="w-full px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-medium rounded text-md transition-colors"
             >
               View Details
             </button>
@@ -260,11 +260,11 @@
             v-model="lostSearch"
             type="text"
             placeholder="Search by Item Name or Student ID"
-            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 w-64 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors"
+            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 w-64 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
           />
           <select
             v-model="lostCategoryFilter"
-            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors"
+            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
           >
             <option value="">All Categories</option>
             <option value="id">ID Items</option>
@@ -355,7 +355,7 @@
               <td class="px-4 py-2 flex space-x-2">
                 <button
                   @click="viewItem(item)"
-                  class="px-4 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+                  class="px-4 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600"
                 >
                   View
                 </button>
@@ -389,12 +389,12 @@
             v-model="foundSearch"
             type="text"
             placeholder="Search by Item Name or Student ID"
-            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 w-64 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors"
+            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 w-64 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
           />
           <div class="flex space-x-4">
             <select
               v-model="foundStatusFilter"
-              class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors"
+              class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
             >
               <option value="">All Status</option>
               <option value="pending">Pending</option>
@@ -402,7 +402,7 @@
             </select>
             <select
               v-model="foundCategoryFilter"
-              class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors"
+              class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
             >
               <option value="">All Categories</option>
               <option value="id">ID Items</option>
@@ -475,33 +475,33 @@
                 </span>
               </td>
               <td class="px-4 py-2">
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2 whitespace-nowrap">
                   <img
                     v-if="item.reporter_profile_picture && !item.reporterImageError"
                     :src="`${API_BASE_URL}${item.reporter_profile_picture}`"
                     @error="item.reporterImageError = true"
-                    class="w-8 h-8 rounded-full object-cover border border-gray-600"
+                    class="w-8 h-8 rounded-full object-cover border border-gray-600 flex-shrink-0"
                   />
                   <div
                     v-else
-                    class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold"
+                    class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                   >
                     {{ item.reporter_name ? item.reporter_name.charAt(0).toUpperCase() : '?' }}
                   </div>
-                  <span>{{ item.reporter_name || 'Anonymous' }}</span>
+                  <span class="truncate">{{ item.reporter_name || 'Anonymous' }}</span>
                 </div>
               </td>
               <td class="px-4 py-2 flex space-x-2">
                 <button
                   @click="viewItem(item)"
-                  class="px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition text-s font-medium"
+                  class="px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition font-medium"
                 >
                   View
                 </button>
                 <button
                   v-if="item.status === 'pending'"
                   @click="openReviewModal(item)"
-                  class="px-4 py-2 bg-green-500 text-white  rounded hover:bg-green-600"
+                  class="px-3 py-1 bg-amber-500 text-white  rounded hover:bg-amber-600"
                 >
                   Accept
                 </button>
@@ -520,11 +520,11 @@
             v-model="claimsSearch"
             type="text"
             placeholder="Search by Item Name, Student ID, or Claimant Name"
-            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 flex-1 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors"
+            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 flex-1 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
           />
           <select
             v-model="claimsStatusFilter"
-            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white ml-4 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors"
+            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white ml-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
           >
             <option value="">All Status</option>
             <option value="pending">Pending</option>
@@ -533,7 +533,7 @@
           </select>
           <select
             v-model="claimsCategoryFilter"
-            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white ml-4 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors"
+            class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white ml-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
           >
             <option value="">All Categories</option>
             <option value="student">Student ID</option>
@@ -552,7 +552,7 @@
           <div
             v-for="claim in filteredClaimRequests"
             :key="claim.claim_id"
-            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors relative"
+            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors relative"
           >
             <!-- Delete Button (Top-Right Corner) - For Approved & Rejected Claims -->
             <button
@@ -622,7 +622,7 @@
                     <img
                       v-if="claim.claimant_profile_picture"
                       :src="getFullUrl(claim.claimant_profile_picture)"
-                      class="w-7 h-7 rounded-full object-cover border border-yellow-500"
+                      class="w-7 h-7 rounded-full object-cover border border-emerald-500"
                       @error="claim._claimantImageError = true; $event.target.style.display='none'"
                     />
                     <div v-else class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
@@ -636,11 +636,11 @@
                   
                   <span
                     :class="{
-                      'bg-yellow-500 text-black': claim.status === 'pending',
+                      'bg-yellow-500 text-white': claim.status === 'pending',
                       'bg-green-500 text-white': claim.status === 'approved',
                       'bg-red-500 text-white': claim.status === 'rejected'
                     }"
-                    class="px-3 py-1 rounded-full text-sm font-semibold flex-shrink-0"
+                    class="px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0"
                   >
                     {{ claim.status ? claim.status.toUpperCase() : 'PENDING' }}
                   </span>
@@ -653,7 +653,7 @@
                   </div>
                   <button
                     @click="viewClaimDetails(claim)"
-                    class="px-3 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600 text-xs font-medium"
+                    class="px-3 py-2 bg-emerald-500 text-black rounded hover:bg-emerald-600 text-xs font-medium"
                   >
                     View Details
                   </button>
@@ -747,7 +747,7 @@
                 <div class="flex items-center space-x-2">
                   <button
                     @click="downloadReturnReport(item)"
-                    class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                    class="flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium whitespace-nowrap"
                     title="Download PDF"
                   >
                    <svg xmlns="http://www.w3.org/2000/svg" 
@@ -759,14 +759,14 @@
     <path stroke-linecap="round" stroke-linejoin="round"
       d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M7.5 10.5L12 15m0 0l4.5-4.5M12 15V3" />
   </svg>
-  <span>Download</span>
+                    <span>Download</span>
                   </button>
                   <button
                     @click="printReturnReport(item)"
-                    class="px-3 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600 text-sm"
+                    class="px-3 py-1 bg-amber-500 text-white rounded hover:bg-amber-600 text-sm"
                     title="Open printable view"
                   >
-                    Print Report
+                    View PDF
                   </button>
                 </div>
               </td>
@@ -878,7 +878,7 @@
             <!-- ITEM DETAILS SECTION (Left Column) -->
             <div class="lg:col-span-1">
               <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 sticky top-0 transition-colors">
-                <h4 class="text-lg font-semibold text-yellow-500 mb-4">Item Details</h4>
+                <h4 class="text-lg font-semibold text-emerald-700 mb-4">Item Details</h4>
                 
                 <!-- Item Image -->
                 <img
@@ -938,7 +938,7 @@
             <!-- CLAIMS SECTION (Right Column - 2 columns wide) -->
             <div class="lg:col-span-2">
               <!-- Claims Count Banner -->
-              <div v-if="claimRequests.length > 0" class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-500/30 rounded text-sm text-yellow-700 dark:text-yellow-300">
+              <div v-if="claimRequests.length > 0" class="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-500/30 rounded text-sm text-emerald-700 dark:text-emerald-300">
                 <strong>⚠️ {{ claimRequests.length }} Claim Request{{ claimRequests.length > 1 ? 's' : '' }} for This Item</strong>
               </div>
 
@@ -959,9 +959,9 @@
                         v-if="claim.claimant_profile_picture && !claim._claimantPhotoError"
                         :src="getFullUrl(claim.claimant_profile_picture)"
                         @error="claim._claimantPhotoError = true"
-                        class="w-12 h-12 rounded-full object-cover border-2 border-yellow-400"
+                        class="w-12 h-12 rounded-full object-cover border-2 border-emerald-400"
                       />
-                      <div v-else class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold border-2 border-yellow-400 text-sm">
+                      <div v-else class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold border-2 border-emerald-400 text-sm">
                         {{ (claim.claimant_name || 'U')[0].toUpperCase() }}
                       </div>
                     </div>
@@ -984,7 +984,7 @@
                   </div>
 
                   <!-- Claimant Message -->
-                  <div v-if="claim.message" class="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded text-sm text-gray-700 dark:text-gray-300 border-l-2 border-yellow-400">
+                  <div v-if="claim.message" class="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded text-sm text-gray-700 dark:text-gray-300 border-l-2 border-emerald-400">
                     <strong class="block mb-1">Message:</strong>
                     <p class="whitespace-pre-line">{{ claim.message }}</p>
                   </div>
@@ -1060,7 +1060,7 @@
         class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
         @click.self="closeClaimReviewModal"
       >
-        <div class="bg-gray-900 text-white rounded-xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
+        <div class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 shadow-2xl">
           <!-- Header -->
           <h2 class="text-2xl font-bold mb-6">
             {{ claimReviewData.action === 'approve' ? 'Review Claim - Approve' : 'Review Claim - Reject' }}
@@ -1068,8 +1068,8 @@
 
           <!-- Item Information Section -->
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-yellow-400 mb-3">Item Information</h3>
-            <div class="bg-gray-800 rounded-lg p-4 flex gap-4">
+            <h3 class="text-lg font-semibold text-emerald-500 dark:text-emerald-400 mb-3">Item Information</h3>
+            <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex gap-4">
               <!-- Item Image -->
               <div class="flex-shrink-0">
                 <img
@@ -1078,38 +1078,38 @@
                   @error="claimReviewItemImageError = true"
                   class="w-24 h-24 object-cover rounded"
                 />
-                <div v-else class="w-24 h-24 rounded bg-gray-700 flex items-center justify-center text-gray-400 text-xs">No Image</div>
+                <div v-else class="w-24 h-24 rounded bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400 text-xs">No Image</div>
               </div>
 
               <!-- Item Details -->
               <div class="flex-1">
-                <p class="text-lg font-semibold text-white">{{ (claimReviewItemSafe && claimReviewItemSafe.name) || claimReviewData.claim.item_name || 'Unknown Item' }}</p>
-                  <p class="text-sm text-gray-400 mb-2">ID: {{ (claimReviewItemSafe && claimReviewItemSafe.id) || claimReviewData.claim.item_id || 'N/A' }}</p>
+                <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ (claimReviewItemSafe && claimReviewItemSafe.name) || claimReviewData.claim.item_name || 'Unknown Item' }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">ID: {{ (claimReviewItemSafe && claimReviewItemSafe.id) || claimReviewData.claim.item_id || 'N/A' }}</p>
                 
                 <div class="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span class="text-gray-400">Category:</span>
-                    <p class="text-white font-medium">{{ (claimReviewItemSafe && claimReviewItemSafe.category) || 'General' }}</p>
+                    <span class="text-gray-600 dark:text-gray-400">Category:</span>
+                    <p class="text-gray-900 dark:text-white font-medium">{{ (claimReviewItemSafe && claimReviewItemSafe.category) || 'General' }}</p>
                   </div>
                   <div>
-                    <span class="text-gray-400">Status:</span>
-                    <p class="text-white font-medium">{{ formatStatus((claimReviewItemSafe && claimReviewItemSafe.status) || '') }}</p>
+                    <span class="text-gray-600 dark:text-gray-400">Status:</span>
+                    <p class="text-gray-900 dark:text-white font-medium">{{ formatStatus((claimReviewItemSafe && claimReviewItemSafe.status) || '') }}</p>
                   </div>
                   <div v-if="claimReviewItemSafe && claimReviewItemSafe.student_id">
-                    <span class="text-gray-400">Student ID:</span>
-                    <p class="text-white font-medium">{{ claimReviewData.claim.item.student_id }}</p>
+                    <span class="text-gray-600 dark:text-gray-400">Student ID:</span>
+                    <p class="text-gray-900 dark:text-white font-medium">{{ claimReviewData.claim.item.student_id }}</p>
                   </div>
                   <div v-if="claimReviewItemSafe && claimReviewItemSafe.brand">
-                    <span class="text-gray-400">Brand:</span>
-                    <p class="text-white font-medium">{{ claimReviewData.claim.item.brand }}</p>
+                    <span class="text-gray-600 dark:text-gray-400">Brand:</span>
+                    <p class="text-gray-900 dark:text-white font-medium">{{ claimReviewData.claim.item.brand }}</p>
                   </div>
                   <div v-if="claimReviewItemSafe && claimReviewItemSafe.color">
-                    <span class="text-gray-400">Color:</span>
-                    <p class="text-white font-medium">{{ claimReviewData.claim.item.color }}</p>
+                    <span class="text-gray-600 dark:text-gray-400">Color:</span>
+                    <p class="text-gray-900 dark:text-white font-medium">{{ claimReviewData.claim.item.color }}</p>
                   </div>
                   <div>
-                    <span class="text-gray-400">Date Found:</span>
-                    <p class="text-white font-medium">{{ formatDate((claimReviewItemSafe && claimReviewItemSafe.datetime) || claimReviewData.claim.created_at) }}</p>
+                    <span class="text-gray-600 dark:text-gray-400">Date Found:</span>
+                    <p class="text-gray-900 dark:text-white font-medium">{{ formatDate((claimReviewItemSafe && claimReviewItemSafe.datetime) || claimReviewData.claim.created_at) }}</p>
                   </div>
                 </div>
               </div>
@@ -1117,18 +1117,18 @@
           </div>
 
           <!-- Divider -->
-          <div class="border-t border-gray-700 my-6"></div>
+          <div class="border-t border-gray-300 dark:border-gray-700 my-6"></div>
 
           <!-- Claimant Information Section -->
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-green-400 mb-3">Claimant Information</h3>
-            <div class="bg-gray-800 rounded-lg p-4 flex gap-4">
+            <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-3">Claimant Information</h3>
+            <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex gap-4">
               <!-- Claimant Profile Picture -->
               <div class="flex-shrink-0">
                 <img
                   v-if="claimReviewData.claim.claimant_profile_picture"
                   :src="getFullUrl(claimReviewData.claim.claimant_profile_picture)"
-                  class="w-16 h-16 rounded-full object-cover border-2 border-yellow-500"
+                  class="w-16 h-16 rounded-full object-cover border-2 border-emerald-500"
                 />
                 <div v-else class="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
                   {{ (claimReviewData.claim.claimant_name || 'U')[0].toUpperCase() }}
@@ -1137,21 +1137,21 @@
 
               <!-- Claimant Details -->
               <div class="flex-1">
-                <p class="text-lg font-semibold text-white">{{ claimReviewData.claim.claimant_name || claimReviewData.claim.user_name || 'Unknown' }}</p>
-                <p class="text-sm text-gray-400">{{ claimReviewData.claim.claimant_email || claimReviewData.claim.user_email || 'N/A' }}</p>
+                <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ claimReviewData.claim.claimant_name || claimReviewData.claim.user_name || 'Unknown' }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ claimReviewData.claim.claimant_email || claimReviewData.claim.user_email || 'N/A' }}</p>
                 
                 <div class="mt-3 space-y-1 text-sm">
                   <div v-if="claimReviewData.claim.claimant_contact">
-                    <span class="text-gray-400">Contact:</span>
-                    <p class="text-white font-medium">{{ claimReviewData.claim.claimant_contact }}</p>
+                    <span class="text-gray-600 dark:text-gray-400">Contact:</span>
+                    <p class="text-gray-900 dark:text-white font-medium">{{ claimReviewData.claim.claimant_contact }}</p>
                   </div>
                   <div v-if="claimReviewData.claim.claimant_department">
-                    <span class="text-gray-400">Department:</span>
-                    <p class="text-white font-medium">{{ claimReviewData.claim.claimant_department }}</p>
+                    <span class="text-gray-600 dark:text-gray-400">Department:</span>
+                    <p class="text-gray-900 dark:text-white font-medium">{{ claimReviewData.claim.claimant_department }}</p>
                   </div>
                   <div>
-                    <span class="text-gray-400">Requested:</span>
-                    <p class="text-white font-medium">{{ formatDate(claimReviewData.claim.created_at) }}</p>
+                    <span class="text-gray-600 dark:text-gray-400">Requested:</span>
+                    <p class="text-gray-900 dark:text-white font-medium">{{ formatDate(claimReviewData.claim.created_at) }}</p>
                   </div>
                 </div>
               </div>
@@ -1160,27 +1160,27 @@
 
           <!-- Claim Message Section -->
           <div v-if="claimReviewData.claim.message" class="mb-6">
-            <h3 class="text-lg font-semibold text-blue-400 mb-2">Claimant's Message</h3>
-            <div class="bg-gray-800 rounded-lg p-3 border-l-4 border-blue-500 text-sm text-gray-300">
+            <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">Claimant's Message</h3>
+            <div class="bg-blue-50 dark:bg-gray-800 rounded-lg p-3 border-l-4 border-blue-500 text-sm text-gray-700 dark:text-gray-300">
               {{ claimReviewData.claim.message }}
             </div>
           </div>
 
           <!-- Confirmation/Warning Messages -->
-          <div class="mb-6 p-4 rounded-lg" :class="claimReviewData.action === 'approve' ? 'bg-green-900/30 border border-green-500' : 'bg-red-900/30 border border-red-500'">
-            <p v-if="claimReviewData.action === 'approve'" class="text-green-300 text-sm">
+          <div class="mb-6 p-4 rounded-lg" :class="claimReviewData.action === 'approve' ? 'bg-green-50 dark:bg-green-900/30 border border-green-300 dark:border-green-500' : 'bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-500'">
+            <p v-if="claimReviewData.action === 'approve'" class="text-green-700 dark:text-green-300 text-sm">
               <strong>✓ Approval Confirmation:</strong> By confirming this, you approve that the item is returned to the rightful owner. The claimant will be notified of the approval.
             </p>
-            <p v-else class="text-red-300 text-sm">
+            <p v-else class="text-red-700 dark:text-red-300 text-sm">
               <strong>✗ Rejection Notice:</strong> By confirming this, the claim request will be rejected. The claim status will remain pending and the claimant will be notified of the rejection.
             </p>
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex gap-3 justify-end pt-4 border-t border-gray-700">
+          <div class="flex gap-3 justify-end pt-4 border-t border-gray-300 dark:border-gray-700">
             <button
               @click="closeClaimReviewModal"
-              class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition font-medium"
+              class="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition font-medium"
             >
               Cancel
             </button>
@@ -1226,7 +1226,7 @@
           </div>
 
           <div v-if="reviewItem.reporter_name" class="mt-4 pt-3 border-t border-gray-800">
-            <h4 class="text-lg font-medium text-yellow-400 mb-2">Reported By</h4>
+            <h4 class="text-lg font-medium text-emerald-400 mb-2">Reported By</h4>
             <div class="flex items-center space-x-3 mb-3">
               <img
                 v-if="reviewItem.reporter_profile_picture && !reporterImageError"
@@ -1234,7 +1234,7 @@
                 @error="reporterImageError = true"
                 class="w-10 h-10 rounded-full object-cover border border-gray-600"
               />
-              <div v-else class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+              <div v-else class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white text-sm font-bold">
                 {{ reviewItem.reporter_name[0].toUpperCase() }}
               </div>
               <div>
@@ -1262,7 +1262,7 @@
           <p><strong>Name:</strong> {{ returnItem.name }}</p>
           <p><strong>Category:</strong> {{ returnItem.category || "General" }}</p>
           <p><strong>Status:</strong> {{ formatStatus(returnItem.status) }}</p>
-          <p class="mt-4 text-yellow-400 text-sm">
+          <p class="mt-4 text-emerald-400 text-sm">
             ⚠️ This item will be officially marked as
             <strong>returned to the owner</strong>.
           </p>
@@ -1292,7 +1292,7 @@
           </div>
           <p class="text-sm text-gray-300 mb-3">This is a frontend-only modal placeholder for quick actions or help. Wire real actions here later.</p>
           <div class="space-y-2">
-            <button class="w-full px-3 py-2 bg-yellow-500 text-black rounded">Open Claims Panel</button>
+            <button class="w-full px-3 py-2 bg-emerald-500 text-black rounded">Open Claims Panel</button>
             <button class="w-full px-3 py-2 bg-gray-800 text-white rounded border border-gray-700">View Notifications</button>
             <button class="w-full px-3 py-2 bg-gray-700 text-white rounded">Other Action</button>
           </div>
@@ -1645,11 +1645,11 @@ const claimStatusClass = (status) => {
   const normalized = (status || "pending").toString().toLowerCase();
   switch (normalized) {
     case "approved":
-      return "bg-green-500/20 border-green-500/40 text-green-300";
+      return "bg-green-500 border-green-500 text-white";
     case "rejected":
-      return "bg-red-500/20 border-red-500/40 text-red-300";
+      return "bg-red-500 border-red-500 text-white";
     default:
-      return "bg-yellow-500/20 border-yellow-500/40 text-yellow-300";
+      return "bg-yellow-500 border-yellow-500 text-white";
   }
 };
 
