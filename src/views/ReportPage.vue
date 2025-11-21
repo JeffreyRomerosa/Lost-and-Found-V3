@@ -173,12 +173,44 @@
 
           <div>
             <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Course / Program *</label>
-            <input 
-              v-model="idForm.course" 
-              type="text" 
-              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" 
-              required 
-            />
+            <div class="relative" ref="courseSuggestionsRef">
+              <input 
+                v-model="idForm.course" 
+                type="text" 
+                @input="filterCourseSuggestions"
+                @focus="openCourseSuggestions"
+                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all pr-10" 
+                required 
+              />
+
+              <button type="button" @click.stop="toggleCourseSuggestions" class="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent p-1 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+
+              <div v-if="showCourseSuggestions" class="absolute left-0 right-0 z-40 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full">
+                <div class="sticky top-0 bg-emerald-500 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
+                  <span class="font-bold text-lg">COURSE</span>
+                  <button @click="closeCourseSuggestions" class="text-white hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="overflow-y-auto max-h-40 py-2">
+                  <button
+                    v-for="c in (idForm.course ? (filteredCourseSuggestions.length ? filteredCourseSuggestions : courseOptions) : courseOptions)"
+                    :key="c"
+                    @click="selectCourseSuggestion(c)"
+                    class="w-full px-4 py-3 text-left font-semibold text-gray-900 dark:text-white hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                  >
+                    {{ c }}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -196,22 +228,25 @@
                 <!-- Month Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Month</label>
-                  <button @click="openIdPicker('month')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openIdPickerWrapped('month')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ getMonthName(idDatePicker.month) }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
                 <!-- Day Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Day</label>
-                  <button @click="openIdPicker('day')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openIdPickerWrapped('day')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ String(idDatePicker.day).padStart(2, '0') }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
                 <!-- Year Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Year</label>
-                  <button @click="openIdPicker('year')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openIdPickerWrapped('year')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ idDatePicker.year }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
               </div>
@@ -223,22 +258,25 @@
                 <!-- Hour Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Hour</label>
-                  <button @click="openIdPicker('hour')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openIdPickerWrapped('hour')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ idDatePicker.hour }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
                 <!-- Minute Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Minute</label>
-                  <button @click="openIdPicker('minute')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openIdPickerWrapped('minute')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ String(idDatePicker.minute).padStart(2, '0') }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
                 <!-- Period Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">AM/PM</label>
-                  <button @click="openIdPicker('period')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openIdPickerWrapped('period')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ idDatePicker.period }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
               </div>
@@ -249,12 +287,44 @@
             <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">
               {{ reportType === "lost" ? "Location Lost" : "Location Found" }} *
             </label>
-            <input 
-              v-model="idForm.location" 
-              type="text" 
-              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" 
-              required 
-            />
+            <div class="relative" ref="idLocationSuggestionsRef">
+              <input 
+                v-model="idForm.location" 
+                type="text" 
+                @input="filterIdLocationSuggestions"
+                @focus="openIdLocationSuggestions"
+                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all pr-10" 
+                required 
+              />
+
+              <button type="button" @click.stop="toggleIdLocationSuggestions" class="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent p-1 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+
+              <div v-if="showIdLocationSuggestions" class="absolute left-0 right-0 z-40 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full">
+                <div class="sticky top-0 bg-emerald-500 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
+                  <span class="font-bold text-lg">LOCATION</span>
+                  <button @click="closeIdLocationSuggestions" class="text-white hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="overflow-y-auto max-h-40 py-2">
+                  <button
+                    v-for="loc in (idForm.location ? (filteredLocationSuggestions.length ? filteredLocationSuggestions : locationOptions) : locationOptions)"
+                    :key="loc"
+                    @click="selectIdLocationSuggestion(loc)"
+                    class="w-full px-4 py-3 text-left font-semibold text-gray-900 dark:text-white hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                  >
+                    {{ loc }}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -299,8 +369,8 @@
             @change="handleImage($event, 'general')"
             class="w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 file:cursor-pointer"
           />
-
-          <div v-if="isAnalyzing" class="mt-3 p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm">
+         <!-- commented out for privacy reasons:hidden -->
+          <!-- <div v-if="isAnalyzing" class="mt-3 p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm">
             🔍 Analyzing image...
           </div>
 
@@ -315,7 +385,7 @@
                 {{ obj.class_name }} ({{ Math.round(obj.confidence * 100) }}%)
               </span>
             </div>
-          </div>
+          </div> -->
 
           <div v-if="generalForm.preview" class="mt-4 flex items-center gap-4">
             <img
@@ -338,17 +408,47 @@
         <div class="space-y-4">
           <div>
             <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Item Name *</label>
-            <input
-              v-model="generalForm.name"
-              type="text"
-              @input="filterSuggestions"
-              list="item-suggestions"
-              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-              required
-            />
-            <datalist id="item-suggestions">
-              <option v-for="item in filteredSuggestions" :key="item" :value="item" />
-            </datalist>
+            <div class="relative" ref="suggestionsRef">
+              <input
+                v-model="generalForm.name"
+                type="text"
+                @input="filterSuggestions"
+                @focus="openSuggestions"
+                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all pr-10"
+                required
+              />
+
+              <!-- Always-visible caret button -->
+              <button type="button" @click.stop="toggleSuggestions" class="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent p-1 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+
+              <!-- Custom suggestions dropdown styled like date picker modal -->
+              <div v-if="showItemSuggestions" class="absolute left-0 right-0 z-50 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-full">
+                <div class="sticky top-0 bg-emerald-500 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
+                  <span class="font-bold text-lg">ITEMS</span>
+                  <button @click="closeSuggestions" class="text-white hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="overflow-y-auto max-h-44 py-2">
+                  <button
+                    v-for="item in filteredSuggestions"
+                    :key="item"
+                    @click="selectSuggestion(item)"
+                    class="w-full px-4 py-3 text-left font-semibold text-gray-900 dark:text-white hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                  >
+                    {{ item }}
+                  </button>
+                  <div v-if="filteredSuggestions.length === 0" class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">No suggestions</div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -363,12 +463,44 @@
 
             <div>
               <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">Color *</label>
-              <input 
-                v-model="generalForm.color" 
-                type="text" 
-                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" 
-                required
-              />
+              <div class="relative" ref="colorSuggestionsRef">
+                <input
+                  v-model="generalForm.color"
+                  type="text"
+                  @input="filterColorSuggestions"
+                  @focus="openColorSuggestions"
+                  class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all pr-10"
+                  required
+                />
+
+                <button type="button" @click.stop="toggleColorSuggestions" class="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent p-1 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+
+                <div v-if="showColorSuggestions" class="absolute left-0 right-0 z-40 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full">
+                  <div class="sticky top-0 bg-emerald-500 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
+                    <span class="font-bold text-lg">COLOR</span>
+                    <button @click="closeColorSuggestions" class="text-white hover:text-gray-200">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div class="overflow-y-auto max-h-40 py-2">
+                    <button
+                      v-for="c in (generalForm.color ? (filteredColorSuggestions.length ? filteredColorSuggestions : colorOptions) : colorOptions)"
+                      :key="c"
+                      @click="selectColorSuggestion(c)"
+                      class="w-full px-4 py-3 text-left font-semibold text-gray-900 dark:text-white hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                    >
+                      {{ c }}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -403,22 +535,25 @@
                 <!-- Month Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Month</label>
-                  <button @click="openGeneralPicker('month')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openGeneralPickerWrapped('month')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ getMonthName(generalDatePicker.month) }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
                 <!-- Day Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Day</label>
-                  <button @click="openGeneralPicker('day')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openGeneralPickerWrapped('day')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ String(generalDatePicker.day).padStart(2, '0') }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
                 <!-- Year Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Year</label>
-                  <button @click="openGeneralPicker('year')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openGeneralPickerWrapped('year')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ generalDatePicker.year }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
               </div>
@@ -430,22 +565,25 @@
                 <!-- Hour Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Hour</label>
-                  <button @click="openGeneralPicker('hour')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openGeneralPickerWrapped('hour')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ generalDatePicker.hour }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
                 <!-- Minute Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">Minute</label>
-                  <button @click="openGeneralPicker('minute')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openGeneralPickerWrapped('minute')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ String(generalDatePicker.minute).padStart(2, '0') }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
                 <!-- Period Picker -->
                 <div class="flex flex-col">
                   <label class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-2">AM/PM</label>
-                  <button @click="openGeneralPicker('period')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all">
+                  <button type="button" @click="openGeneralPickerWrapped('period')" class="w-full px-3 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-center hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all flex items-center justify-center gap-2">
                     {{ generalDatePicker.period }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </div>
               </div>
@@ -456,12 +594,44 @@
             <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 uppercase">
               {{ reportType === "lost" ? "Location Lost" : "Location Found" }} *
             </label>
-            <input 
-              v-model="generalForm.location" 
-              type="text" 
-              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" 
-              required 
-            />
+            <div class="relative" ref="generalLocationSuggestionsRef">
+              <input 
+                v-model="generalForm.location" 
+                type="text" 
+                @input="filterGeneralLocationSuggestions"
+                @focus="openGeneralLocationSuggestions"
+                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all pr-10" 
+                required 
+              />
+
+              <button type="button" @click.stop="toggleGeneralLocationSuggestions" class="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent p-1 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+
+              <div v-if="showGeneralLocationSuggestions" class="absolute left-0 right-0 z-40 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full">
+                <div class="sticky top-0 bg-emerald-500 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
+                  <span class="font-bold text-lg">LOCATION</span>
+                  <button @click="closeGeneralLocationSuggestions" class="text-white hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="overflow-y-auto max-h-40 py-2">
+                  <button
+                    v-for="loc in (generalForm.location ? (filteredLocationSuggestions.length ? filteredLocationSuggestions : locationOptions) : locationOptions)"
+                    :key="loc"
+                    @click="selectGeneralLocationSuggestion(loc)"
+                    class="w-full px-4 py-3 text-left font-semibold text-gray-900 dark:text-white hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                  >
+                    {{ loc }}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -628,7 +798,7 @@
   />
 
   <!-- 📱 PICKER MODAL OVERLAY -->
-  <div v-if="activePickerModal" @click="closePicker" class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4">
+  <div v-if="activePickerModal" @click="closePicker" class="fixed inset-0 bg-black/50 z-60 flex items-center justify-center p-4">
     <div @click.stop class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-xs max-h-96">
       <!-- Modal Header -->
       <div class="sticky top-0 bg-emerald-500 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
@@ -797,6 +967,122 @@ const suggestions = [
 //end of nov13
 
 const filteredSuggestions = ref([]);
+// Color options for dropdown
+const colorOptions = [
+  'Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Gray', 'Silver', 'Gold', 'Brown', 'Pink', 'Purple', 'Orange', 'Maroon', 'Beige',
+  'Navy','Teal','Turquoise','Lavender','Khaki','Cream','Bronze','Olive','Mustard','Charcoal','Transparent/Clear'
+
+];
+const filteredColorSuggestions = ref([]);
+// Location options for dropdown (provided list)
+const locationOptions = [
+  "GUARD HOUSE",
+  "OVERPASS",
+  "CSU MILK PROCESSING FACILITY",
+  "CED BUILDING",
+  "CHED CARAGA REGIONAL OFFICE",
+  "GASOLINE STATION",
+  "FOOD TECH. BUILDING",
+  "FOOD INNOVATION CENTER",
+  "AGRO-WORKSHOP/CAA TESDA",
+  "TISSUE CULTURE LABORATORY",
+  "CAA BUILDING",
+  "GREEN HOUSE",
+  "H.E.R.O LEARNING COMMONS",
+  "S & T BUILDING",
+  "HOSTEL BUILDING (e.i CLINIC OFFICE)",
+  "EXECUTIVE HOUSE",
+  "DIAGNOSTIC LABORATORY",
+  "FARM MECHANIZATION CENTER",
+  "NEW ADMINISTRATION BUILDING",
+  "OLD ADMINISTRATION BUILDING",
+  "OVAL",
+  "ORGMS OFFICE/BOOKSTORE",
+  "ANNEX 3/SENIOR HIGH SCHOOL",
+  "UNIVERSITY GYMNASIUM & CULTURAL CENTER",
+  "PHYSICAL FITNESS OFFICE",
+  "OLD CAS BUILDING",
+  "KINAADMAN BUILDING",
+  "CEIT ANNEX BUILDING",
+  "HIRAYA BUILDING",
+  "HINANG BUILDING",
+  "CHAPEL",
+  "ECO-LODGE",
+  "OLD FARM MECHANIZATION CENTER",
+  "OLD GENTS’ DORMITORY",
+  "PIG PENS",
+  "NATIVE CHICKEN HOUSE",
+  "OATC",
+  "VERMI HOUSE/NURSERY/POULTRY",
+  "BOTANICAL GARDEN",
+  "CoFES ANNEX",
+  "ANNEX 2 BUILDING",
+  "DOST BUILDING",
+  "CoFES BUILDING",
+  "CoFES CLASSROOM/HOSTEL",
+  "NEW GENTS’ DORMITORY",
+  "MICROIZA OFFICE",
+  "WOOD WORKSHOP\\TECH VOC BUILDING",
+  "ROOTING RECOVERY FACILITY",
+  "NEW LADIES DORMITORY"
+];
+const filteredLocationSuggestions = ref([]);
+// Course / Program options for ID form
+const courseOptions = [
+  "BACHELOR OF ARTS IN SOCIOLOGY (AB-SOCIO)",
+  "BACHELOR OF ELEMENTARY EDUCATION (BEED)",
+  "BACHELOR OF SCIENCE IN AGRICULTURAL AND BIOSYSTEMS ENGINEERING (BSABE)",
+  "BACHELOR OF SCIENCE IN AGRICULTURE (BSA)",
+  "BACHELOR OF SCIENCE IN AGRICULTURE MAJOR IN AGRIBUSINESS MANAGEMENT (BSA-AGRI)",
+  "BACHELOR OF SCIENCE IN AGRICULTURE MAJOR IN AGRICULTURAL ECONOMICS (BSA-AGECON)",
+  "BACHELOR OF SCIENCE IN AGRICULTURE MAJOR IN AGRONOMY (BSA-AGRON)",
+  "BACHELOR OF SCIENCE IN AGRICULTURE MAJOR IN ANIMAL SCIENCE (BSA-ANSCI)",
+  "BACHELOR OF SCIENCE IN AGRICULTURE MAJOR IN CROP PROTECTION (BSA-CROPPROT)",
+  "BACHELOR OF SCIENCE IN AGRICULTURE MAJOR IN HORTICULTURE (BSA-HORTI)",
+  "BACHELOR OF SCIENCE IN AGRICULTURE MAJOR IN SOIL SCIENCE (BSA-SOILSCI)",
+  "BACHELOR OF SCIENCE IN AGROFORESTRY (BSAF)",
+  "BACHELOR OF SCIENCE IN APPLIED MATHEMATICS (BSAM)",
+  "BACHELOR OF SCIENCE IN BIOLOGY (BSBIO)",
+  "BACHELOR OF SCIENCE IN BIOLOGY MAJOR IN BIODIVERSITY CONSERVATION (BSBIO BIOCON)",
+  "BACHELOR OF SCIENCE IN BIOLOGY MAJOR IN ENTOMOLOGY (BSBIO-ENT)",
+  "BACHELOR OF SCIENCE IN BIOLOGY MAJOR IN MEDICAL BIOLOGY (BSBIO MEDBIO)",
+  "BACHELOR OF SCIENCE IN BIOLOGY MAJOR IN MICROBIOLOGY (BSBIO MICRO)",
+  "BACHELOR OF SCIENCE IN BIOLOGY MAJOR IN PLANT BIOLOGY (BSBIO PLANTBIO)",
+  "BACHELOR OF SCIENCE IN CHEMISTRY (BSCHEM)",
+  "BACHELOR OF SCIENCE IN CIVIL ENGINEERING (BSCE)",
+  "BACHELOR OF SCIENCE IN CIVIL ENGINEERING WITH SPECIALIZATION IN STRUCTURAL ENGINEERING (BSCE-SE)",
+  "BACHELOR OF SCIENCE IN COMPUTER SCIENCE (BSCS)",
+  "BACHELOR OF SCIENCE IN ELECTRONICS ENGINEERING (BSEcE)",
+  "BACHELOR OF SCIENCE IN ENVIRONMENTAL SCIENCE (BSES)",
+  "BACHELOR OF SCIENCE IN FORESTRY (BSF)",
+  "BACHELOR OF SCIENCE IN GEODETIC ENGINEERING (BSGE)",
+  "BACHELOR OF SCIENCE IN GEOLOGY (BSGeol)",
+  "BACHELOR OF SCIENCE IN INFORMATION SYSTEM (BSIS)",
+  "BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY (BSIT)",
+  "BACHELOR OF SCIENCE IN MARINE BIOLOGY (BS Marine Bio)",
+  "BACHELOR OF SCIENCE IN MATHEMATICS (BSMATH)",
+  "BACHELOR OF SCIENCE IN MINING ENGINEERING (BSEM)",
+  "BACHELOR OF SCIENCE IN PHYSICS (BS-PHYS)",
+  "BACHELOR OF SCIENCE IN PSYCHOLOGY (BS PSYCH)",
+  "BACHELOR OF SCIENCE IN SOCIAL WORK (BSSW)",
+  "BACHELOR OF SECONDARY EDUCATION MAJOR IN ENGLISH (BSED ENG)",
+  "BACHELOR OF SECONDARY EDUCATION MAJOR IN FILIPINO (BSED FIL)",
+  "BACHELOR OF SECONDARY EDUCATION MAJOR IN MATHEMATICS (BSED-MATH)",
+  "BACHELOR OF SECONDARY EDUCATION MAJOR IN SCIENCE (BSED SCI)",
+  "TEACHERS CERTIFICATE PROGRAM (TCP)"
+];
+const filteredCourseSuggestions = ref([]);
+const showCourseSuggestions = ref(false);
+const courseSuggestionsRef = ref(null);
+const showItemSuggestions = ref(false);
+const showColorSuggestions = ref(false);
+const showIdLocationSuggestions = ref(false);
+const showGeneralLocationSuggestions = ref(false);
+const suggestionsRef = ref(null);
+const colorSuggestionsRef = ref(null);
+const idLocationSuggestionsRef = ref(null);
+const generalLocationSuggestionsRef = ref(null);
+let _handleDocClick = null;
 
 // ✅ Automatically save progress (only core state)
 const saveProgress = () => {
@@ -814,6 +1100,11 @@ const saveProgress = () => {
 
 // 🔄 Watch for changes and save automatically
 watch([step, reportType, itemCategory, reviewing, submitted], saveProgress);
+
+// Hide any open suggestion dropdowns whenever a picker modal becomes active
+watch(activePickerModal, (val) => {
+  if (val) _blurSuggestionsInput();
+});
 
 // 🚀 Restore progress on page load
 onMounted(() => {
@@ -843,11 +1134,28 @@ onMounted(() => {
   if (socket) {
     socket.on("itemReceived", handleItemReceivedEvent);
   }
+  // Close suggestions when clicking outside (checks both suggestion menus)
+  _handleDocClick = (e) => {
+    if (suggestionsRef.value && suggestionsRef.value.contains(e.target)) return;
+    if (colorSuggestionsRef.value && colorSuggestionsRef.value.contains(e.target)) return;
+    if (idLocationSuggestionsRef.value && idLocationSuggestionsRef.value.contains(e.target)) return;
+    if (generalLocationSuggestionsRef.value && generalLocationSuggestionsRef.value.contains(e.target)) return;
+    if (courseSuggestionsRef.value && courseSuggestionsRef.value.contains(e.target)) return;
+    showItemSuggestions.value = false;
+    showColorSuggestions.value = false;
+    showIdLocationSuggestions.value = false;
+    showGeneralLocationSuggestions.value = false;
+    showCourseSuggestions.value = false;
+  };
+  window.addEventListener('click', _handleDocClick);
 });
 
 onUnmounted(() => {
   if (socket) {
     socket.off("itemReceived", handleItemReceivedEvent);
+  }
+  if (_handleDocClick) {
+    window.removeEventListener('click', _handleDocClick);
   }
 });
 
@@ -1189,7 +1497,157 @@ const formatStudentId = () => {
 
 const filterSuggestions = () => {
   const term = generalForm.name.toLowerCase();
-  filteredSuggestions.value = suggestions.filter((s) => s.toLowerCase().includes(term));
+  if (!term) {
+    // show full list when empty
+    filteredSuggestions.value = [...suggestions];
+  } else {
+    filteredSuggestions.value = suggestions.filter((s) => s.toLowerCase().includes(term));
+  }
+  // Show the dropdown when there are suggestions
+  showItemSuggestions.value = filteredSuggestions.value.length > 0;
+};
+
+const openSuggestions = () => {
+  if (!filteredSuggestions.value.length) filteredSuggestions.value = [...suggestions];
+  showItemSuggestions.value = true;
+};
+
+const closeSuggestions = () => {
+  showItemSuggestions.value = false;
+};
+
+const toggleSuggestions = () => {
+  // When opening via caret ensure full list is available so users see all options
+  if (!showItemSuggestions.value) {
+    filteredSuggestions.value = [...suggestions];
+  }
+  showItemSuggestions.value = !showItemSuggestions.value;
+};
+
+const selectSuggestion = (item) => {
+  generalForm.name = item;
+  showItemSuggestions.value = false;
+  filteredSuggestions.value = [];
+};
+
+// Color suggestion helpers
+const filterColorSuggestions = () => {
+  const term = (generalForm.color || '').toLowerCase();
+  if (!term) {
+    filteredColorSuggestions.value = [];
+  } else {
+    filteredColorSuggestions.value = colorOptions.filter(c => c.toLowerCase().includes(term));
+  }
+  console.debug('filterColorSuggestions -> term:', term, 'results:', filteredColorSuggestions.value.length);
+  showColorSuggestions.value = filteredColorSuggestions.value.length > 0;
+};
+
+const openColorSuggestions = () => {
+  if (!filteredColorSuggestions.value.length) filteredColorSuggestions.value = [...colorOptions];
+  showColorSuggestions.value = true;
+};
+
+const closeColorSuggestions = () => {
+  showColorSuggestions.value = false;
+};
+
+const toggleColorSuggestions = () => {
+  // Always populate full color list when opening so caret shows all options
+  if (!showColorSuggestions.value) {
+    filteredColorSuggestions.value = [...colorOptions];
+    console.debug('toggleColorSuggestions -> populated full color list, count =', filteredColorSuggestions.value.length);
+  }
+  showColorSuggestions.value = !showColorSuggestions.value;
+};
+
+const selectColorSuggestion = (c) => {
+  generalForm.color = c;
+  showColorSuggestions.value = false;
+  filteredColorSuggestions.value = [];
+};
+
+// Course suggestion helpers (ID form)
+const filterCourseSuggestions = () => {
+  const term = (idForm.course || '').toLowerCase();
+  if (!term) filteredCourseSuggestions.value = [...courseOptions];
+  else filteredCourseSuggestions.value = courseOptions.filter(c => c.toLowerCase().includes(term));
+  showCourseSuggestions.value = filteredCourseSuggestions.value.length > 0;
+};
+
+const openCourseSuggestions = () => {
+  if (!filteredCourseSuggestions.value.length) filteredCourseSuggestions.value = [...courseOptions];
+  showCourseSuggestions.value = true;
+};
+
+const closeCourseSuggestions = () => {
+  showCourseSuggestions.value = false;
+};
+
+const toggleCourseSuggestions = () => {
+  if (!showCourseSuggestions.value) filteredCourseSuggestions.value = [...courseOptions];
+  showCourseSuggestions.value = !showCourseSuggestions.value;
+};
+
+const selectCourseSuggestion = (c) => {
+  idForm.course = c;
+  showCourseSuggestions.value = false;
+  filteredCourseSuggestions.value = [];
+};
+
+// Location helpers for ID form
+const filterIdLocationSuggestions = () => {
+  const term = (idForm.location || '').toLowerCase();
+  if (!term) filteredLocationSuggestions.value = [...locationOptions];
+  else filteredLocationSuggestions.value = locationOptions.filter(l => l.toLowerCase().includes(term));
+  showIdLocationSuggestions.value = filteredLocationSuggestions.value.length > 0;
+};
+
+const openIdLocationSuggestions = () => {
+  if (!filteredLocationSuggestions.value.length) filteredLocationSuggestions.value = [...locationOptions];
+  showIdLocationSuggestions.value = true;
+};
+
+const closeIdLocationSuggestions = () => {
+  showIdLocationSuggestions.value = false;
+};
+
+const toggleIdLocationSuggestions = () => {
+  if (!showIdLocationSuggestions.value) filteredLocationSuggestions.value = [...locationOptions];
+  showIdLocationSuggestions.value = !showIdLocationSuggestions.value;
+};
+
+const selectIdLocationSuggestion = (loc) => {
+  idForm.location = loc;
+  showIdLocationSuggestions.value = false;
+  filteredLocationSuggestions.value = [];
+};
+
+// Location helpers for General form
+const filterGeneralLocationSuggestions = () => {
+  const term = (generalForm.location || '').toLowerCase();
+  if (!term) filteredLocationSuggestions.value = [...locationOptions];
+  else filteredLocationSuggestions.value = locationOptions.filter(l => l.toLowerCase().includes(term));
+  showGeneralLocationSuggestions.value = filteredLocationSuggestions.value.length > 0;
+};
+
+const openGeneralLocationSuggestions = () => {
+  if (!filteredLocationSuggestions.value.length) filteredLocationSuggestions.value = [...locationOptions];
+  showGeneralLocationSuggestions.value = true;
+};
+
+const closeGeneralLocationSuggestions = () => {
+  showGeneralLocationSuggestions.value = false;
+};
+
+const toggleGeneralLocationSuggestions = () => {
+  if (!showGeneralLocationSuggestions.value) filteredLocationSuggestions.value = [...locationOptions];
+  showGeneralLocationSuggestions.value = !showGeneralLocationSuggestions.value;
+};
+
+const selectGeneralLocationSuggestion = (loc) => {
+  generalForm.location = loc;
+  showGeneralLocationSuggestions.value = false;
+  filteredLocationSuggestions.value = [];
 };
 
 // Format and update date/time for ID form
@@ -1287,13 +1745,45 @@ const getMonthName = (month) => {
 };
 
 const openIdPicker = (pickerType) => {
+  // ensure item suggestions are closed so the picker modal doesn't get overlapped
+  try { closeSuggestions(); } catch (e) { /* ignore if not available */ }
   activePickerModal.value = `id-${pickerType}`;
   pickerFormType.value = 'id';
 };
 
 const openGeneralPicker = (pickerType) => {
+  // ensure item suggestions are closed so the picker modal doesn't get overlapped
+  try { closeSuggestions(); } catch (e) { /* ignore if not available */ }
   activePickerModal.value = `general-${pickerType}`;
   pickerFormType.value = 'general';
+};
+
+// Also blur item input and hide any suggestion overlays when opening pickers
+const _blurSuggestionsInput = () => {
+  try {
+    if (suggestionsRef.value && suggestionsRef.value.querySelector) {
+      const inputEl = suggestionsRef.value.querySelector('input');
+      if (inputEl && typeof inputEl.blur === 'function') inputEl.blur();
+    }
+  } catch (e) {
+    // ignore
+  }
+  showItemSuggestions.value = false;
+  showColorSuggestions.value = false;
+  showIdLocationSuggestions.value = false;
+  showGeneralLocationSuggestions.value = false;
+  showCourseSuggestions.value = false;
+};
+
+// Wrap pickers to also blur suggestions (keeps behavior consistent)
+const openIdPickerWrapped = (pickerType) => {
+  _blurSuggestionsInput();
+  openIdPicker(pickerType);
+};
+
+const openGeneralPickerWrapped = (pickerType) => {
+  _blurSuggestionsInput();
+  openGeneralPicker(pickerType);
 };
 
 const closePicker = () => {

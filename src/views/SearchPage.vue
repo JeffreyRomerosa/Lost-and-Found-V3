@@ -178,11 +178,12 @@
 
         <!-- Right column: AI Detection Results -->
         <div>
-          <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-4">
+          <!-- hidden for privacy reasons -->
+          <!-- <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-4">
             AI Detection Result
-          </label>
+          </label> -->
           <div class="space-y-4">
-            <!-- Detection Status -->
+            <!-- Detection Status, hidden
             <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">Detection Status</p>
               <div class="space-y-2">
@@ -197,7 +198,7 @@
                 </p>
                 <p v-if="errorMessage" class="text-red-600 dark:text-red-400 text-sm">{{ errorMessage }}</p>
               </div>
-            </div>
+            </div> -->
 
             <!-- Detected Object Info (Success Case) - now editable -->
             <div v-if="classNames" class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
@@ -236,9 +237,10 @@
                     </li>
                   </ul>
                 </div>
-              <p v-if="detectedConfidence" class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                <!-- commented out for privacy reasons -->
+              <!-- <p v-if="detectedConfidence" class="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 Confidence: {{ detectedConfidence }}
-              </p>
+              </p> -->
               <!-- Note moved above upload area so users see guidance before choosing a photo -->
             </div>
 

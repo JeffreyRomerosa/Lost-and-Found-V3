@@ -46,7 +46,7 @@
                   v-if="notif.image"
                   :src="notif.image"
                   alt="Matched item"
-                  class="w-full h-full object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-sm"
+                  class="w-full h-full object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-sm filter blur-md"
                 />
                 <div v-else class="w-full h-full rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 border-2 border-gray-200 dark:border-gray-700">
                   <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +149,7 @@
               v-if="selectedNotification.image"
               :src="selectedNotification.image"
               alt="Matched item"
-              class="w-full h-40 sm:h-48 lg:h-64 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-md"
+              class="w-full h-40 sm:h-48 lg:h-64 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-md filter blur-md"
             />
 
             <!-- Student badge overlay -->
@@ -444,8 +444,8 @@ const mapNotification = (row) => {
   // Handle match found notifications (original logic)
   const title =
     row.category?.toLowerCase() === "id"
-      ? "⭐ Student ID match found"
-      : "⭐ Item match found";
+      ? " Student ID match found"
+      : " Item match found";
 
   const message =
     row.category?.toLowerCase() === "id"

@@ -14,7 +14,7 @@
             ]"
           />
           <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-            Security Office
+            Security Office Hours
           </h3>
         </div>
       </div>

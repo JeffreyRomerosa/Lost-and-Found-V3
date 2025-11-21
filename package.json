@@ -8,7 +8,7 @@
     "lint": "vue-cli-service lint",
     "start:backend": "cd backend && npm start",
     "start:model": "cd yolo_api_local && .\\venv\\Scripts\\python.exe main.py",
-    "dev": "concurrently \"npm run serve\" \"npm run start:model\""
+    "dev": "concurrently \"vue-cli-service serve --port 5001\" \"cd backend && npm start\" \"cd yolo_api_local && .\\venv\\Scripts\\python.exe main.py\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.58.0",

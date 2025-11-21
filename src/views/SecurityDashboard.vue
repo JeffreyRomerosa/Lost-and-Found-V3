@@ -877,7 +877,7 @@
             
             <!-- ITEM DETAILS SECTION (Left Column) -->
             <div class="lg:col-span-1">
-              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 sticky top-0 transition-colors">
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded border border-emerald-200 dark:border-emerald-700 sticky top-0 transition-colors">
                 <h4 class="text-lg font-semibold text-emerald-700 mb-4">Item Details</h4>
                 
                 <!-- Item Image -->

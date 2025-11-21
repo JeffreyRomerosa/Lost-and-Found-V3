@@ -52,7 +52,7 @@
         <!-- Notifications Dropdown -->
         <div
           v-if="showNotifications"
-          class="fixed left-1/2 top-20 transform -translate-x-1/2 w-80 max-w-xs sm:max-w-sm bg-white dark:bg-gray-800 rounded-xl shadow-2xl z-50 border border-gray-200 dark:border-gray-700 overflow-hidden"
+          class="fixed left-1/2 top-20 transform -translate-x-1/2 w-80 max-w-xs sm:max-w-sm bg-white dark:bg-gray-800 rounded-xl shadow-2xl z-50 border border-gray-200 dark:border-gray-700 overflow-hidden md:absolute md:left-auto md:right-0 md:top-full md:transform-none md:mt-2 md:w-80"
         >
           <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-emerald-50 dark:bg-emerald-900/20">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -181,7 +181,7 @@
                     v-if="notif.display_image"
                     :src="notif.display_image"
                     alt="Matched item"
-                    class="w-10 h-10 object-cover rounded border border-gray-300 dark:border-gray-600"
+                    class="w-10 h-10 object-cover rounded border border-gray-300 dark:border-gray-600 filter blur-sm"
                   />
                   <div class="text-xs">
                     <p class="font-semibold text-gray-900 dark:text-white">{{ notif.display_name }}</p>
@@ -373,8 +373,8 @@
                   <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ report.type || report.item_type || 'N/A' }}</p>
 
                   <p v-if="report.description" class="text-xs text-gray-700 dark:text-gray-300 mb-2 line-clamp-2">{{ report.description }}</p>
-                  <p v-if="report.student_id" class="text-xs text-gray-600 dark:text-gray-400">Student ID: {{ report.student_id }}</p>
-                  <p v-if="report.location" class="text-xs text-gray-600 dark:text-gray-400">Location: {{ report.location }}</p>
+                  <p v-if="report.student_id" class="text-center text-xs text-gray-600 dark:text-gray-400">Student ID: {{ report.student_id }}</p>
+                  <p v-if="report.location" class="text-centertext-xs text-gray-600 dark:text-gray-400">Location: {{ report.location }}</p>
 
                   <div class="mt-3 flex items-center gap-2">
                     <button @click="viewReport(report)" class="px-3 py-1.5 text-xs rounded-lg bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition">View</button>
@@ -442,7 +442,7 @@
         @click="$router.push('/search')"  
         class="w-full py-3 px-6 rounded-lg bg-emerald-500 text-white font-bold text-lg hover:bg-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
       >
-        Search by Image
+        Search Item 
       </button>
     </div>
 
@@ -451,34 +451,32 @@
       v-if="selectedMatch"
       class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
-      <div class="relative bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700">
-        <!-- Close button -->
-        <button
-          @click="clearAndCloseSelectedMatch"
-          aria-label="Clear notification"
-          class="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white text-lg font-bold shadow-lg border-2 border-white dark:border-gray-800 z-50 transition"
-          title="Clear notification"
-        >
-          ×
-        </button>
-        <div class="p-6">
-          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">✨ Match Found!</h3>
-          <p class="text-gray-900 dark:text-white mb-2">{{ selectedMatch.message }}</p>
-          <p
-            v-if="selectedMatch.display_description"
-            class="text-sm text-gray-600 dark:text-gray-400 mb-4"
-          >
-            {{ selectedMatch.display_description }}
-          </p>
+      <div class="relative bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full shadow-2xl border border-gray-200 dark:border-gray-700">
+        <div class="p-6 md:grid md:grid-cols-2 md:gap-6 md:items-center">
+          <div class="flex flex-col items-center md:items-start">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3 md:hidden text-center md:text-left">✨ Match Found!</h3>
+            <p class="text-gray-900 dark:text-white mb-2 md:hidden text-center md:text-left">{{ selectedMatch.message }}</p>
+            <div class="mb-4">
+              <img
+                v-if="selectedMatch.display_image"
+                :src="selectedMatch.display_image"
+                alt="Matched item"
+                class="w-40 h-40 object-cover rounded-xl border-4 border-emerald-100 dark:border-emerald-900/30 mb-4 shadow-md filter blur-md"
+              />
+            </div>
+          </div>
 
-          <div class="flex flex-col items-center mb-6">
-            <img
-              v-if="selectedMatch.display_image"
-              :src="selectedMatch.display_image"
-              alt="Matched item"
-              class="w-40 h-40 object-cover rounded-xl border-4 border-emerald-100 dark:border-emerald-900/30 mb-4 shadow-md"
-            />
-            <p class="font-semibold text-gray-900 dark:text-white text-lg text-center">
+          <div>
+            <h3 class="hidden md:block text-2xl font-bold text-gray-900 dark:text-white mb-3 text-center md:text-left">✨ Match Found!</h3>
+            <p class="hidden md:block text-gray-900 dark:text-white mb-2 text-center md:text-left">{{ selectedMatch.message }}</p>
+            <p
+              v-if="selectedMatch.display_description"
+              class="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center md:text-left"
+            >
+              {{ selectedMatch.display_description }}
+            </p>
+
+            <p class="font-semibold text-gray-900 dark:text-white text-lg text-center md:text-left">
               {{ selectedMatch.display_name }}
             </p>
             <p
@@ -499,27 +497,21 @@
             >
               {{ claimStatusNotice }}
             </p>
+
+            <div class="flex justify-center md:justify-start mt-6">
+              <button
+                @click="goToNotificationForMatch(selectedMatch)"
+                class="px-6 py-2 rounded-lg font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+              >
+                View Found Item
+              </button>
+            </div>
+
+            
           </div>
-
-          <div class="flex justify-center mb-4">
-            <button
-              @click="goToNotificationForMatch(selectedMatch)"
-              class="px-6 py-2 rounded-lg font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
-            >
-              View Found Item
-            </button>
-          </div>
-
-          <p class="text-center text-xs text-gray-600 dark:text-gray-400 mb-1">
-            Ready to submit a claim request to the security office?
-          </p>
-
-          <p class="text-xs text-gray-600 dark:text-gray-400 text-center">
-            This item is currently in the Security Office.
-          </p>
         </div>
 
-        <div class="bg-gray-50 dark:bg-gray-700/30 px-6 py-4 text-right border-t border-gray-200 dark:border-gray-700">
+        <div class="bg-gray-50 dark:bg-gray-700/30 px-6 py-4 text-center md:text-right border-t border-gray-200 dark:border-gray-700">
           <button
             @click="closeMatchModal"
             class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition font-semibold"
@@ -616,6 +608,7 @@ export default {
       // Keep short-lived keys for notifications the user just cleared so auto-preview
       // and realtime handlers won't immediately re-open them.
       recentlyClearedNotificationKeys: [],
+      // Image blur state for Match Found modal (confidential display)
     };
   },
   computed: {
